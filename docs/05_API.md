@@ -1,6 +1,6 @@
 # 05. API (Service Layer)
 
-> Part of the [Documentation Index](DOCUMENT_INDEX.md). Implements the Service Layer box from [03_ARCHITECTURE.md §4](03_ARCHITECTURE.md#4-component-architecture) against the schema in [04_DATABASE.md](04_DATABASE.md). Precedes [06_MCP.md](06_MCP.md) (every MCP tool maps to a method below), [07_AI.md](DOCUMENT_INDEX.md#07_aimd-planned) (extends `AIService`/`EmbeddingService`), and [08_SEARCH.md](DOCUMENT_INDEX.md#08_searchmd-planned) (extends `SearchService`).
+> Part of the [Documentation Index](DOCUMENT_INDEX.md). Implements the Service Layer box from [03_ARCHITECTURE.md §4](03_ARCHITECTURE.md#4-component-architecture) against the schema in [04_DATABASE.md](04_DATABASE.md). Precedes [06_MCP.md](06_MCP.md) (every MCP tool maps to a method below), [07_AI.md](07_AI.md) (extends `AIService`/`EmbeddingService`), and [08_SEARCH.md](08_SEARCH.md) (extends `SearchService`).
 >
 > This document specifies method signatures, not implementations — logical contracts, not HTTP routes. The Web API and MCP Server are both thin callers of what's defined here ([03_ARCHITECTURE.md §5.2](03_ARCHITECTURE.md#5-layering--code-organization-principles)).
 
@@ -23,7 +23,7 @@ Eight services own all business logic in the system. Every mutation, from any ca
 
 - **`userId` is always the first parameter**, sourced from the verified session/token by the caller (Web API or MCP Server) — never accepted from request body/tool arguments. This is what makes FR-MCP-4 (MCP can't act outside its owner's scope) a service-layer guarantee, not just an RLS one ([04_DATABASE.md §7](04_DATABASE.md#7-row-level-security-rls-policies)).
 - **Pagination** is cursor-based everywhere a method returns a list: `list(userId, options?: { cursor?: string; limit?: number })` returns `Paginated<T> = { items: T[]; nextCursor?: string }`. Chosen over offset/limit so results stay stable while a user is actively editing the graph mid-scroll.
-- **Mutations return the full updated resource**, not just an id or a boolean — callers (UI, MCP tool responses) shouldn't need a follow-up read after every write.
+- **Mutations return the full updated resource** (deletes return `void`), not just an id or a boolean — callers (UI, MCP tool responses) shouldn't need a follow-up read after every write.
 - **Every method is `async`** (returns a `Promise`); there is no synchronous variant.
 - **Errors are thrown, not returned as values**, from the fixed taxonomy in §3. Callers catch and translate — the Web API to HTTP status codes, the MCP Server to MCP error responses ([06_MCP.md](06_MCP.md)).
 
@@ -55,7 +55,7 @@ A fixed, closed set — every service throws only from this list. No service inv
 | `ConflictError` | Unique constraint violated (duplicate daily note date, duplicate tag name) | 409 | Tool error, conflict |
 | `CyclicMoveError` | A folder move would make a folder its own ancestor ([04_DATABASE.md §4.5](04_DATABASE.md#45-folders)) | 400 | Tool error, `invalid_params` |
 | `FileTooLargeError` | Upload exceeds the configured max size (FR-ATTACH-3) | 413 | Tool error, `invalid_params` |
-| `RateLimitError` | Caller exceeded an AI or MCP rate limit ([09_SECURITY.md](DOCUMENT_INDEX.md#09_securitymd-planned)) | 429 | Tool error, rate limited |
+| `RateLimitError` | Caller exceeded an AI or MCP rate limit ([09_SECURITY.md](09_SECURITY.md)) | 429 | Tool error, rate limited |
 | `UpstreamProviderError` | OpenAI (or another external dependency) call failed | 502 | Tool error, upstream failure |
 
 `ForbiddenError` exists even though RLS ([04_DATABASE.md §7](04_DATABASE.md#7-row-level-security-rls-policies)) already makes cross-owner access physically impossible at the query level — it's what a service throws when a query legitimately returns zero rows *because* RLS filtered them, so the caller gets a meaningful error instead of a bare `NotFoundError` indistinguishable from "this never existed."
@@ -70,7 +70,7 @@ A fixed, closed set — every service throws only from this list. No service inv
 | `delete` | `noteId` | `void` | `NotFoundError`, `ForbiddenError` |
 | `restore` | `noteId` | `Note` | `NotFoundError` (outside retention window), `ForbiddenError` |
 | `list` | `{ folderId? } & PaginationOptions` | `Paginated<Note>` | — |
-| `getBacklinks` | `noteId` | `KnowledgeObjectSummary[]` | `NotFoundError` |
+| `getBacklinks` | `noteId` | `{ object: KnowledgeObjectSummary; snippet: string }[]` — snippet is the text surrounding the link in the source note, for the backlinks panel | `NotFoundError` |
 | `getOrCreateDailyNote` | `date` | `Note` | — |
 | `addTag` | `noteId, tagName` | `Note` | `NotFoundError`, `ForbiddenError` |
 | `removeTag` | `noteId, tagId` | `Note` | `NotFoundError`, `ForbiddenError` |
@@ -78,6 +78,7 @@ A fixed, closed set — every service throws only from this list. No service inv
 **Behavioral notes:**
 - `update` re-parses `[[wiki links]]` out of `body` and reconciles the `links` table (insert new, delete removed) in the same transaction as the note save — this is what makes FR-LINK-6 true without a separate reindex step ([04_DATABASE.md §4.8](04_DATABASE.md#48-links)).
 - `update` writes `notes.title` and `knowledge_objects.title` together, always — `NoteService` is the schema's designated single writer for both ([04_DATABASE.md §4.3](04_DATABASE.md#43-notes)).
+- **Rename propagation (FR-NOTE-3):** when `title` changes, `update` uses the `links` table to find every note linking to this one and rewrites their `[[old title]]` occurrences to `[[new title]]` in the same transaction. Link *edges* are ID-based and unchanged — only display text in referencing bodies is updated. This keeps raw markdown human-readable (`[[title]]`, never opaque IDs), which is what makes export ([09_SECURITY.md §11](09_SECURITY.md#11-privacy--data-ownership)) portable without a translation step.
 - `getOrCreateDailyNote` is an upsert against the `(owner_id, daily_note_date)` unique constraint — it never races itself into a `ConflictError` under normal use.
 - Neither `create` nor `update` calls `EmbeddingService` directly. Re-embedding is triggered by the database webhook described in [03_ARCHITECTURE.md §6.4](03_ARCHITECTURE.md#64-embedding-pipeline), not a synchronous service-to-service call — see §10.
 
@@ -115,7 +116,7 @@ Output: {
 | `listTags` | — | `Tag[]` | — |
 
 **Behavioral notes:**
-- `search` runs full-text and semantic queries concurrently and merges them into one hybrid-ranked list — the two-branch flow in [03_ARCHITECTURE.md §6.3](03_ARCHITECTURE.md#63-search-hybrid); exact ranking formula is [08_SEARCH.md](DOCUMENT_INDEX.md#08_searchmd-planned)'s responsibility.
+- `search` runs full-text and semantic queries concurrently and merges them into one hybrid-ranked list — the two-branch flow in [03_ARCHITECTURE.md §6.3](03_ARCHITECTURE.md#63-search-hybrid); exact ranking formula is [08_SEARCH.md](08_SEARCH.md)'s responsibility.
 - `semanticSearch` is called directly by `AIService` (§11) for RAG context assembly, in addition to being usable standalone.
 - `suggestNoteTitles` backs the `[[` autocomplete UI (FR-LINK-3); it's a prefix/fuzzy match on title, not a full hybrid search — kept cheap and low-latency on purpose.
 - Tag CRUD lives on the owning object's service (`NoteService.addTag`, `AttachmentService.addTag`); `listByTag`/`listTags` live here because browsing is a discovery operation, not a mutation.
@@ -125,12 +126,12 @@ Output: {
 Input:  { query: "roadmap", options: { limit: 10 } }
 Output: {
   items: [
-    { object: { id: "n_4f2...", title: "Quarterly Planning", ... },
-      snippet: "...no literal keyword match, but semantically similar to Q3 planning...",
-      score: 0.81, matchType: "semantic" },
     { object: { id: "n_8b1...", title: "Product Roadmap 2026", ... },
       snippet: "...our <mark>roadmap</mark> for the next two quarters...",
-      score: 0.97, matchType: "fulltext" }
+      score: 0.97, matchType: "fulltext" },
+    { object: { id: "n_4f2...", title: "Quarterly Planning", ... },
+      snippet: "...no literal keyword match, but semantically similar to Q3 planning...",
+      score: 0.81, matchType: "semantic" }
   ],
   nextCursor: null
 }
@@ -156,7 +157,7 @@ Unlike the services above, most callers of `EmbeddingService` are the embedding 
 | `reembed` | `knowledgeObjectId` | `EmbeddingStatus` | `NotFoundError`, `UpstreamProviderError` |
 | `deleteEmbeddings` | `knowledgeObjectId` | `void` | — |
 
-**Behavioral notes:** `embedObject` is invoked by the Vercel Route Handler that receives the Supabase Database Webhook, not by `NoteService`. `reembed` exists for maintenance (e.g., after an embedding model change in [07_AI.md](DOCUMENT_INDEX.md#07_aimd-planned)) and is deliberately separate from the automatic save-triggered path. `getStatus` is exposed so the UI can show "indexing..." rather than silently having new notes be unsearchable semantically for a few seconds.
+**Behavioral notes:** `embedObject` is invoked by the Vercel Route Handler that receives the Supabase Database Webhook, not by `NoteService`. `reembed` exists for maintenance (e.g., after an embedding model change in [07_AI.md](07_AI.md)) and is deliberately separate from the automatic save-triggered path. `getStatus` is exposed so the UI can show "indexing..." rather than silently having new notes be unsearchable semantically for a few seconds.
 
 ## 9. AttachmentService
 
@@ -182,7 +183,7 @@ Unlike the services above, most callers of `EmbeddingService` are the embedding 
 `ChatStreamEvent` is a discriminated union: `{ type: 'token'; value: string } \| { type: 'citation'; knowledgeObjectId: string } \| { type: 'done'; messageId: string }`.
 
 **Behavioral notes:**
-- `streamChat` with `scope: 'vault'` calls `SearchService.semanticSearch` first to retrieve context, then assembles a prompt and streams the completion — the flow in [03_ARCHITECTURE.md §6.5](03_ARCHITECTURE.md#65-ai-request-flow-vault-chat-rag); chunking/prompt-template detail is [07_AI.md](DOCUMENT_INDEX.md#07_aimd-planned)'s responsibility.
+- `streamChat` with `scope: 'vault'` calls `SearchService.semanticSearch` first to retrieve context, then assembles a prompt and streams the completion — the flow in [03_ARCHITECTURE.md §6.5](03_ARCHITECTURE.md#65-ai-request-flow-vault-chat-rag); chunking/prompt-template detail is [07_AI.md](07_AI.md)'s responsibility.
 - `scope: 'note'` requires `noteId`; `scope: 'vault'` requires it to be absent — enforced as a `ValidationError`, mirroring the constraint on `chat_conversations.note_id` ([04_DATABASE.md §4.10](04_DATABASE.md#410-chat_conversations)).
 - Every `citation` event's `knowledgeObjectId` corresponds to a real object the caller can fetch via `NoteService.get` — citations are never synthesized text, satisfying FR-AI-3.
 - `streamChat` only ever produces a `ChatMessage` in the conversation it's called on. It has no method that mutates any other Knowledge Object — this is the concrete enforcement of FR-AI-5 ([01_PRODUCT.md §11](01_PRODUCT.md#11-non-goals-mvp)): the AI service layer, as specified, is structurally incapable of writing to the graph outside of chat history.
@@ -198,7 +199,7 @@ Unlike the services above, most callers of `EmbeddingService` are the embedding 
 | `listMcpCredentials` | — | `McpCredential[]` (never includes `rawToken` or `tokenHash`) | — |
 | `revokeMcpCredential` | `credentialId` | `void` | `NotFoundError`, `ForbiddenError` |
 
-**Behavioral notes:** `createMcpCredential`'s `rawToken` is returned exactly once, at creation — it is never retrievable again, matching `mcp_credentials.token_hash`-only storage ([04_DATABASE.md §4.12](04_DATABASE.md#412-mcp_credentials)). `deleteAccount` is a service-layer orchestration: soft-delete every owned Knowledge Object, revoke every MCP credential, then hand off to Supabase Auth account deletion (FR-AUTH-6).
+**Behavioral notes:** `createMcpCredential`'s `rawToken` is returned exactly once, at creation — it is never retrievable again, matching `mcp_credentials.token_hash`-only storage ([04_DATABASE.md §4.12](04_DATABASE.md#412-mcp_credentials)). `deleteAccount` is a service-layer orchestration: soft-delete every owned Knowledge Object, revoke every MCP credential, then — only after the FR-AUTH-6 grace period elapses — hand off to Supabase Auth account deletion, so deletion stays reversible until the grace period ends.
 
 ## 12. Cross-Service Interaction Rules
 
@@ -212,6 +213,6 @@ Unlike the services above, most callers of `EmbeddingService` are the embedding 
 - [03_ARCHITECTURE.md](03_ARCHITECTURE.md) — the layering rules this document's method boundaries implement, and the request flows (§6) that call these methods in sequence.
 - [04_DATABASE.md](04_DATABASE.md) — the schema each service reads and writes.
 - [06_MCP.md](06_MCP.md) — the MCP tool set, each tool a thin wrapper over one method above.
-- [07_AI.md](DOCUMENT_INDEX.md#07_aimd-planned) — chunking, prompt assembly, and streaming detail behind `AIService` and `EmbeddingService`.
-- [08_SEARCH.md](DOCUMENT_INDEX.md#08_searchmd-planned) — the ranking algorithm behind `SearchService.search`.
-- [09_SECURITY.md](DOCUMENT_INDEX.md#09_securitymd-planned) — rate limiting behind `RateLimitError`, and the full authorization model behind `ForbiddenError`.
+- [07_AI.md](07_AI.md) — chunking, prompt assembly, and streaming detail behind `AIService` and `EmbeddingService`.
+- [08_SEARCH.md](08_SEARCH.md) — the ranking algorithm behind `SearchService.search`.
+- [09_SECURITY.md](09_SECURITY.md) — rate limiting behind `RateLimitError`, and the full authorization model behind `ForbiddenError`.

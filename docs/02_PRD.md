@@ -1,10 +1,10 @@
 # 02. Product Requirements Document (PRD)
 
-> Part of the [Documentation Index](DOCUMENT_INDEX.md). Builds on [01_PRODUCT.md](01_PRODUCT.md) — read that first for the Knowledge Object model, product pillars, and MVP scope boundaries this document assumes. Precedes [03_ARCHITECTURE.md](DOCUMENT_INDEX.md#03_architecturemd-planned), which designs the system that satisfies these requirements.
+> Part of the [Documentation Index](DOCUMENT_INDEX.md). Builds on [01_PRODUCT.md](01_PRODUCT.md) — read that first for the Knowledge Object model, product pillars, and MVP scope boundaries this document assumes. Precedes [03_ARCHITECTURE.md](03_ARCHITECTURE.md), which designs the system that satisfies these requirements.
 
 ## 1. Purpose & Scope
 
-This document specifies *what* must be built for MVP, in enough detail that [12_TASKS.md](DOCUMENT_INDEX.md#12_tasksmd-planned) can decompose it into independently implementable tasks without re-deriving product decisions. It does not specify *how* — schema, service signatures, and UI design are [04_DATABASE.md](DOCUMENT_INDEX.md#04_databasemd-planned), [05_API.md](DOCUMENT_INDEX.md#05_apimd-planned), and [10_DESIGN.md](DOCUMENT_INDEX.md#10_designmd-planned)'s job respectively.
+This document specifies *what* must be built for MVP, in enough detail that [12_TASKS.md](12_TASKS.md) can decompose it into independently implementable tasks without re-deriving product decisions. It does not specify *how* — schema, service signatures, and UI design are [04_DATABASE.md](04_DATABASE.md), [05_API.md](05_API.md), and [10_DESIGN.md](10_DESIGN.md)'s job respectively.
 
 Every requirement below implements a feature already named in [01_PRODUCT.md §7](01_PRODUCT.md#7-product-pillars) (Product Pillars). If a requirement doesn't trace back to that table, it doesn't belong in MVP — raise it as a Future Roadmap item (§9) instead.
 
@@ -33,7 +33,7 @@ Every requirement below implements a feature already named in [01_PRODUCT.md §7
 | Wiki links | Connect | Markdown Note |
 | Backlinks | Connect | Markdown Note |
 | Graph view | Connect | Markdown Note |
-| Full-text search | Discover | Markdown Note, Attachment |
+| Full-text search | Discover | Markdown Note |
 | Semantic search | Discover | Markdown Note |
 | AI chat (note-level) | Collaborate | Markdown Note |
 | Vault chat | Collaborate | Markdown Note |
@@ -49,16 +49,17 @@ Applies to every object type, present and future ([01_PRODUCT §2](01_PRODUCT.md
 |---|---|---|---|
 | FR-KO-1 | Every stored artifact is represented with a common metadata envelope: id, owner, type, title, created/updated timestamps, tags, deletion state. | A Markdown Note and an Attachment both expose the same envelope fields via the service layer, differing only in type-specific payload. | Must |
 | FR-KO-2 | Any Knowledge Object may hold outbound links to any other Knowledge Object, independent of type. | Creating a link does not require the two objects to share a type. | Must |
-| FR-KO-3 | Deletion is soft: a deleted object is recoverable for a defined retention window, not immediately purged. | Deleting a note removes it from all listings/search but it can be restored within the retention window (value set in [04_DATABASE.md](DOCUMENT_INDEX.md#04_databasemd-planned)). | Must |
-| FR-KO-4 | Every Knowledge Object is scoped to exactly one owner in MVP. | No UI or API path exposes an object to a user other than its owner (see [09_SECURITY.md](DOCUMENT_INDEX.md#09_securitymd-planned)). | Must |
+| FR-KO-3 | Deletion is soft: a deleted object is recoverable for a defined retention window, not immediately purged. | Deleting a note removes it from all listings/search but it can be restored within the retention window (value set in [04_DATABASE.md](04_DATABASE.md)). | Must |
+| FR-KO-4 | Every Knowledge Object is scoped to exactly one owner in MVP. | No UI or API path exposes an object to a user other than its owner (see [09_SECURITY.md](09_SECURITY.md)). | Must |
 | FR-KO-5 | MVP implements exactly two Knowledge Object types: Markdown Note and Attachment. | No other object type is creatable through any client in MVP. | Must |
+| FR-KO-6 | Users can export their complete graph — markdown files preserving folder structure and `[[title]]` links, plus attachments — at any time ([01_PRODUCT §6.4](01_PRODUCT.md#6-guiding-principles), [09_SECURITY.md §11](09_SECURITY.md#11-privacy--data-ownership)). | An exported archive contains every live note and attachment; re-reading the markdown reproduces the notes' content and links. | Must |
 
 ### 4.2 Authentication & Account
 
 | ID | Requirement | Acceptance Criteria | Priority |
 |---|---|---|---|
 | FR-AUTH-1 | Users can sign up and log in with email + password. | A new email/password pair creates an account and an authenticated session. | Must |
-| FR-AUTH-2 | Users can sign up and log in via at least one OAuth provider. | Provider selection deferred to [03_ARCHITECTURE.md](DOCUMENT_INDEX.md#03_architecturemd-planned); Google is the default assumption. | Should |
+| FR-AUTH-2 | Users can sign up and log in via at least one OAuth provider. | Google OAuth (decision recorded in [03_ARCHITECTURE.md §6.1](03_ARCHITECTURE.md#61-authentication)). | Should |
 | FR-AUTH-3 | Users can reset a forgotten password via an emailed verification link. | Password reset flow completes without support intervention. | Must |
 | FR-AUTH-4 | Sessions persist securely across browser restarts until explicit logout or expiry. | Closing and reopening the browser does not require re-authentication within the session lifetime. | Must |
 | FR-AUTH-5 | First successful signup provisions an empty, owned graph. | A brand-new user lands in an authenticated app shell with zero Knowledge Objects, not an error state. | Must |
@@ -96,7 +97,7 @@ Applies to every object type, present and future ([01_PRODUCT §2](01_PRODUCT.md
 | ID | Requirement | Acceptance Criteria | Priority |
 |---|---|---|---|
 | FR-LINK-1 | Users create a wiki-style link to another note using `[[note title]]` syntax. | Typing `[[` followed by a title and closing brackets renders as a navigable link. | Must |
-| FR-LINK-2 | Wiki links resolve to a stable object ID at save time, not at render time. | Renaming the target note updates the link's display text without re-parsing the linking note's body. | Must |
+| FR-LINK-2 | Wiki links resolve to a stable object ID at save time, not at render time. | Renaming the target note updates the `[[title]]` text in linking notes via a targeted rewrite guided by the links table ([05_API.md §4](05_API.md#4-noteservice)); link edges are ID-based and unaffected. | Must |
 | FR-LINK-3 | The editor offers autocomplete suggestions when typing `[[`. | A dropdown of matching note titles appears and is keyboard-navigable. | Should |
 | FR-LINK-4 | Links to a note that doesn't yet exist support "create on click." | Clicking an unresolved link creates the target note and navigates to it. | Should |
 | FR-LINK-5 | Every note displays a backlinks panel listing notes that link to it. | Opening a note shows an accurate, non-empty backlinks panel when at least one inbound link exists. | Must |
@@ -116,7 +117,7 @@ Applies to every object type, present and future ([01_PRODUCT §2](01_PRODUCT.md
 | ID | Requirement | Acceptance Criteria | Priority |
 |---|---|---|---|
 | FR-ATTACH-1 | Users upload a file as an Attachment object and reference it from a note. | Uploaded file appears embedded/linked in the note and is independently listable. | Must |
-| FR-ATTACH-2 | Attachments are stored with the same ownership-based access control as other Knowledge Objects. | A second user cannot fetch another user's attachment by any means, including direct storage URL (see [09_SECURITY.md](DOCUMENT_INDEX.md#09_securitymd-planned)). | Must |
+| FR-ATTACH-2 | Attachments are stored with the same ownership-based access control as other Knowledge Objects. | A second user cannot fetch another user's attachment by any means, including direct storage URL (see [09_SECURITY.md](09_SECURITY.md)). | Must |
 | FR-ATTACH-3 | The system enforces a maximum upload file size and rejects oversized uploads with a clear error. | Oversized upload fails client-side with an explicit message, not a silent truncation or server error. | Must |
 | FR-ATTACH-4 | Image attachments render inline in note preview. | An uploaded image displays as an image, not a download link, in the rendered note. | Should |
 
@@ -132,9 +133,9 @@ Applies to every object type, present and future ([01_PRODUCT §2](01_PRODUCT.md
 
 | ID | Requirement | Acceptance Criteria | Priority |
 |---|---|---|---|
-| FR-SEARCH-1 | Users full-text search across all owned Knowledge Objects (titles + body). | A query matching text anywhere in a note's title or body returns that note. | Must |
+| FR-SEARCH-1 | Users full-text search across all owned Markdown Notes (title + body). Attachments have no extractable text in MVP ([08_SEARCH.md §2](08_SEARCH.md#2-full-text-search)) and are discoverable via listing and tags instead. | A query matching text anywhere in a note's title or body returns that note. | Must |
 | FR-SEARCH-2 | Results show a relevant snippet with the matching term highlighted. | Each result row displays surrounding context, not just the title. | Must |
-| FR-SEARCH-3 | Search is scoped to the requesting user's graph only. | No query can return another user's objects, tested explicitly (see [09_SECURITY.md](DOCUMENT_INDEX.md#09_securitymd-planned)). | Must |
+| FR-SEARCH-3 | Search is scoped to the requesting user's graph only. | No query can return another user's objects, tested explicitly (see [09_SECURITY.md](09_SECURITY.md)). | Must |
 | FR-SEARCH-4 | Search returns results within the latency budget defined in §6. | p95 measured in production meets the NFR target. | Must |
 
 ### 4.11 Semantic Search
@@ -142,8 +143,8 @@ Applies to every object type, present and future ([01_PRODUCT §2](01_PRODUCT.md
 | ID | Requirement | Acceptance Criteria | Priority |
 |---|---|---|---|
 | FR-SEM-1 | Users run a natural-language query and get results ranked by semantic similarity, not just keyword match. | A query with no literal keyword overlap still surfaces conceptually related notes. | Must |
-| FR-SEM-2 | Full-text and semantic results are combined into a single hybrid-ranked result set. | Search UI presents one ranked list, not two separate result panels (ranking detail in [08_SEARCH.md](DOCUMENT_INDEX.md#08_searchmd-planned)). | Must |
-| FR-SEM-3 | New and edited notes are re-embedded asynchronously without blocking save. | Saving a note returns immediately; embedding availability lags by a bounded, monitored delay (see [07_AI.md](DOCUMENT_INDEX.md#07_aimd-planned)). | Must |
+| FR-SEM-2 | Full-text and semantic results are combined into a single hybrid-ranked result set. | Search UI presents one ranked list, not two separate result panels (ranking detail in [08_SEARCH.md](08_SEARCH.md)). | Must |
+| FR-SEM-3 | New and edited notes are re-embedded asynchronously without blocking save. | Saving a note returns immediately; embedding availability lags by a bounded, monitored delay (see [07_AI.md](07_AI.md)). | Must |
 
 ### 4.12 AI Chat & Vault Chat
 
@@ -162,7 +163,7 @@ Applies to every object type, present and future ([01_PRODUCT §2](01_PRODUCT.md
 | FR-MCP-1 | The system exposes an MCP server that authenticates the requesting client to one user's graph. | Connecting an MCP client requires a credential tied to exactly one Second Brain account. | Must |
 | FR-MCP-2 | The MCP server exposes tools to search, read, create, and update Knowledge Objects via the same service layer as the web app. | An MCP tool call and an equivalent web-app action produce identical resulting state ([01_PRODUCT §6.6](01_PRODUCT.md#6-guiding-principles)). | Must |
 | FR-MCP-3 | Any MCP-compatible client can connect using the same server, without Second-Brain-specific client code. | Claude Desktop, Cursor, and at least one other MCP client each connect and successfully call a tool, using only standard MCP configuration. | Must |
-| FR-MCP-4 | MCP write operations enforce the same ownership/authorization rules as the web app. | An MCP client cannot read or write another user's objects under any tool call (see [09_SECURITY.md](DOCUMENT_INDEX.md#09_securitymd-planned)). | Must |
+| FR-MCP-4 | MCP write operations enforce the same ownership/authorization rules as the web app. | An MCP client cannot read or write another user's objects under any tool call (see [09_SECURITY.md](09_SECURITY.md)). | Must |
 
 ## 5. Acceptance Criteria — Key Flows
 
@@ -196,12 +197,12 @@ Given a user has connected Claude Desktop as an MCP client, when they ask it to 
 | Performance — AI chat first token | p95 time to first streamed token | < 1.5s | Bounded mostly by the upstream model provider; app-layer overhead budgeted separately at < 300ms. |
 | Performance — graph view | Interactive (pan/zoom) at 60fps | Up to 2,000 nodes | Beyond this, local-graph mode (FR-GRAPH-4) is the intended interaction, not global rendering. |
 | Availability | Monthly uptime | ≥ 99.5% | Matches what's achievable on managed Vercel + Supabase without custom infrastructure ([01_PRODUCT §6.1](01_PRODUCT.md#6-guiding-principles)). |
-| Scalability | Search and note-open latency budgets hold at | ≥ 10,000 notes per user graph | Must remain index-backed, not full-scan, at realistic power-user vault sizes (see [08_SEARCH.md](DOCUMENT_INDEX.md#08_searchmd-planned)). |
+| Scalability | Search and note-open latency budgets hold at | ≥ 10,000 notes per user graph | Must remain index-backed, not full-scan, at realistic power-user vault sizes (see [08_SEARCH.md](08_SEARCH.md)). |
 | Data durability | Silent data loss incidents | Zero tolerance | Not a target range — a knowledge base that loses data has failed its core purpose regardless of any other metric. |
-| Security | Cross-user data access | Zero tolerance, enforced at the database layer (RLS), not application logic alone | See [09_SECURITY.md](DOCUMENT_INDEX.md#09_securitymd-planned). |
-| Accessibility | Core flows (auth, note edit, search, chat) | WCAG 2.1 AA | See [10_DESIGN.md](DOCUMENT_INDEX.md#10_designmd-planned). |
+| Security | Cross-user data access | Zero tolerance, enforced at the database layer (RLS), not application logic alone | See [09_SECURITY.md](09_SECURITY.md). |
+| Accessibility | Core flows (auth, note edit, search, chat) | WCAG 2.1 AA | See [10_DESIGN.md](10_DESIGN.md). |
 | Browser support | Desktop web | Latest 2 versions of Chrome, Firefox, Safari, Edge | No legacy browser support commitment for a new product. |
-| Observability | Every service-layer method call | Logged/traceable sufficient to debug a production incident without local repro | Mechanism deferred to [03_ARCHITECTURE.md](DOCUMENT_INDEX.md#03_architecturemd-planned). |
+| Observability | Every service-layer method call | Logged/traceable sufficient to debug a production incident without local repro | Mechanism deferred to [03_ARCHITECTURE.md](03_ARCHITECTURE.md). |
 
 ## 7. Milestones
 
@@ -212,7 +213,7 @@ Given a user has connected Claude Desktop as an MCP client, when they ask it to 
 | **M2 — Connect** | The graph exists | Wiki links, backlinks, graph view (§4.6–§4.7) | A user can link notes, see accurate backlinks, and visually navigate the graph. |
 | **M3 — Discover** | Everything is findable | Full-text search, embedding pipeline, hybrid search (§4.10–§4.11) | A user can find any owned note by keyword or natural-language query within the §6 latency budgets. |
 | **M4 — Collaborate** | AI is a first-class participant | Note chat, vault chat, MCP server (§4.12–§4.13) | A user can converse with their graph in-app, and connect an external MCP client to read and write it. |
-| **M5 — Launch Readiness** | Ship publicly | Performance hardening against §6 budgets, security review ([09_SECURITY.md](DOCUMENT_INDEX.md#09_securitymd-planned)), accessibility pass ([10_DESIGN.md](DOCUMENT_INDEX.md#10_designmd-planned)) | §6 NFR budgets hold under production monitoring; security review signed off; public beta opens. |
+| **M5 — Launch Readiness** | Ship publicly | Performance hardening against §6 budgets, security review ([09_SECURITY.md](09_SECURITY.md)), accessibility pass ([10_DESIGN.md](10_DESIGN.md)), vault export (FR-KO-6) | §6 NFR budgets hold under production monitoring; security review signed off; public beta opens. |
 
 Milestones are sequential by dependency (M2 requires M1's note model; M3's embeddings require M1's notes to embed; M4's vault chat requires M3's retrieval). Within a milestone, "Should"/"Could" requirements (§2) may be deferred to the next milestone without blocking exit criteria, since exit criteria are written against "Must" requirements only.
 
@@ -235,7 +236,7 @@ Milestones are sequential by dependency (M2 requires M1's note model; M3's embed
 | Full-text search p95 latency | < 300ms |
 | Hybrid search p95 latency | < 800ms |
 | Monthly uptime | ≥ 99.5% |
-| Embedding pipeline lag (save → embedded) | Bounded and monitored (specific target set in [07_AI.md](DOCUMENT_INDEX.md#07_aimd-planned)) |
+| Embedding pipeline lag (save → embedded) | Bounded and monitored (specific target set in [07_AI.md](07_AI.md)) |
 | Data-loss incidents | Zero |
 
 ## 9. Future Roadmap
@@ -267,9 +268,9 @@ This document does not restate [01_PRODUCT.md §11 (Non-Goals)](01_PRODUCT.md#11
 ## 11. Related Documents
 
 - [01_PRODUCT.md](01_PRODUCT.md) — the vision, Knowledge Object model, and pillars this document turns into requirements.
-- [03_ARCHITECTURE.md](DOCUMENT_INDEX.md#03_architecturemd-planned) — the system design satisfying these requirements, including the auth provider decision (FR-AUTH-2) and observability mechanism (§6).
-- [04_DATABASE.md](DOCUMENT_INDEX.md#04_databasemd-planned) — the schema implementing the Knowledge Object envelope (§4.1) and soft-delete retention window (FR-KO-3).
-- [07_AI.md](DOCUMENT_INDEX.md#07_aimd-planned) — the embedding pipeline behind FR-SEM-3 and the chat design behind §4.12.
-- [08_SEARCH.md](DOCUMENT_INDEX.md#08_searchmd-planned) — the ranking algorithm behind FR-SEM-2.
-- [09_SECURITY.md](DOCUMENT_INDEX.md#09_securitymd-planned) — the authorization model referenced throughout §4 and §6.
-- [12_TASKS.md](DOCUMENT_INDEX.md#12_tasksmd-planned) — the backlog decomposing every FR above into implementable tasks.
+- [03_ARCHITECTURE.md](03_ARCHITECTURE.md) — the system design satisfying these requirements, including the auth provider decision (FR-AUTH-2) and observability mechanism (§6).
+- [04_DATABASE.md](04_DATABASE.md) — the schema implementing the Knowledge Object envelope (§4.1) and soft-delete retention window (FR-KO-3).
+- [07_AI.md](07_AI.md) — the embedding pipeline behind FR-SEM-3 and the chat design behind §4.12.
+- [08_SEARCH.md](08_SEARCH.md) — the ranking algorithm behind FR-SEM-2.
+- [09_SECURITY.md](09_SECURITY.md) — the authorization model referenced throughout §4 and §6.
+- [12_TASKS.md](12_TASKS.md) — the backlog decomposing every FR above into implementable tasks.

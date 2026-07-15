@@ -1,6 +1,6 @@
 # 03. Architecture
 
-> Part of the [Documentation Index](DOCUMENT_INDEX.md). Builds on [01_PRODUCT.md](01_PRODUCT.md) (Knowledge Object model, guiding principles) and [02_PRD.md](02_PRD.md) (functional/non-functional requirements this architecture must satisfy). Precedes [04_DATABASE.md](04_DATABASE.md), [05_API.md](DOCUMENT_INDEX.md#05_apimd-planned), [06_MCP.md](DOCUMENT_INDEX.md#06_mcpmd-planned), [07_AI.md](DOCUMENT_INDEX.md#07_aimd-planned), and [08_SEARCH.md](DOCUMENT_INDEX.md#08_searchmd-planned), each of which implements one slice of the system defined here.
+> Part of the [Documentation Index](DOCUMENT_INDEX.md). Builds on [01_PRODUCT.md](01_PRODUCT.md) (Knowledge Object model, guiding principles) and [02_PRD.md](02_PRD.md) (functional/non-functional requirements this architecture must satisfy). Precedes [04_DATABASE.md](04_DATABASE.md), [05_API.md](05_API.md), [06_MCP.md](06_MCP.md), [07_AI.md](07_AI.md), and [08_SEARCH.md](08_SEARCH.md), each of which implements one slice of the system defined here.
 
 ## 1. Purpose & Scope
 
@@ -20,6 +20,21 @@ Second Brain is a **layered monolith on managed infrastructure** — one Next.js
 | Business logic location | Service layer only. Components and API/MCP route handlers are thin — they validate input shape and call a service method, nothing more. |
 | Typing | Strong typing end-to-end (TypeScript); no `any` at service-layer boundaries. |
 | Data access | Repository pattern *where appropriate* (§5) — not a DB-agnostic abstraction, since the product is permanently committed to Postgres/Supabase. |
+
+### 2.1 Technology Stack
+
+The canonical statement of the MVP stack. Documents 04–12 reference this table rather than the original project brief.
+
+| Layer | Technology |
+|---|---|
+| Framework | Next.js 15 (App Router), React 19, TypeScript (strict) |
+| Styling / components | Tailwind CSS, shadcn/ui |
+| Data fetching / forms | TanStack Query, React Hook Form |
+| Editor | Tiptap |
+| Graph rendering | React Flow |
+| Backend platform | Supabase: PostgreSQL (+ pgvector), Auth, Storage, RLS |
+| AI provider | OpenAI (Responses API for chat; embeddings endpoint for vectors) |
+| Hosting | Vercel |
 
 ## 3. System Context
 
@@ -74,15 +89,15 @@ flowchart TB
 
 | Component | Responsibility | Detailed in |
 |---|---|---|
-| UI Layer | Rendering, client-side interaction, optimistic updates. Contains no business logic. | [10_DESIGN.md](DOCUMENT_INDEX.md#10_designmd-planned) |
-| Web API (Route Handlers) | Thin HTTP boundary: parse request, call a service method, shape the response. | [05_API.md](DOCUMENT_INDEX.md#05_apimd-planned) |
-| MCP Server | MCP protocol boundary for external AI clients — calls the *same* service methods as the Web API. | [06_MCP.md](DOCUMENT_INDEX.md#06_mcpmd-planned) |
-| Service Layer | All business logic: validation, authorization checks beyond RLS, orchestration across repositories, AI calls. | [05_API.md](DOCUMENT_INDEX.md#05_apimd-planned) |
+| UI Layer | Rendering, client-side interaction, optimistic updates. Contains no business logic. | [10_DESIGN.md](10_DESIGN.md) |
+| Web API (Route Handlers) | Thin HTTP boundary: parse request, call a service method, shape the response. | [05_API.md](05_API.md) |
+| MCP Server | MCP protocol boundary for external AI clients — calls the *same* service methods as the Web API. | [06_MCP.md](06_MCP.md) |
+| Service Layer | All business logic: validation, authorization checks beyond RLS, orchestration across repositories, AI calls. | [05_API.md](05_API.md) |
 | Repository Layer | Typed wrappers around Supabase client calls; the only code that issues SQL/PostgREST queries. | [04_DATABASE.md](04_DATABASE.md) |
 | Postgres + pgvector | System of record for all Knowledge Object metadata, note content, embeddings, and relationships. | [04_DATABASE.md](04_DATABASE.md) |
-| Auth | Identity, session issuance, JWT verification for both the web app and the MCP server. | [09_SECURITY.md](DOCUMENT_INDEX.md#09_securitymd-planned) |
+| Auth | Identity, session issuance, JWT verification for both the web app and the MCP server. | [09_SECURITY.md](09_SECURITY.md) |
 | Storage | Binary object storage for Attachments. | [04_DATABASE.md](04_DATABASE.md) |
-| OpenAI Responses API | Embeddings and chat completions. The only external network dependency in the request path. | [07_AI.md](DOCUMENT_INDEX.md#07_aimd-planned) |
+| OpenAI Responses API | Embeddings and chat completions. The only external network dependency in the request path. | [07_AI.md](07_AI.md) |
 
 ## 5. Layering & Code Organization Principles
 
@@ -108,7 +123,7 @@ sequenceDiagram
     Note over UI,Auth: Every subsequent request carries the session JWT;<br/>Postgres RLS policies evaluate auth.uid() from it directly.
 ```
 
-Satisfies FR-AUTH-1–5 ([02_PRD §4.2](02_PRD.md#42-authentication--account)). Provider decision (email/password vs. OAuth) is Supabase Auth's built-in providers — no custom auth server.
+Satisfies FR-AUTH-1–5 ([02_PRD §4.2](02_PRD.md#42-authentication--account)). Auth uses Supabase Auth's built-in providers — no custom auth server; Google is the MVP OAuth provider (FR-AUTH-2).
 
 ### 6.2 Standard Read/Write Request
 
@@ -153,7 +168,7 @@ sequenceDiagram
     UI-->>U: render list
 ```
 
-Satisfies FR-SEARCH-* and FR-SEM-1/2 ([02_PRD §4.10–4.11](02_PRD.md#410-search-full-text)). Full-text and semantic queries run concurrently, not sequentially, to stay inside the 800ms p95 hybrid-search budget ([02_PRD §6](02_PRD.md#6-non-functional-requirements)). Ranking algorithm detail is [08_SEARCH.md](DOCUMENT_INDEX.md#08_searchmd-planned)'s responsibility.
+Satisfies FR-SEARCH-* and FR-SEM-1/2 ([02_PRD §4.10–4.11](02_PRD.md#410-search-full-text)). Full-text and semantic queries run concurrently, not sequentially, to stay inside the 800ms p95 hybrid-search budget ([02_PRD §6](02_PRD.md#6-non-functional-requirements)). Ranking algorithm detail is [08_SEARCH.md](08_SEARCH.md)'s responsibility.
 
 ### 6.4 Embedding Pipeline
 
@@ -201,7 +216,7 @@ sequenceDiagram
     UI-->>U: render incrementally, citations link to source notes
 ```
 
-Satisfies FR-AI-1–4 ([02_PRD §4.12](02_PRD.md#412-ai-chat--vault-chat)). Streaming uses HTTP Server-Sent Events over a Vercel Route Handler — not WebSockets (§11, ADR-6). Context assembly, chunking, and prompt templates are [07_AI.md](DOCUMENT_INDEX.md#07_aimd-planned)'s responsibility; this flow only fixes the transport and the fact that retrieval always precedes generation.
+Satisfies FR-AI-1–4 ([02_PRD §4.12](02_PRD.md#412-ai-chat--vault-chat)). Streaming uses HTTP Server-Sent Events over a Vercel Route Handler — not WebSockets (§11, ADR-6). Context assembly, chunking, and prompt templates are [07_AI.md](07_AI.md)'s responsibility; this flow only fixes the transport and the fact that retrieval always precedes generation.
 
 ### 6.6 MCP Request Flow
 
@@ -243,20 +258,20 @@ Markdown Note content is **not** stored as files in Storage. Treating Postgres a
 | Preview (per PR) | Vercel preview deployment | Shared dev/staging Supabase project |
 | Production | Vercel production deployment | Production Supabase project |
 
-- **CI/CD:** Vercel's native Git integration builds and deploys on push; a required CI check (type-check, lint, tests) gates merges to `main` before a production deploy is triggered (mechanics owned by [11_CONTRIBUTING.md](DOCUMENT_INDEX.md#11_contributingmd-planned)).
+- **CI/CD:** Vercel's native Git integration builds and deploys on push; a required CI check (type-check, lint, tests) gates merges to `main` before a production deploy is triggered (mechanics owned by [11_CONTRIBUTING.md](11_CONTRIBUTING.md)).
 - **Schema changes ship before dependent code.** Because Vercel deploys and Supabase migrations aren't transactionally coupled, additive schema changes (new nullable column, new table) must be deployed and migrated *before* the application code that depends on them; destructive changes (drop column, drop table) must only ship after no deployed code references them. This ordering rule is binding for every change touching [04_DATABASE.md](04_DATABASE.md).
-- **Secrets** (Supabase service role key, OpenAI API key) live in Vercel environment variables, scoped per environment, never committed. Full policy in [09_SECURITY.md](DOCUMENT_INDEX.md#09_securitymd-planned).
+- **Secrets** (Supabase service role key, OpenAI API key) live in Vercel environment variables, scoped per environment, never committed. Full policy in [09_SECURITY.md](09_SECURITY.md).
 - **The MCP server ships as part of the same Vercel deployment** as the web app (§11, ADR-3) — there is no separate release cadence to manage.
 
 ## 9. Cross-Cutting Concerns
 
 | Concern | Approach | Detail owned by |
 |---|---|---|
-| Session/auth propagation | Supabase Auth JWT, verified on every request (web via cookie, MCP via bearer token) | [09_SECURITY.md](DOCUMENT_INDEX.md#09_securitymd-planned) |
-| Authorization | Postgres RLS as the enforcement floor; service layer may add additional checks, but never relies on the client to self-restrict | [04_DATABASE.md §7](04_DATABASE.md), [09_SECURITY.md](DOCUMENT_INDEX.md#09_securitymd-planned) |
-| Error handling | Service methods return typed results/errors; each boundary (Web API, MCP Server) translates that into its own protocol's error shape | [05_API.md](DOCUMENT_INDEX.md#05_apimd-planned) |
+| Session/auth propagation | Supabase Auth JWT, verified on every request (web via cookie, MCP via bearer token) | [09_SECURITY.md](09_SECURITY.md) |
+| Authorization | Postgres RLS as the enforcement floor; service layer may add additional checks, but never relies on the client to self-restrict | [04_DATABASE.md §7](04_DATABASE.md), [09_SECURITY.md](09_SECURITY.md) |
+| Error handling | Service methods return typed results/errors; each boundary (Web API, MCP Server) translates that into its own protocol's error shape | [05_API.md](05_API.md) |
 | Observability | Structured logs tagged with request id + user id (never note content); mechanism (Vercel logs vs. a hosted sink) is an implementation choice, not an infra addition | [02_PRD §6](02_PRD.md#6-non-functional-requirements) |
-| Rate limiting | Applied at minimum to AI endpoints (cost control) and auth endpoints (abuse prevention) | [09_SECURITY.md](DOCUMENT_INDEX.md#09_securitymd-planned) |
+| Rate limiting | Applied at minimum to AI endpoints (cost control) and auth endpoints (abuse prevention) | [09_SECURITY.md](09_SECURITY.md) |
 
 ## 10. Future Scalability
 
@@ -267,7 +282,7 @@ None of the below is built now — each row states the trigger that would justif
 | Postgres read load | Supabase read replica | Sustained p95 latency regression on read-heavy endpoints (search, note list) despite adequate indexing. |
 | Embedding pipeline reliability | Move from DB webhook (§6.4) to a durable queue | Measured webhook delivery failure rate, or embedding lag consistently breaching its monitored budget. |
 | Vector search at scale | Dedicated vector index tuning, or a dedicated vector database | Per-user note counts approaching/exceeding the 10,000-note NFR ceiling ([02_PRD §6](02_PRD.md#6-non-functional-requirements)) in aggregate across users, causing index maintenance cost issues. |
-| Multi-owner graphs | Extend RLS/ownership model beyond single-owner (§11, ADR-1 in [04_DATABASE.md](04_DATABASE.md)) | Shared/team graphs move from roadmap ([02_PRD §9](02_PRD.md#9-future-roadmap)) into active development. |
+| Multi-owner graphs | Extend RLS/ownership model beyond single-owner (ADR-DB-1 in [04_DATABASE.md §9](04_DATABASE.md#9-schema-level-decisions)) | Shared/team graphs move from roadmap ([02_PRD §9](02_PRD.md#9-future-roadmap)) into active development. |
 | AI request volume/cost | Response caching for repeated queries, tiered model selection | Sustained OpenAI spend growth disproportionate to active users, or rate-limit pressure. |
 
 ## 11. Architecture Decision Records
@@ -297,8 +312,8 @@ None of the below is built now — each row states the trigger that would justif
 - [01_PRODUCT.md](01_PRODUCT.md) — the principles (§6.1 simplicity, §6.6 shared service layer) this architecture is built to satisfy.
 - [02_PRD.md](02_PRD.md) — the functional and non-functional requirements every flow in §6 is traced against.
 - [04_DATABASE.md](04_DATABASE.md) — the schema behind every table referenced in §7 and every flow in §6.
-- [05_API.md](DOCUMENT_INDEX.md#05_apimd-planned) — the service layer contracts referenced throughout §4–§6.
-- [06_MCP.md](DOCUMENT_INDEX.md#06_mcpmd-planned) — the full MCP tool design behind §6.6.
-- [07_AI.md](DOCUMENT_INDEX.md#07_aimd-planned) — embedding, chunking, and prompt detail behind §6.4–§6.5.
-- [08_SEARCH.md](DOCUMENT_INDEX.md#08_searchmd-planned) — the hybrid ranking algorithm behind §6.3.
-- [09_SECURITY.md](DOCUMENT_INDEX.md#09_securitymd-planned) — the authorization/rate-limiting detail behind §9.
+- [05_API.md](05_API.md) — the service layer contracts referenced throughout §4–§6.
+- [06_MCP.md](06_MCP.md) — the full MCP tool design behind §6.6.
+- [07_AI.md](07_AI.md) — embedding, chunking, and prompt detail behind §6.4–§6.5.
+- [08_SEARCH.md](08_SEARCH.md) — the hybrid ranking algorithm behind §6.3.
+- [09_SECURITY.md](09_SECURITY.md) — the authorization/rate-limiting detail behind §9.

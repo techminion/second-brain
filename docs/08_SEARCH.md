@@ -74,7 +74,7 @@ Backed by the `target_object_id` index on `links` ([04_DATABASE.md §4.8](04_DAT
 |---|---|
 | Method | `SearchService.suggestNoteTitles` ([05_API.md §6](05_API.md#6-searchservice)) |
 | Index | Trigram index (`pg_trgm`) on `notes.title`, not `search_vector` — `tsvector` matches whole lexemes and doesn't handle prefix/substring/typo-tolerant matching well; trigram similarity does. |
-| Latency target | Sub-100ms — an order of magnitude tighter than the 300ms full-text budget ([02_PRD.md §6](02_PRD.md#6-non-functional-requirements) sets the floor; autocomplete must feel instantaneous per keystroke, not just "fast"). |
+| Latency target | Sub-100ms — three times tighter than the 300ms full-text budget ([02_PRD.md §6](02_PRD.md#6-non-functional-requirements) sets the floor; autocomplete must feel instantaneous per keystroke, not just "fast"). |
 | Scope | Title-only match, no body text, no semantic component — precision over recall; a user typing `[[` wants the note they're thinking of, not a conceptually related one. |
 
 ## 7. Snippets

@@ -1,6 +1,6 @@
 # 01. Product
 
-> Part of the [Documentation Index](DOCUMENT_INDEX.md). Precedes [02_PRD.md](DOCUMENT_INDEX.md#02_prdmd-planned), which turns this vision into buildable requirements.
+> Part of the [Documentation Index](DOCUMENT_INDEX.md). Precedes [02_PRD.md](02_PRD.md), which turns this vision into buildable requirements.
 
 ## 1. Purpose
 
@@ -32,7 +32,7 @@ A **Markdown Note** is one Knowledge Object type. It is the primary one for MVP,
 | Bookmark / web clip | Future | Browser capture |
 | Task | Future | Tasks feature |
 
-**Scope boundary:** MVP implements exactly the two types marked **MVP** above. The rest of this table exists so the schema and service layer are designed to support the supertype correctly from day one (see [04_DATABASE.md](DOCUMENT_INDEX.md#04_databasemd-planned), [05_API.md](DOCUMENT_INDEX.md#05_apimd-planned)) — it is not a commitment to build every row now. See §11 (Non-Goals).
+**Scope boundary:** MVP implements exactly the two types marked **MVP** above. The rest of this table exists so the schema and service layer are designed to support the supertype correctly from day one (see [04_DATABASE.md](04_DATABASE.md), [05_API.md](05_API.md)) — it is not a commitment to build every row now. See §11 (Non-Goals).
 
 ## 3. Vision
 
@@ -73,16 +73,16 @@ The MVP is scoped to a single-owner graph, but nothing in the object model (§2)
 
 These principles govern tradeoffs when requirements conflict. They apply across every document in this set.
 
-1. **Simplicity over infrastructure.** The system runs on Vercel + Supabase only. No Docker, Kafka, Redis, Kubernetes, RabbitMQ, or microservices until a *measured* scaling requirement demands it (see [03_ARCHITECTURE.md](DOCUMENT_INDEX.md#03_architecturemd-planned)).
+1. **Simplicity over infrastructure.** The system runs on Vercel + Supabase only. No Docker, Kafka, Redis, Kubernetes, RabbitMQ, or microservices until a *measured* scaling requirement demands it (see [03_ARCHITECTURE.md](03_ARCHITECTURE.md)).
 2. **Protocol over platform.** Where a choice exists between building a proprietary integration and adopting an open protocol (MCP, standard markdown, SQL), the open protocol wins, even at short-term feature cost.
-3. **Service layer over ad-hoc queries.** Business logic lives in a typed service layer, never inside UI components or scattered SQL calls (see [05_API.md](DOCUMENT_INDEX.md#05_apimd-planned)).
+3. **Service layer over ad-hoc queries.** Business logic lives in a typed service layer, never inside UI components or scattered SQL calls (see [05_API.md](05_API.md)).
 4. **Data outlives the app.** Users must always be able to export a complete, readable copy of their graph as plain markdown files.
 5. **Speed is a feature, not a nice-to-have.** Every primary interaction (search, object open, link navigation) is held to an explicit latency budget.
 6. **AI reads and writes through the same interfaces as humans.** The MCP server and the web app both call the same service layer — there is no separate, weaker API for AI access.
 
 ## 7. Product Pillars
 
-The primary feature set (full detail in [02_PRD.md](DOCUMENT_INDEX.md#02_prdmd-planned)) maps onto four pillars. Each pillar has an MVP scope and a future direction — keep the two separate when reading this table.
+The primary feature set (full detail in [02_PRD.md](02_PRD.md)) maps onto four pillars. Each pillar has an MVP scope and a future direction — keep the two separate when reading this table.
 
 | Pillar | Role | MVP | Future |
 |---|---|---|---|
@@ -101,9 +101,9 @@ Most competitors' AI features stop at retrieval: find relevant notes, answer a q
 - *"These notes appear related — should I link them?"* — auto-linking suggestion
 - *"This concept appears in five places — create a canonical note?"* — canonicalization
 
-These are **proposals, not silent writes**: every AI-initiated graph change requires explicit user confirmation before it's applied. The graph belongs to the user; AI edits it the way a careful collaborator would — surfacing a suggestion and waiting for approval — not the way a background job would. The specific confirmation mechanism (draft/apply pattern, diff preview, etc.) is an implementation detail for [05_API.md](DOCUMENT_INDEX.md#05_apimd-planned) and [09_SECURITY.md](DOCUMENT_INDEX.md#09_securitymd-planned) once written.
+These are **proposals, not silent writes**: every AI-initiated graph change requires explicit user confirmation before it's applied. The graph belongs to the user; AI edits it the way a careful collaborator would — surfacing a suggestion and waiting for approval — not the way a background job would. The specific confirmation mechanism (draft/apply pattern, diff preview, etc.) is an implementation detail for [05_API.md](05_API.md) and [09_SECURITY.md](09_SECURITY.md) once written.
 
-**This capability is a long-term direction, not an MVP requirement.** It builds on the "Knowledge compounds" principle (§4) and depends on two things that *are* MVP requirements: (1) Knowledge Objects existing as a stable core abstraction (§2), and (2) the MCP server and AI services having read *and* write access to the graph (§6.6). The autonomous-suggestion behaviors themselves are sequenced after MVP — see [02_PRD.md](DOCUMENT_INDEX.md#02_prdmd-planned).
+**This capability is a long-term direction, not an MVP requirement.** It builds on the "Knowledge compounds" principle (§4) and depends on two things that *are* MVP requirements: (1) Knowledge Objects existing as a stable core abstraction (§2), and (2) the MCP server and AI services having read *and* write access to the graph (§6.6). The autonomous-suggestion behaviors themselves are sequenced after MVP — see [02_PRD.md](02_PRD.md).
 
 ## 9. Competitive Analysis
 
@@ -136,13 +136,13 @@ Explicitly out of scope, to keep the guiding principle of simplicity (§6.1) enf
 - **Real-time multiplayer collaboration.** Single-owner graphs for MVP; shared/team ownership (§5) is a future consideration, not an MVP requirement.
 - **Being an Obsidian plugin-compatible clone.** No commitment to Obsidian's plugin API or `.obsidian` config format.
 - **General-purpose database/work-management platform** (i.e., not competing with Notion's databases or Jira's issue tracking directly) — integrations with those tools (§7, long-term features) are additive, not replacements.
-- **Non-MVP Knowledge Object types.** The Knowledge Object abstraction (§2) is designed to support PDFs, GitHub, Jira, Confluence, Slack, calendar, email, and voice sources — but MVP implements exactly two concrete types: Markdown Note and Attachment. Everything else is a future connector, sequenced in [02_PRD.md](DOCUMENT_INDEX.md#02_prdmd-planned).
+- **Non-MVP Knowledge Object types.** The Knowledge Object abstraction (§2) is designed to support PDFs, GitHub, Jira, Confluence, Slack, calendar, email, and voice sources — but MVP implements exactly two concrete types: Markdown Note and Attachment. Everything else is a future connector, sequenced in [02_PRD.md](02_PRD.md).
 - **Autonomous AI writes to the graph.** MVP's AI features (AI chat, vault chat) are read/answer-oriented. The self-organizing behaviors described in §8 — proposing merges, auto-links, or canonical notes — are a future capability, not an MVP requirement.
 
 ## 12. Related Documents
 
-- [02_PRD.md](DOCUMENT_INDEX.md#02_prdmd-planned) — turns these pillars into functional/non-functional requirements and milestones.
-- [03_ARCHITECTURE.md](DOCUMENT_INDEX.md#03_architecturemd-planned) — the system design that implements the "simplicity over infrastructure" principle (§6.1).
-- [04_DATABASE.md](DOCUMENT_INDEX.md#04_databasemd-planned) — implements the Knowledge Object supertype/subtype pattern described in §2.
-- [06_MCP.md](DOCUMENT_INDEX.md#06_mcpmd-planned) — the concrete design of the MCP-first commitment (§4) and the read/write access referenced in §8.
-- [09_SECURITY.md](DOCUMENT_INDEX.md#09_securitymd-planned) — data ownership and privacy commitments implied by "Open" (§4) and "data outlives the app" (§6.4).
+- [02_PRD.md](02_PRD.md) — turns these pillars into functional/non-functional requirements and milestones.
+- [03_ARCHITECTURE.md](03_ARCHITECTURE.md) — the system design that implements the "simplicity over infrastructure" principle (§6.1).
+- [04_DATABASE.md](04_DATABASE.md) — implements the Knowledge Object supertype/subtype pattern described in §2.
+- [06_MCP.md](06_MCP.md) — the concrete design of the MCP-first commitment (§4) and the read/write access referenced in §8.
+- [09_SECURITY.md](09_SECURITY.md) — data ownership and privacy commitments implied by "Open" (§4) and "data outlives the app" (§6.4).

@@ -71,7 +71,7 @@ supabase/
 |---|---|---|
 | Service layer (the bulk of tests) | Every public method's contract from [05_API.md](05_API.md): happy path, each declared error, edge cases (empty body, cyclic folder move, duplicate daily note). Repositories mocked at their seam ([03_ARCHITECTURE.md §5.3](03_ARCHITECTURE.md#5-layering--code-organization-principles)). | Vitest |
 | Repository / RLS integration | Queries run against a real local Supabase instance. **Mandatory for every table: a test that user B cannot read or write user A's rows** — the T1 coverage promised in [09_SECURITY.md §9](09_SECURITY.md#9-threat-model). | Vitest + Supabase CLI local stack |
-| Pure logic | Wiki-link parsing/reconciliation, chunking (§ [07_AI.md §4](07_AI.md#4-chunking)), RRF ranking math ([08_SEARCH.md §4](08_SEARCH.md#4-hybrid-ranking)) — exhaustive unit tests; these are the highest bug-density spots. | Vitest |
+| Pure logic | Wiki-link parsing/reconciliation, chunking ([07_AI.md §4](07_AI.md#4-chunking)), RRF ranking math ([08_SEARCH.md §4](08_SEARCH.md#4-hybrid-ranking)) — exhaustive unit tests; these are the highest bug-density spots. | Vitest |
 | Components | Render + interaction for components with behavior (editor link autocomplete, folder-delete dialog). Presentational components are not snapshot-tested — snapshots rot. | Testing Library |
 | End-to-end | The six PRD flows from [02_PRD.md §5](02_PRD.md#5-acceptance-criteria--key-flows), verbatim, against a preview deployment. | Playwright |
 | Accessibility | axe checks on every route; keyboard-only walkthrough of core flows per release ([10_DESIGN.md §6](10_DESIGN.md#6-accessibility-wcag-21-aa)). | axe + Playwright |

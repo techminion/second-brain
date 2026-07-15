@@ -22,7 +22,7 @@ This document is the authority on how Second Brain protects user data. Where an 
 |---|---|---|
 | Web app | Supabase Auth: email/password (FR-AUTH-1), OAuth (FR-AUTH-2), password reset (FR-AUTH-3). Session JWT carried in an `HttpOnly`, `Secure`, `SameSite=Lax` cookie — never in `localStorage`, which any XSS could read. | [03_ARCHITECTURE.md §6.1](03_ARCHITECTURE.md#61-authentication) |
 | MCP clients | Long-lived bearer credential, hash-only storage, per-request verification, immediate revocation. | [06_MCP.md §4](06_MCP.md#4-authentication) |
-| Embedding webhook endpoint | The Supabase Database Webhook → Vercel endpoint ([03_ARCHITECTURE.md §6.4](03_ARCHITECTURE.md#64-embedding-pipeline)) authenticates with a shared secret header configured on both sides — it is *not* an open endpoint that trusts its caller by URL obscurity. |
+| Embedding webhook endpoint | Shared-secret header configured on both the Supabase and Vercel sides — it is *not* an open endpoint that trusts its caller by URL obscurity. | [03_ARCHITECTURE.md §6.4](03_ARCHITECTURE.md#64-embedding-pipeline) |
 
 **Session policy:** access tokens short-lived (Supabase default, ~1 hour), transparently refreshed via the refresh token; explicit logout revokes the refresh token server-side. Failed-login throttling is delegated to Supabase Auth's built-in protections rather than reimplemented.
 
@@ -55,7 +55,7 @@ The MCP server is explicitly **not** on this list ([06_MCP.md §9](06_MCP.md#9-s
 |---|---|
 | Storage | Vercel environment variables, scoped per environment (preview vs. production values are distinct) — per [03_ARCHITECTURE.md §8](03_ARCHITECTURE.md#8-deployment-architecture). |
 | Inventory | Supabase service-role key, OpenAI API key, webhook shared secret (§3). The Supabase anon key and URL are public by design (RLS is the protection, not key secrecy) — but the *service-role* key must never ship in any client bundle; only code running in Route Handlers/server components may read it. |
-| Client exposure | No secret is ever prefixed `NEXT_PUBLIC_`. CI lint rule enforces this mechanically ([11_CONTRIBUTING.md](DOCUMENT_INDEX.md#11_contributingmd-planned)). |
+| Client exposure | No secret is ever prefixed `NEXT_PUBLIC_`. CI lint rule enforces this mechanically ([11_CONTRIBUTING.md](11_CONTRIBUTING.md)). |
 | Logs | Structured logs carry request id + user id, never tokens, note content, or signed URLs ([03_ARCHITECTURE.md §9](03_ARCHITECTURE.md#9-cross-cutting-concerns)). |
 | Rotation | All three secrets are rotatable without a schema change; rotation is a Vercel env-var update + redeploy. On any suspected exposure, rotate first, investigate second. |
 
@@ -92,7 +92,7 @@ Assets: user Knowledge Objects (the crown jewel), account credentials, MCP crede
 
 | # | Threat | Vector | Mitigation |
 |---|---|---|---|
-| T1 | Cross-user data access | Any query surface (web, MCP, future) | RLS floor (§4); denormalized `owner_id` making policies uniform ([04_DATABASE.md §9](04_DATABASE.md#9-schema-level-decisions), ADR-DB-1); explicit cross-user test coverage required ([11_CONTRIBUTING.md](DOCUMENT_INDEX.md#11_contributingmd-planned)). |
+| T1 | Cross-user data access | Any query surface (web, MCP, future) | RLS floor (§4); denormalized `owner_id` making policies uniform ([04_DATABASE.md §9](04_DATABASE.md#9-schema-level-decisions), ADR-DB-1); explicit cross-user test coverage required ([11_CONTRIBUTING.md](11_CONTRIBUTING.md)). |
 | T2 | Stolen MCP credential | Leaked config file, malware on user device | Hash-only storage, immediate revocation, per-credential rate limit (§7), `last_used_at` visibility so users can spot anomalous use ([04_DATABASE.md §4.12](04_DATABASE.md#412-mcp_credentials)). Full-account scope means a stolen token is serious — which is why revocation is one click and takes effect on the next request. |
 | T3 | Prompt injection via note content | Malicious text in a note manipulating an AI client reading it via MCP, or Second Brain's own vault chat | For MCP: the client's responsibility, documented explicitly ([06_MCP.md §9](06_MCP.md#9-security-considerations)). For vault chat: the blast radius is structurally capped — `AIService` cannot write to the graph (FR-AI-5, [05_API.md §10](05_API.md#10-aiservice)), so injected instructions can at worst distort an answer, never mutate or exfiltrate data to a third party. |
 | T4 | XSS via rendered markdown | Note bodies are user-controlled markdown, rendered as HTML | Markdown rendering sanitizes HTML output (no raw-HTML passthrough by default); CSP (§8) as second layer, so even a sanitizer bypass has no external origin to exfiltrate to; `HttpOnly` session cookie (§3) as third, so script cannot steal the session. |
@@ -111,7 +111,7 @@ Assets: user Knowledge Objects (the crown jewel), account credentials, MCP crede
 | A03 Injection | Parameterized queries only via the Supabase client — no string-assembled SQL anywhere ([04_DATABASE.md](04_DATABASE.md) tooling); prompt injection treated separately as T3 |
 | A04 Insecure Design | This document set — threat model (§9), fail-closed principles (§2), ADRs with rationale |
 | A05 Security Misconfiguration | Enumerated service-role usage (§5), headers (§8), per-environment secrets (§6) |
-| A06 Vulnerable Components | Dependency update + audit policy in [11_CONTRIBUTING.md](DOCUMENT_INDEX.md#11_contributingmd-planned) |
+| A06 Vulnerable Components | Dependency update + audit policy in [11_CONTRIBUTING.md](11_CONTRIBUTING.md) |
 | A07 Auth Failures | §3, T8 |
 | A08 Software & Data Integrity | CI-gated deploys ([03_ARCHITECTURE.md §8](03_ARCHITECTURE.md#8-deployment-architecture)); no unreviewed migration path ([04_DATABASE.md §11](04_DATABASE.md#11-migration-strategy)) |
 | A09 Logging & Monitoring Failures | Structured logging with request/user ids, content-free (§6); audit log for mutations ([04_DATABASE.md §8](04_DATABASE.md#8-audit-strategy)) |
@@ -147,4 +147,4 @@ Not MVP scope; recorded so they're planned, not forgotten:
 - [05_API.md §2–3](05_API.md#2-conventions) — the `userId`-first convention and error taxonomy that carry authorization through the service layer.
 - [06_MCP.md §4, §9](06_MCP.md#4-authentication) — MCP credential lifecycle and MCP-specific threat surface.
 - [07_AI.md §10](07_AI.md#10-rate-limits) — the AI-surface rate-limit design whose thresholds are set here (§7).
-- [11_CONTRIBUTING.md](DOCUMENT_INDEX.md#11_contributingmd-planned) — the test requirements (cross-user access tests) and dependency policy this document depends on.
+- [11_CONTRIBUTING.md](11_CONTRIBUTING.md) — the test requirements (cross-user access tests) and dependency policy this document depends on.

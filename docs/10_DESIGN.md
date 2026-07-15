@@ -1,6 +1,6 @@
 # 10. Design System & UX
 
-> Part of the [Documentation Index](DOCUMENT_INDEX.md). Governs the UI Layer from [03_ARCHITECTURE.md §4](03_ARCHITECTURE.md#4-component-architecture), built on Tailwind CSS + shadcn/ui with the Tiptap editor and React Flow graph (MVP tech stack, [.claude/ARCHITECT_PROMPT.md](../.claude/ARCHITECT_PROMPT.md)). Satisfies the accessibility NFR (WCAG 2.1 AA) and the perceived-performance principles from [02_PRD.md §6](02_PRD.md#6-non-functional-requirements) and [01_PRODUCT.md §4](01_PRODUCT.md#4-core-philosophy) ("Fast").
+> Part of the [Documentation Index](DOCUMENT_INDEX.md). Governs the UI Layer from [03_ARCHITECTURE.md §4](03_ARCHITECTURE.md#4-component-architecture), built on Tailwind CSS + shadcn/ui with the Tiptap editor and React Flow graph (tech stack: [03_ARCHITECTURE.md §2.1](03_ARCHITECTURE.md#21-technology-stack)). Satisfies the accessibility NFR (WCAG 2.1 AA) and the perceived-performance principles from [02_PRD.md §6](02_PRD.md#6-non-functional-requirements) and [01_PRODUCT.md §4](01_PRODUCT.md#4-core-philosophy) ("Fast").
 
 ## 1. Purpose & Scope
 
@@ -35,7 +35,7 @@ All values are Tailwind theme tokens — never hardcoded hex/px in component cod
 
 | Rule | Value |
 |---|---|
-| Spacing unit | Tailwind's 4px base scale, exclusively — no arbitrary values (`p-[13px]` is a lint error, [11_CONTRIBUTING.md](DOCUMENT_INDEX.md#11_contributingmd-planned)) |
+| Spacing unit | Tailwind's 4px base scale, exclusively — no arbitrary values (`p-[13px]` is a lint error, [11_CONTRIBUTING.md](11_CONTRIBUTING.md)) |
 | Editor measure | `max-w-prose`-equivalent (~65–70ch) centered column — reading-optimal line length regardless of window width |
 | App shell | Three-zone layout: collapsible sidebar (navigation: folders, tags, daily note) · main content (editor/graph/search) · collapsible right panel (backlinks, note-scoped chat) |
 | Radii | `rounded-md` default for interactive elements, `rounded-lg` for surfaces (cards, popovers, dialogs) — two radii total |
@@ -92,7 +92,7 @@ The editor is the single most important surface in the product. Its defining dec
 | Streaming chat | Chat responses render into an `aria-live="polite"` region — screen readers announce streamed answers ([07_AI.md §8](07_AI.md#8-streaming)) without interrupting |
 | Graph view | The graph canvas (§10) is inherently visual; every node is *also* reachable as a focusable list (the same data as text), so graph-only information has a non-visual path — the accessible alternative is structural, not an afterthought |
 | Motion | All animation respects `prefers-reduced-motion` (§9) |
-| Verification | Automated checks (axe) in CI plus keyboard-only walkthrough of the §8 flows per release ([11_CONTRIBUTING.md](DOCUMENT_INDEX.md#11_contributingmd-planned)) |
+| Verification | Automated checks (axe) in CI plus keyboard-only walkthrough of the §8 flows per release ([11_CONTRIBUTING.md](11_CONTRIBUTING.md)) |
 
 ## 7. Dark Mode
 
@@ -162,4 +162,4 @@ Touch targets meet 44px minimums on coarse-pointer devices via responsive spacin
 - [05_API.md](05_API.md) — the service methods every interactive surface here calls.
 - [07_AI.md §8](07_AI.md#8-streaming) — the streaming events the chat UI (§6) renders.
 - [08_SEARCH.md §6](08_SEARCH.md#6-wiki-links--autocomplete) — the autocomplete backing `[[` and `⌘P`.
-- [11_CONTRIBUTING.md](DOCUMENT_INDEX.md#11_contributingmd-planned) — lint/CI enforcement of the token and accessibility rules stated here.
+- [11_CONTRIBUTING.md](11_CONTRIBUTING.md) — lint/CI enforcement of the token and accessibility rules stated here.

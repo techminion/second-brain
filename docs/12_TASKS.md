@@ -15,13 +15,15 @@
 
 | Phase | Area codes | Tasks |
 |---|---|---|
-| 0 — Foundations | SETUP, DB, AUTH, SHELL, CI | 50 |
+| 0 — Foundations | SETUP, DB, AUTH, SHELL, CI, OBS-01 | 63 |
 | 1 — Collect | NOTE, EDIT, FOLD, TAG, ATT, DAILY | 78 |
-| 2 — Connect | LINK, BACK, GRAPH | 36 |
-| 3 — Discover | FTS, EMB, SEM, SRCH | 46 |
-| 4 — Collaborate | AICH, VCH, MCP, CRED | 56 |
-| 5 — Launch readiness | PERF, SEC, A11Y, EXP, OBS | 40 |
-| **Total** | | **306** |
+| 2 — Connect | LINK, BACK, GRAPH, SRCH-05/06/08 | 39 |
+| 3 — Discover | FTS, EMB, SEM, SRCH (remainder) | 38 |
+| 4 — Collaborate | AICH, VCH, MCP, CRED | 52 |
+| 5 — Launch readiness | PERF, SEC, A11Y, EXP, OBS | 39 |
+| **Total** | | **309** |
+
+Two areas span phases deliberately: OBS-01 (structured logging) lives in Phase 0 because instrumentation tasks in every later phase depend on it, and SRCH-05/06/08 (title autocomplete) live in Phase 2 because the `[[` autocomplete (LINK-06) depends on them.
 
 ---
 
@@ -113,6 +115,12 @@
 | CI-06 | Playwright E2E job against preview deployments | M | SETUP-10, CI-02 |
 | CI-07 | Per-environment env var setup: preview vs. production Supabase/OpenAI secrets ([09_SECURITY.md §6](09_SECURITY.md#6-secrets-management)) | S | CI-02 |
 | CI-08 | axe accessibility check job on core routes | M | CI-06 |
+
+### Observability foundation (OBS)
+
+| ID | Task | Cx | Depends on |
+|---|---|---|---|
+| OBS-01 | Structured logging module: request id + user id, content-free ([03_ARCHITECTURE.md §9](03_ARCHITECTURE.md#9-cross-cutting-concerns)) — in Phase 0 because latency-instrumentation tasks across all later phases depend on it | M | SETUP-06 |
 
 ---
 
@@ -230,6 +238,14 @@
 
 ## Phase 2 — Connect ([02_PRD.md §7](02_PRD.md#7-milestones), M2)
 
+### Title autocomplete (SRCH — moved ahead of the rest of its area; LINK-06 depends on it)
+
+| ID | Task | Cx | Depends on |
+|---|---|---|---|
+| SRCH-05 | `pg_trgm` migration + index on `notes.title` ([08_SEARCH.md §6](08_SEARCH.md#6-wiki-links--autocomplete)) | S | DB-04 |
+| SRCH-06 | `SearchService.suggestNoteTitles`: trigram match, sub-100ms — backs LINK-06 and `⌘P` | M | SRCH-05 |
+| SRCH-08 | Autocomplete latency test (per-keystroke budget) | S | SRCH-06 |
+
 ### Wiki links (LINK)
 
 | ID | Task | Cx | Depends on |
@@ -241,7 +257,7 @@
 | LINK-05 | Tiptap wiki-link mark: render `[[link]]` as navigable, ID-resolved element | L | EDIT-02, LINK-02 |
 | LINK-06 | `[[` autocomplete popup backed by `suggestNoteTitles` — FR-LINK-3 | L | LINK-05, SRCH-06 |
 | LINK-07 | Unresolved-link rendering (dashed) + create-on-click — FR-LINK-4 | M | LINK-05, NOTE-02 |
-| LINK-08 | Rename propagation: renamed note's links display new title everywhere — FR-NOTE-3 | M | LINK-02, EDIT-12 |
+| LINK-08 | Rename propagation: rewrite `[[old title]]` → `[[new title]]` in linking notes via the links table, same transaction ([05_API.md §4](05_API.md#4-noteservice)) — FR-NOTE-3 | M | LINK-02, EDIT-12 |
 | LINK-09 | Link navigation: click → open target note | S | LINK-05, NOTE-10 |
 | LINK-10 | Reconciliation tests: add/remove/duplicate links, dedupe to single edge ([04_DATABASE.md §4.8](04_DATABASE.md#48-links)) | M | LINK-04 |
 | LINK-11 | E2E: PRD flow "create a note and link it" ([02_PRD.md §5](02_PRD.md#5-acceptance-criteria--key-flows)) | M | LINK-06, BACK-03, CI-06 |
@@ -278,7 +294,7 @@
 | GRAPH-14 | Theme-aware graph tokens (both modes, [10_DESIGN.md §7](10_DESIGN.md#7-dark-mode)) | S | GRAPH-04 |
 | GRAPH-15 | Graph empty/sparse state | S | GRAPH-04, SHELL-09 |
 | GRAPH-16 | E2E: open graph, click node, apply filter | M | GRAPH-09, CI-06 |
-| GRAPH-17 | Dagre/layout caching so re-opening the graph doesn't re-simulate from scratch | M | GRAPH-04 |
+| GRAPH-17 | Layout caching so re-opening the graph doesn't re-simulate from scratch | M | GRAPH-04 |
 | GRAPH-18 | Graph service tests: filters, local depth, deleted-note exclusion | S | GRAPH-01, GRAPH-02 |
 
 ---
@@ -341,10 +357,7 @@
 | SRCH-02 | Command palette search mode: results inline in `⌘K` | M | SRCH-01, SHELL-04 |
 | SRCH-03 | Result → note navigation with match highlighted in editor | M | SRCH-01, EDIT-18 |
 | SRCH-04 | Recent searches (local, client-side only) | S | SRCH-01 |
-| SRCH-05 | `pg_trgm` migration + index on `notes.title` ([08_SEARCH.md §6](08_SEARCH.md#6-wiki-links--autocomplete)) | S | DB-04 |
-| SRCH-06 | `SearchService.suggestNoteTitles`: trigram match, sub-100ms — backs LINK-06 and `⌘P` | M | SRCH-05 |
-| SRCH-07 | `⌘P` quick-open | S | SRCH-06, SHELL-05 |
-| SRCH-08 | Autocomplete latency test (per-keystroke budget) | S | SRCH-06 |
+| SRCH-07 | `⌘P` quick-open | S | SRCH-06 (Phase 2), SHELL-05 |
 
 ---
 
@@ -471,7 +484,7 @@
 
 | ID | Task | Cx | Depends on |
 |---|---|---|---|
-| EXP-01 | Vault export service: full graph → markdown files + attachments as zip ([09_SECURITY.md §11](09_SECURITY.md#11-privacy--data-ownership)) | L | NOTE-06, ATT-03, FOLD-04 |
+| EXP-01 | Vault export service: full graph → markdown files + attachments as zip — FR-KO-6 ([09_SECURITY.md §11](09_SECURITY.md#11-privacy--data-ownership)) | L | NOTE-06, ATT-03, FOLD-04 |
 | EXP-02 | Export preserves folder structure and wiki links as `[[title]]` syntax | M | EXP-01 |
 | EXP-03 | Export UI in settings + async generation with download link | M | EXP-01 |
 | EXP-04 | Export round-trip verification test (content fidelity) | M | EXP-02 |
@@ -480,8 +493,7 @@
 
 | ID | Task | Cx | Depends on |
 |---|---|---|---|
-| OBS-01 | Structured logging module: request id + user id, content-free ([03_ARCHITECTURE.md §9](03_ARCHITECTURE.md#9-cross-cutting-concerns)) | M | SETUP-06 |
-| OBS-02 | Request logging across Web API, MCP, webhook endpoints | M | OBS-01 |
+| OBS-02 | Request logging across Web API, MCP, webhook endpoints | M | OBS-01 (Phase 0) |
 | OBS-03 | SLI dashboards: the [02_PRD.md §8](02_PRD.md#8-success-metrics) engineering metrics | M | OBS-02 |
 | OBS-04 | Uptime monitoring + alerting (99.5% target) | S | CI-02 |
 | OBS-05 | Error tracking wiring (unhandled errors surfaced with request context) | M | OBS-01 |
@@ -495,7 +507,7 @@
 
 ## Post-MVP Backlog Seeds
 
-Deliberately *not* decomposed into tasks — each requires its own design pass against [02_PRD.md §9](02_PRD.md#9-future-roadmap) before implementation. Listed to make the boundary explicit: an agent finding these "missing" from the backlog above should treat that as intentional.
+Deliberately *not* decomposed into tasks — each requires its own design pass before implementation, grounded in [02_PRD.md §9](02_PRD.md#9-future-roadmap) or the post-MVP notes in [09_SECURITY.md §12](09_SECURITY.md#12-post-mvp-security-roadmap) and [10_DESIGN.md §11](10_DESIGN.md#11-responsive-behavior). Listed to make the boundary explicit: an agent finding these "missing" from the backlog above should treat that as intentional.
 
 Version history · OCR/PDF object type · GitHub/Jira/Confluence/Slack/Drive/email/calendar connectors · voice notes · tasks · canvas · whiteboard · self-organizing knowledge (propose/confirm tooling) · shared graphs · MFA · scoped MCP credentials · mobile PWA.
 

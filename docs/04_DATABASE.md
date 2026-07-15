@@ -1,6 +1,6 @@
 # 04. Database
 
-> Part of the [Documentation Index](DOCUMENT_INDEX.md). Implements the storage architecture defined in [03_ARCHITECTURE.md §7](03_ARCHITECTURE.md#7-storage-architecture) and the Knowledge Object model from [01_PRODUCT.md §2](01_PRODUCT.md#2-the-knowledge-object). Precedes [05_API.md](DOCUMENT_INDEX.md#05_apimd-planned) (the service layer that is the *only* caller of this schema) and [08_SEARCH.md](DOCUMENT_INDEX.md#08_searchmd-planned) (which builds ranking on top of the indexes defined here.
+> Part of the [Documentation Index](DOCUMENT_INDEX.md). Implements the storage architecture defined in [03_ARCHITECTURE.md §7](03_ARCHITECTURE.md#7-storage-architecture) and the Knowledge Object model from [01_PRODUCT.md §2](01_PRODUCT.md#2-the-knowledge-object). Precedes [05_API.md](05_API.md) (the service layer that is the *only* caller of this schema) and [08_SEARCH.md](08_SEARCH.md) (which builds ranking on top of the indexes defined here).
 >
 > This document describes schema structurally — tables, columns, types, relationships, indexes, constraints — as engineering specification, not as executable SQL. Actual migration files are implementation, not documentation.
 
@@ -92,7 +92,7 @@ The supertype table — the common envelope for every object in the graph ([01_P
 | `title` | `text` | No | Denormalized mirror of `knowledge_objects.title` (§9, ADR-DB-2) — enables `search_vector` below |
 | `body` | `text` | No | Markdown source; default `''` |
 | `folder_id` | `uuid` | Yes | FK → `folders.id`; null = root |
-| `daily_note_date` | `date` | Yes | Non-null only for daily notes (FR-DAILY-3: still an ordinary note row, distinguished by this column, not a separate type) |
+| `daily_note_date` | `date` | Yes | Non-null only for daily notes (FR-DAILY-3: still an ordinary note row, distinguished by this column, not a separate type). A `date` rather than an `is_daily` boolean — the date itself is the datum (§2) |
 | `search_vector` | `tsvector` | No | Generated from `title \|\| body`; GIN-indexed |
 | `created_at` | `timestamptz` | No | |
 | `updated_at` | `timestamptz` | No | |
@@ -185,12 +185,12 @@ Chunked vector representations of Knowledge Object content, for semantic search 
 | `knowledge_object_id` | `uuid` | No | FK → `knowledge_objects.id` |
 | `chunk_index` | `integer` | No | Order within the source object |
 | `chunk_text` | `text` | No | The chunk this vector represents — kept for citation/snippet display without re-fetching the source |
-| `embedding` | `vector(1536)` | No | Dimension matches the embedding model chosen in [07_AI.md](DOCUMENT_INDEX.md#07_aimd-planned); 1536 assumes `text-embedding-3-small` pending confirmation there |
+| `embedding` | `vector(1536)` | No | Dimension fixed at 1536, matching the small-embedding-tier decision in [07_AI.md §2](07_AI.md#2-model-selection-strategy) |
 | `created_at` | `timestamptz` | No | |
 
 **Constraints:** `UNIQUE (knowledge_object_id, chunk_index)`.
 
-**Indexes:** an approximate-nearest-neighbor index (`ivfflat` or `hnsw` — chosen in [07_AI.md](DOCUMENT_INDEX.md#07_aimd-planned) based on measured recall/latency) on `embedding`. Chunking strategy itself is [07_AI.md](DOCUMENT_INDEX.md#07_aimd-planned)'s responsibility; this table only fixes where chunks live.
+**Indexes:** an HNSW approximate-nearest-neighbor index on `embedding` (decision and rationale in [08_SEARCH.md §3](08_SEARCH.md#3-semantic-search-pgvector)). Chunking strategy itself is [07_AI.md](07_AI.md)'s responsibility; this table only fixes where chunks live.
 
 **Write rule:** populated exclusively by the async embedding pipeline ([03_ARCHITECTURE.md §6.4](03_ARCHITECTURE.md#64-embedding-pipeline)), never synchronously on note save.
 
@@ -228,7 +228,7 @@ Long-lived credentials issued to external MCP clients (FR-MCP-1).
 | `id` | `uuid` | No | PK |
 | `owner_id` | `uuid` | No | FK → `profiles.id` |
 | `name` | `text` | No | User-facing label, e.g. "Claude Desktop" |
-| `token_hash` | `text` | No | Hash only — the raw token is shown once at creation and never stored (see [09_SECURITY.md](DOCUMENT_INDEX.md#09_securitymd-planned)) |
+| `token_hash` | `text` | No | Hash only — the raw token is shown once at creation and never stored (see [09_SECURITY.md](09_SECURITY.md)) |
 | `created_at` | `timestamptz` | No | |
 | `last_used_at` | `timestamptz` | Yes | Updated on each authenticated MCP request |
 | `revoked_at` | `timestamptz` | Yes | Non-null disables the credential immediately |
@@ -281,7 +281,7 @@ RLS is enabled on every table in this document. Because every table carries `own
 
 | Rule | Detail |
 |---|---|
-| Enforcement floor | RLS is the actual authorization boundary — not an optimization. The service layer must not compensate for a missing policy; a table without a correct RLS policy is a security bug, not a service-layer concern to patch around ([09_SECURITY.md](DOCUMENT_INDEX.md#09_securitymd-planned)). |
+| Enforcement floor | RLS is the actual authorization boundary — not an optimization. The service layer must not compensate for a missing policy; a table without a correct RLS policy is a security bug, not a service-layer concern to patch around ([09_SECURITY.md](09_SECURITY.md)). |
 | MCP path | The MCP server authenticates as the *requesting user*, not as a privileged service role, and issues queries under that user's JWT — so the exact same RLS policies apply to MCP-originated queries as to web-app queries (FR-MCP-4). The Supabase service role key is never used for user-scoped reads/writes. |
 | `audit_log` exception | `INSERT` is allowed under the standard `owner_id = auth.uid()` policy; **no `UPDATE` or `DELETE` policy exists on this table for any role other than the scheduled retention job** — audit rows are append-only by construction, not just by convention. |
 | Trash visibility | The default `deleted_at IS NULL` filter (§6) is applied at the repository query level, not the RLS policy — RLS governs *ownership*, not soft-delete state, so a user can still query their own trash deliberately. |
@@ -324,14 +324,14 @@ Not built now — recorded so a future change doesn't have to rediscover these i
 | Tooling | Supabase CLI migrations — versioned SQL files, applied via the standard Supabase migration workflow. |
 | File naming | `YYYYMMDDHHMMSS_description.sql`, one logical change per file. |
 | Direction | Forward-only in production. Rollback is a new forward migration that reverses the change, not a `down` script relied upon in prod. |
-| Review | Every migration is reviewed in the same PR as any code that depends on it (see [11_CONTRIBUTING.md](DOCUMENT_INDEX.md#11_contributingmd-planned) for PR requirements generally). |
+| Review | Every migration is reviewed in the same PR as any code that depends on it (see [11_CONTRIBUTING.md](11_CONTRIBUTING.md) for PR requirements generally). |
 | Deploy ordering | Per [03_ARCHITECTURE.md §8](03_ARCHITECTURE.md#8-deployment-architecture): additive migrations (new nullable column, new table) ship *before* the application code that reads/writes them; destructive migrations (drop column/table) ship only after no deployed code references them. This is the binding rule for every change to this document. |
 
 ## 12. Related Documents
 
 - [01_PRODUCT.md §2](01_PRODUCT.md#2-the-knowledge-object) — the Knowledge Object concept this schema implements.
 - [03_ARCHITECTURE.md §7](03_ARCHITECTURE.md#7-storage-architecture) — the storage placement decisions (Postgres vs. Storage vs. pgvector) this schema follows.
-- [05_API.md](DOCUMENT_INDEX.md#05_apimd-planned) — the service layer that is the only permitted writer of every table above.
-- [07_AI.md](DOCUMENT_INDEX.md#07_aimd-planned) — chunking strategy and embedding model choice behind `embeddings` (§4.9).
-- [08_SEARCH.md](DOCUMENT_INDEX.md#08_searchmd-planned) — the ranking algorithm consuming `search_vector` (§4.3) and `embeddings` (§4.9).
-- [09_SECURITY.md](DOCUMENT_INDEX.md#09_securitymd-planned) — the full authorization model behind §7, and credential handling behind `mcp_credentials` (§4.12).
+- [05_API.md](05_API.md) — the service layer that is the only permitted writer of every table above.
+- [07_AI.md](07_AI.md) — chunking strategy and embedding model choice behind `embeddings` (§4.9).
+- [08_SEARCH.md](08_SEARCH.md) — the ranking algorithm consuming `search_vector` (§4.3) and `embeddings` (§4.9).
+- [09_SECURITY.md](09_SECURITY.md) — the full authorization model behind §7, and credential handling behind `mcp_credentials` (§4.12).
