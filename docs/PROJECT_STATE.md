@@ -27,7 +27,7 @@ Next: **Sprint 1 — Repo & tooling foundation** (scope defined in [.ai/TASK_QUE
 
 ## In Progress
 
-- None.
+- None. The two SETUP blockers were resolved by ADR-8 (concrete token values, now in [10_DESIGN.md §3.3](10_DESIGN.md#33-color)) and ADR-9 (cookie-based theme persistence, [10_DESIGN.md §7](10_DESIGN.md#7-dark-mode)) — Sprint 1 is fully unblocked.
 
 ## Blocked
 
@@ -55,4 +55,4 @@ Next: **Sprint 1 — Repo & tooling foundation** (scope defined in [.ai/TASK_QUE
 
 ## Last Updated
 
-2026-07-16 — governance-layer creation session (Claude, TPM role)
+2026-07-16 — SETUP-02/SETUP-13 blockers resolved via ADR-8/ADR-9; Sprint 1 unblocked (Claude, TPM role)

@@ -56,6 +56,20 @@ Semantic tokens only — components reference *roles*, never palette values, whi
 
 **One accent color.** Wiki links, buttons, and active navigation share `primary` — a knowledge tool with a rainbow of accents stops feeling calm (§1). Graph view (§10) and tag chips may derive muted categorical variants, but body text and chrome never exceed the single accent.
 
+**Token values (ADR-8, [DECISIONS.md](DECISIONS.md)).** Concrete starting values: shadcn/ui's zinc neutral scale, Tailwind blue-600/500 as the accent, and red-600 for destructive (darkened from shadcn's default red-500, which fails the 4.5:1 text-contrast rule on white). Deliberately brand-neutral; revisitable before public launch by superseding ADR-8 — components never reference these values directly, so a swap is a token-file change.
+
+| Role token | Light (HSL) | Dark (HSL) |
+|---|---|---|
+| `background` / `foreground` | `0 0% 100%` / `240 10% 3.9%` | `240 10% 3.9%` / `0 0% 98%` |
+| `card`, `popover` (+ foregrounds) | `0 0% 100%` / `240 10% 3.9%` | `240 10% 3.9%` / `0 0% 98%` |
+| `primary` / `primary-foreground` | `221.2 83.2% 53.3%` / `0 0% 98%` | `217.2 91.2% 59.8%` / `240 5.9% 10%` |
+| `muted` / `muted-foreground` | `240 4.8% 95.9%` / `240 3.8% 46.1%` | `240 3.7% 15.9%` / `240 5% 64.9%` |
+| `destructive` / `destructive-foreground` | `0 72.2% 50.6%` / `0 0% 98%` | `0 72.2% 50.6%` / `0 0% 98%` |
+| `border`, `input` | `240 5.9% 90%` | `240 3.7% 15.9%` |
+| `ring` | `221.2 83.2% 53.3%` | `217.2 91.2% 59.8%` |
+
+Key pairs verified ≥ 4.5:1 in both themes: `foreground`/`background`, `muted-foreground`/`background`, `primary`-as-text/`background` (wiki links), `destructive-foreground`/`destructive`. SETUP-02 must include an automated contrast check of every pair above so a future value change cannot silently regress (§6).
+
 ## 4. Component Philosophy
 
 | Rule | Rationale |
@@ -98,7 +112,7 @@ The editor is the single most important surface in the product. Its defining dec
 
 - Both themes ship at MVP as first-class citizens — the target audience skews dark-mode-default, so dark is not a downstream port of light.
 - Implementation: the semantic token layer (§3.3) swaps values via the `.dark` class strategy; **no component contains a theme conditional** — a component that knows which theme is active is a token-layer bug.
-- Default follows `prefers-color-scheme`; a manual override (light/dark/system) persists per user.
+- Default follows `prefers-color-scheme`; a manual override (light/dark/system) persists **per browser via a cookie** (ADR-9, [DECISIONS.md](DECISIONS.md)) — cookie rather than `localStorage` so the server can stamp the `.dark` class during SSR and the first paint never flashes the wrong theme. Cross-device (per-account) theme sync is a future enhancement requiring a `profiles` column that deliberately does not exist in the MVP schema.
 - Editor content, syntax highlighting in code blocks, and the graph view are all token-driven and theme-tested — the editor in dark mode is the single most-used surface in the product and gets first-class contrast attention (§6).
 
 ## 8. Keyboard Shortcuts

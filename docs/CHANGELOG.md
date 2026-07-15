@@ -6,6 +6,9 @@ All notable changes to Second Brain are documented here, following [Keep a Chang
 
 ## [Unreleased]
 
+### Changed
+- **2026-07-16** — Design spec unblocked for implementation: concrete light/dark token values added to `10_DESIGN.md §3.3` (ADR-8) and theme-override persistence corrected from "per user" to cookie-based per-browser with SSR stamping (ADR-9), resolving the SETUP-02/SETUP-13 blockers.
+
 ### Added
 - **2026-07-16** — Interim root README, `.gitignore`, corrected `.claude/CLAUDE.md` agent instructions (real file paths, authoritative workflow pointers), and a governance-documents section in `docs/DOCUMENT_INDEX.md`.
 - **2026-07-16** — Project governance layer: roadmap, milestone phase breakdown, living project state, AI handoff log, decision registry (GOV-1–5), this changelog, `.ai/` agent context set (project context, workflow, architecture rules, coding standards, task queue), `.github/` issue/PR templates and label taxonomy, and nine `agents/` role definitions.

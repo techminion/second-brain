@@ -21,6 +21,38 @@ Estimated Context Needed:
 
 ---
 
+## 2026-07-16 — Claude (TPM / governance) — blocker resolution
+
+**Session Date:** 2026-07-16
+**Agent:** Claude (Claude Code), TPM/architect role
+**Objective:** Resolve the two SETUP blockers escalated by the Codex session below.
+**Files Modified:** `docs/10_DESIGN.md` (§3.3: concrete light/dark token value table with verified contrast pairs; §7: "persists per user" corrected to cookie-based per-browser persistence); `docs/DECISIONS.md` (ADR-8, ADR-9); `.ai/TASK_QUEUE.md` (SETUP-02/SETUP-13 → Queued with updated acceptance criteria); `docs/PROJECT_STATE.md`; `docs/CHANGELOG.md`.
+**Files Added:** None.
+**Architecture Decisions:** ADR-8 — shadcn zinc neutrals + blue-600/500 accent + red-600 destructive (shadcn's default red-500 fails the spec's own 4.5:1 rule; revisit before M5 if a brand emerges). ADR-9 — theme override in a cookie, SSR-read to avoid first-paint flash; the "per user" wording in 10_DESIGN §7 actually contradicted the schema (no `profiles.theme` column exists), so the spec was corrected, not just interpreted.
+**Outstanding Work:** None from this session; vault-vs-graph terminology decision still pending (pre-M4).
+**Known Bugs:** None.
+**Risks:** None new — both decisions are one-file-reversible by design.
+**Suggested Next Task:** Resume Sprint 1: SETUP-01 (backend) and DB-01 (database) in parallel; SETUP-02 (designer) once SETUP-01 merges.
+**Estimated Context Needed:** `.ai/PROJECT_CONTEXT.md` + `.ai/TASK_QUEUE.md` + `docs/10_DESIGN.md §3, §7` for the SETUP-02/13 implementer.
+
+---
+
+## 2026-07-16 — Codex (Lead Software Engineer)
+
+**Session Date:** 2026-07-16
+**Agent:** Codex, acting as Lead Software Engineer
+**Objective:** Start M0 SETUP-01 through SETUP-14 after reviewing the repository's authoritative documentation and governance workflow.
+**Files Modified:** `.ai/TASK_QUEUE.md` (recorded SETUP-02 and SETUP-13 blockers); `docs/PROJECT_STATE.md` (recorded the paused SETUP work and blockers); `docs/AI_HANDOFF.md` (this entry).
+**Files Added:** None.
+**Architecture Decisions:** None. No implementation decision was made because the governing documents do not specify the required values/mechanism.
+**Outstanding Work:** Clarify (1) the concrete light and dark semantic-token values for SETUP-02, including the required contrast pairs, and (2) how SETUP-13 must persist a user theme override before authentication/profile storage is in scope. After clarification, return SETUP-02 and SETUP-13 to `Queued` and begin the dependency-ordered SETUP work.
+**Known Bugs:** None; no application code exists.
+**Risks:** Selecting standard shadcn colors or browser-local persistence without approval would introduce undocumented design and persistence decisions, contrary to `docs/11_CONTRIBUTING.md §8`.
+**Suggested Next Task:** Provide the two clarifications above; then resume with SETUP-01 followed by dependency-ready SETUP tasks.
+**Estimated Context Needed:** `docs/10_DESIGN.md §§3, 7`, `docs/12_TASKS.md` SETUP table, `.ai/TASK_QUEUE.md`.
+
+---
+
 ## 2026-07-16 — Claude (TPM / governance)
 
 **Session Date:** 2026-07-16
