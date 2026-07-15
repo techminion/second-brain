@@ -22,8 +22,8 @@ This is the single source of truth for the Second Brain engineering documentatio
 | 08 | SEARCH | ✅ Created |
 | 09 | SECURITY | ✅ Created |
 | 10 | DESIGN | ✅ Created |
-| 11 | CONTRIBUTING | ⏳ Planned |
-| 12 | TASKS | ⏳ Planned |
+| 11 | CONTRIBUTING | ✅ Created |
+| 12 | TASKS | ✅ Created |
 
 ## Documents
 
@@ -57,8 +57,8 @@ The threat-model-driven security authority: fail-closed principles, the three-la
 ### [10_DESIGN.md](10_DESIGN.md)
 The design system: semantic design tokens (typography, spacing, single-accent color) that make dark mode a token swap, shadcn/ui component philosophy, the live-formatted-markdown editor UX decision (Obsidian-style hybrid, not raw+preview), WCAG 2.1 AA by construction, the full keyboard shortcut map anchored on a `⌘K` command palette, motion rules, graph-view UX, and desktop-first responsive behavior.
 
-### 11_CONTRIBUTING.md *(planned)*
-Coding standards, folder structure, naming conventions, testing strategy, commit conventions, PR requirements, architecture rules, and explicit rules for AI coding agents — including what they must never do.
+### [11_CONTRIBUTING.md](11_CONTRIBUTING.md)
+The engineering rulebook: feature-first folder structure with import-boundary enforcement, coding standards (each with its enforcement mechanism), naming conventions, a layered testing strategy (including mandatory cross-user RLS tests per table), commit/PR conventions, the load-bearing architecture rules restated as review-time checks, explicit rules for AI coding agents, and the hard-floor "never do" list.
 
-### 12_TASKS.md *(planned)*
-The master implementation backlog — roughly 250–400 independently implementable tasks, organized by phase and feature, with dependencies and complexity estimates. The document AI coding agents are assigned work from directly.
+### [12_TASKS.md](12_TASKS.md)
+The master implementation backlog: 306 tasks across 6 phases matching the PRD milestones (Foundations → Collect → Connect → Discover → Collaborate → Launch Readiness), each with a stable ID, complexity estimate (S/M/L), explicit dependencies, and a traceable reference to the requirement or design decision it implements. Ends with post-MVP backlog seeds deliberately left undecomposed. The document AI coding agents are assigned work from directly.
