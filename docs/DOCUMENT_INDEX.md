@@ -18,8 +18,8 @@ This is the single source of truth for the Second Brain engineering documentatio
 | 04 | DATABASE | ✅ Created |
 | 05 | API | ✅ Created |
 | 06 | MCP | ✅ Created |
-| 07 | AI | ⏳ Planned |
-| 08 | SEARCH | ⏳ Planned |
+| 07 | AI | ✅ Created |
+| 08 | SEARCH | ✅ Created |
 | 09 | SECURITY | ⏳ Planned |
 | 10 | DESIGN | ⏳ Planned |
 | 11 | CONTRIBUTING | ⏳ Planned |
@@ -45,11 +45,11 @@ The logical service layer (not HTTP endpoints): `NoteService`, `FolderService`, 
 ### [06_MCP.md](06_MCP.md)
 Design of the MCP server — the mechanism that makes the graph accessible to any MCP-compatible AI assistant. 14 tools and 2 resources, each mapped to a `05_API.md` method; authentication via per-user bearer credentials; an explicit list of what's deliberately *not* exposed (chat, attachment upload, credential management) and why; security considerations including prompt injection via note content; and how future connectors extend the same pattern.
 
-### 07_AI.md *(planned)*
-AI architecture: embedding strategy, chunking, context assembly, prompt templates, streaming, caching, rate limits, summarization, RAG, token budgeting, and model selection strategy.
+### [07_AI.md](07_AI.md)
+AI architecture: model-tier selection (not hardcoded model names), embedding strategy and chunking, RAG context assembly, a fixed 4-part prompt template with a non-negotiable citation requirement, token budgeting, SSE streaming with mid-stream failure handling, caching (embeddings *are* the cache), rate limits, and why summarization has no persisted artifact in MVP.
 
-### 08_SEARCH.md *(planned)*
-Hybrid search design: full-text search, pgvector semantic search, ranking, backlinks, wiki links, snippets, suggestions, and performance considerations.
+### [08_SEARCH.md](08_SEARCH.md)
+Hybrid search: full-text search (`tsvector`/`ts_rank_cd`), semantic search (pgvector, HNSW over IVFFlat with rationale), Reciprocal Rank Fusion for combining the two with a worked example, backlinks, trigram-based `[[` autocomplete kept deliberately separate from ranked search for latency, match-type-aware snippet generation, and performance techniques for the search latency budgets in `02_PRD.md`.
 
 ### 09_SECURITY.md *(planned)*
 Authentication, authorization, RLS, secrets management, storage security, rate limiting, security headers, OWASP considerations, threat model, privacy, and data ownership.
