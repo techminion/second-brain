@@ -16,8 +16,8 @@ This is the single source of truth for the Second Brain engineering documentatio
 | 02 | PRD | ✅ Created |
 | 03 | ARCHITECTURE | ✅ Created |
 | 04 | DATABASE | ✅ Created |
-| 05 | API | ⏳ Planned |
-| 06 | MCP | ⏳ Planned |
+| 05 | API | ✅ Created |
+| 06 | MCP | ✅ Created |
 | 07 | AI | ⏳ Planned |
 | 08 | SEARCH | ⏳ Planned |
 | 09 | SECURITY | ⏳ Planned |
@@ -39,11 +39,11 @@ System architecture: a layered monolith on Vercel + Supabase, with component and
 ### [04_DATABASE.md](04_DATABASE.md)
 Complete database schema: 13 tables implementing the Knowledge Object supertype/subtype pattern (`knowledge_objects` + `notes`/`attachments`), an ER diagram, naming conventions, indexes, constraints, 5 schema-level ADRs (denormalized `owner_id` for RLS, `text`+`CHECK` over native enums, etc.), soft-delete mechanics, uniform RLS policy shape, a minimal append-only audit log, migration strategy, and the future-schema implications (new object types, shared graphs, version history) flagged in advance.
 
-### 05_API.md *(planned)*
-The logical service layer (not HTTP endpoints): `NoteService`, `FolderService`, `SearchService`, `AIService`, `GraphService`, `EmbeddingService`, `AttachmentService`, `UserService`. Every public method documented with inputs, outputs, errors, and examples.
+### [05_API.md](05_API.md)
+The logical service layer (not HTTP endpoints): `NoteService`, `FolderService`, `SearchService`, `GraphService`, `EmbeddingService`, `AttachmentService`, `AIService`, `UserService`. Every public method documented with inputs, outputs, and a shared, closed error taxonomy, plus cross-service interaction rules (e.g., why `NoteService` never calls `EmbeddingService` directly).
 
-### 06_MCP.md *(planned)*
-Design of the MCP server — the mechanism that makes every note accessible to any MCP-compatible AI assistant. Tool definitions, schemas, resources, authentication, security considerations, and sample requests/responses.
+### [06_MCP.md](06_MCP.md)
+Design of the MCP server — the mechanism that makes the graph accessible to any MCP-compatible AI assistant. 14 tools and 2 resources, each mapped to a `05_API.md` method; authentication via per-user bearer credentials; an explicit list of what's deliberately *not* exposed (chat, attachment upload, credential management) and why; security considerations including prompt injection via note content; and how future connectors extend the same pattern.
 
 ### 07_AI.md *(planned)*
 AI architecture: embedding strategy, chunking, context assembly, prompt templates, streaming, caching, rate limits, summarization, RAG, token budgeting, and model selection strategy.
