@@ -20,8 +20,8 @@ This is the single source of truth for the Second Brain engineering documentatio
 | 06 | MCP | ✅ Created |
 | 07 | AI | ✅ Created |
 | 08 | SEARCH | ✅ Created |
-| 09 | SECURITY | ⏳ Planned |
-| 10 | DESIGN | ⏳ Planned |
+| 09 | SECURITY | ✅ Created |
+| 10 | DESIGN | ✅ Created |
 | 11 | CONTRIBUTING | ⏳ Planned |
 | 12 | TASKS | ⏳ Planned |
 
@@ -51,11 +51,11 @@ AI architecture: model-tier selection (not hardcoded model names), embedding str
 ### [08_SEARCH.md](08_SEARCH.md)
 Hybrid search: full-text search (`tsvector`/`ts_rank_cd`), semantic search (pgvector, HNSW over IVFFlat with rationale), Reciprocal Rank Fusion for combining the two with a worked example, backlinks, trigram-based `[[` autocomplete kept deliberately separate from ranked search for latency, match-type-aware snippet generation, and performance techniques for the search latency budgets in `02_PRD.md`.
 
-### 09_SECURITY.md *(planned)*
-Authentication, authorization, RLS, secrets management, storage security, rate limiting, security headers, OWASP considerations, threat model, privacy, and data ownership.
+### [09_SECURITY.md](09_SECURITY.md)
+The threat-model-driven security authority: fail-closed principles, the three-layer authorization model (RLS floor → service layer → surface layer), an exhaustive enumeration of service-role-key usage (exactly two places), concrete rate-limit starting values, security headers, a 9-threat model (including prompt injection and cost exhaustion), OWASP Top 10 mapping, and the privacy/data-ownership commitments — including an honest statement of why E2E encryption is structurally incompatible with the product.
 
-### 10_DESIGN.md *(planned)*
-The design system: typography, spacing, component philosophy, accessibility, dark mode, keyboard shortcuts, motion/animation, responsive behavior, and editor UX.
+### [10_DESIGN.md](10_DESIGN.md)
+The design system: semantic design tokens (typography, spacing, single-accent color) that make dark mode a token swap, shadcn/ui component philosophy, the live-formatted-markdown editor UX decision (Obsidian-style hybrid, not raw+preview), WCAG 2.1 AA by construction, the full keyboard shortcut map anchored on a `⌘K` command palette, motion rules, graph-view UX, and desktop-first responsive behavior.
 
 ### 11_CONTRIBUTING.md *(planned)*
 Coding standards, folder structure, naming conventions, testing strategy, commit conventions, PR requirements, architecture rules, and explicit rules for AI coding agents — including what they must never do.
