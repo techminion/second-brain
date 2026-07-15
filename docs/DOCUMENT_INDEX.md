@@ -14,8 +14,8 @@ This is the single source of truth for the Second Brain engineering documentatio
 |---|----------|--------|
 | 01 | PRODUCT | ✅ Created |
 | 02 | PRD | ✅ Created |
-| 03 | ARCHITECTURE | ⏳ Planned |
-| 04 | DATABASE | ⏳ Planned |
+| 03 | ARCHITECTURE | ✅ Created |
+| 04 | DATABASE | ✅ Created |
 | 05 | API | ⏳ Planned |
 | 06 | MCP | ⏳ Planned |
 | 07 | AI | ⏳ Planned |
@@ -33,11 +33,11 @@ Why Second Brain exists. Introduces the **Knowledge Object** — the core abstra
 ### [02_PRD.md](02_PRD.md)
 The Product Requirements Document. ~55 functional requirements (`FR-KO-*` through `FR-MCP-*`) covering the Knowledge Object model and all MVP features, six end-to-end acceptance-criteria flows, non-functional requirement budgets (latency, uptime, durability), a six-milestone delivery plan (M0–M5), success metrics, and a future roadmap mapping every long-term feature to the MVP capability it depends on. Translates the vision in `01_PRODUCT.md` into buildable requirements.
 
-### 03_ARCHITECTURE.md *(planned)*
-System architecture: component diagrams, sequence diagrams for auth/search/embedding/AI request flows, storage architecture, deployment architecture, and future scalability considerations. The technical backbone that `04_DATABASE.md` through `08_SEARCH.md` implement in detail.
+### [03_ARCHITECTURE.md](03_ARCHITECTURE.md)
+System architecture: a layered monolith on Vercel + Supabase, with component and sequence diagrams for auth, standard read/write, hybrid search, the async embedding pipeline, AI chat (RAG), and MCP requests. Includes storage/deployment architecture, 7 Architecture Decision Records, and an explicit table of infrastructure (Docker, Redis, Kafka, Kubernetes, microservices) deliberately excluded and the triggers that would revisit each. The technical backbone that `04_DATABASE.md` through `08_SEARCH.md` implement in detail.
 
-### 04_DATABASE.md *(planned)*
-Complete database schema: tables, relationships, indexes, foreign keys, constraints, naming conventions, migration strategy, RLS policies, soft deletes, and audit strategy.
+### [04_DATABASE.md](04_DATABASE.md)
+Complete database schema: 13 tables implementing the Knowledge Object supertype/subtype pattern (`knowledge_objects` + `notes`/`attachments`), an ER diagram, naming conventions, indexes, constraints, 5 schema-level ADRs (denormalized `owner_id` for RLS, `text`+`CHECK` over native enums, etc.), soft-delete mechanics, uniform RLS policy shape, a minimal append-only audit log, migration strategy, and the future-schema implications (new object types, shared graphs, version history) flagged in advance.
 
 ### 05_API.md *(planned)*
 The logical service layer (not HTTP endpoints): `NoteService`, `FolderService`, `SearchService`, `AIService`, `GraphService`, `EmbeddingService`, `AttachmentService`, `UserService`. Every public method documented with inputs, outputs, errors, and examples.
