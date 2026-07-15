@@ -1,0 +1,10 @@
+# Local, per-machine files — never committed
+.claude/settings.local.json
+.claude/CLAUDE.local.md
+.env
+.env.*
+
+# OS noise
+.DS_Store
+
+# Will be extended by the project scaffold (SETUP-01): node_modules, .next, coverage, etc.

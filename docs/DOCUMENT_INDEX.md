@@ -62,3 +62,14 @@ The engineering rulebook: feature-first folder structure with import-boundary en
 
 ### [12_TASKS.md](12_TASKS.md)
 The master implementation backlog: 309 tasks across 6 phases matching the PRD milestones (Foundations → Collect → Connect → Discover → Collaborate → Launch Readiness), each with a stable ID, complexity estimate (S/M/L), explicit dependencies, and a traceable reference to the requirement or design decision it implements. Ends with post-MVP backlog seeds deliberately left undecomposed. The document AI coding agents are assigned work from directly.
+
+## Governance & Process Documents
+
+The 12 documents above are the stable specification. Project *tracking and process* live alongside them — start any working session from [.ai/PROJECT_CONTEXT.md](../.ai/PROJECT_CONTEXT.md):
+
+- [ROADMAP.md](ROADMAP.md) / [MILESTONES.md](MILESTONES.md) — milestone view and phase breakdown over the `12_TASKS.md` backlog.
+- [PROJECT_STATE.md](PROJECT_STATE.md) — the living snapshot of where the project is right now.
+- [AI_HANDOFF.md](AI_HANDOFF.md) — per-session log enabling any agent to continue the work.
+- [DECISIONS.md](DECISIONS.md) — decision registry (indexes the ADRs embedded in `03`/`04`; records all new ones).
+- [CHANGELOG.md](CHANGELOG.md) — human-readable history.
+- [.ai/](../.ai/) — agent context digests (on conflict, this spec wins — GOV-4); [agents/](../agents/) — agent role definitions; [.github/](../.github/) — issue/PR templates and labels.
