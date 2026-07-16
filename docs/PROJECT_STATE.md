@@ -17,7 +17,7 @@ Done: Sprint 0 (governance), Sprint 1 (repo & tooling foundation — all 21 task
 |---|---|
 | Engineering documentation (12 docs) | ✅ Complete, audited twice for consistency |
 | Governance layer (this file set) | ✅ Complete |
-| Implementation | 21 Done / 309 tasks ([12_TASKS.md](12_TASKS.md)) |
+| Implementation | 21 Done + 1 In Review / 309 tasks ([12_TASKS.md](12_TASKS.md)) |
 
 ## Completed
 
@@ -37,11 +37,11 @@ Done: Sprint 0 (governance), Sprint 1 (repo & tooling foundation — all 21 task
 
 ## In Progress
 
-- None.
+- DB-03 (`knowledge_objects` envelope table) — implemented and applied to the shared Cloud development project; draft PR pending independent review.
 
 ## Blocked
 
-- None — DB-03's FK delete-action gap resolved by **ADR-14** (2026-07-17): all `owner_id` FKs and all FKs referencing `knowledge_objects.id` are `ON DELETE CASCADE`, recorded in [04_DATABASE §4](04_DATABASE.md#4-schema-reference). The rule is uniform, so DB-04..12 won't re-raise it. DB-03 is claimable again.
+- None.
 
 ## Upcoming
 
@@ -63,8 +63,8 @@ Done: Sprint 0 (governance), Sprint 1 (repo & tooling foundation — all 21 task
 
 ## Current Branch
 
-`main`
+`feature/db-03-knowledge-objects`
 
 ## Last Updated
 
-2026-07-17 — ADR-14 recorded (uniform ON DELETE CASCADE for owner and envelope-child FKs); DB-03 unblocked (Claude, architect role)
+2026-07-17 — DB-03 implemented on Cloud with RLS, indexes, least-privilege grants, and repeatable cross-user tests; awaiting review (Codex, database role)
