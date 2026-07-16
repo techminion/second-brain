@@ -37,11 +37,11 @@ Done: Sprint 0 (governance), Sprint 1 (repo & tooling foundation — all 21 task
 
 ## In Progress
 
-- None — Sprint 2 queue is open for claims ([.ai/TASK_QUEUE.md](../.ai/TASK_QUEUE.md)).
+- None.
 
 ## Blocked
 
-- None — CI-04 unblocked by ADR-13 (2026-07-17); every Sprint 2 task is claimable.
+- None — DB-03's FK delete-action gap resolved by **ADR-14** (2026-07-17): all `owner_id` FKs and all FKs referencing `knowledge_objects.id` are `ON DELETE CASCADE`, recorded in [04_DATABASE §4](04_DATABASE.md#4-schema-reference). The rule is uniform, so DB-04..12 won't re-raise it. DB-03 is claimable again.
 
 ## Upcoming
 
@@ -67,4 +67,4 @@ Done: Sprint 0 (governance), Sprint 1 (repo & tooling foundation — all 21 task
 
 ## Last Updated
 
-2026-07-17 — ADR-13 recorded (CI-04 mechanism: ephemeral Postgres replay + drift check); CI-04 unblocked, all Sprint 2 tasks claimable (Claude, TPM role)
+2026-07-17 — ADR-14 recorded (uniform ON DELETE CASCADE for owner and envelope-child FKs); DB-03 unblocked (Claude, architect role)

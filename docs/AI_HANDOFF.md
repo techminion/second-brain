@@ -21,6 +21,40 @@ Estimated Context Needed:
 
 ---
 
+## 2026-07-17 — Claude (Architect) — ADR-14: owner-FK delete action decided, DB-03 unblocked
+
+**Session Date:** 2026-07-17
+**Agent:** Claude, architect/TPM role
+**Objective:** Arbitrate the DB-03 escalation (entry below): `knowledge_objects.owner_id → profiles.id` had no documented FK delete action.
+**Files Modified:** `docs/04_DATABASE.md` (§4 intro gains the delete-action rule; §4.2 `owner_id` row explicit), `docs/DECISIONS.md` (ADR-14), `.ai/TASK_QUEUE.md` (DB-03 Blocked → Queued), `docs/PROJECT_STATE.md`, `docs/AI_HANDOFF.md` (this entry).
+**Files Added:** None.
+**Architecture Decisions:** **ADR-14** — every `owner_id` FK and every FK referencing `knowledge_objects.id` is `ON DELETE CASCADE`. Codex's recommendation (cascade) accepted; decided as a *uniform* rule rather than a DB-03-local answer so DB-04..12 never re-raise it. Basis: `NO ACTION` breaks the FR-AUTH-6 final Auth deletion for any user owning one physical row (soft-deleted rows included), and 04 §6's purge already assumed envelope-child cascades. Safety: cascade fires only on physical deletion, which only the post-grace-period service-role flow performs (ADR-11 leaves `profiles` with no user-facing DELETE).
+**Process notes:** Model escalation from Codex — stopped before writing SQL, verified live Cloud state, gave a reasoned recommendation, explicitly flagged the DB-02 drift lesson (spec must be updated *with* the decision, which this entry does).
+**Outstanding Work:** None from this session. DB-03 claimable immediately.
+**Known Bugs:** None.
+**Risks:** None new — see ADR-14 tradeoffs.
+**Suggested Next Task:** Database agent: re-claim DB-03 and implement per §4.2 + ADR-14 + GOV-6.
+**Estimated Context Needed:** ADR-14 in DECISIONS.md, [04_DATABASE §4 intro + §4.2](04_DATABASE.md#4-schema-reference), the escalation entry below.
+
+---
+
+## 2026-07-17 — Codex (Database) — DB-03 blocked on owner FK delete action
+
+**Session Date:** 2026-07-17
+**Agent:** Codex, database implementation role
+**Objective:** Claim and implement DB-03 (`knowledge_objects` envelope table) after refreshing the Sprint 2 queue and live Supabase Cloud state.
+**Files Modified:** `.ai/TASK_QUEUE.md` (DB-03 marked blocked), `docs/PROJECT_STATE.md` (blocker and branch recorded), `docs/AI_HANDOFF.md` (this entry).
+**Files Added:** None. The empty migration scaffold was removed before any SQL was written.
+**Architecture Decisions:** None. Implementation stopped because the decision belongs to the architect/human.
+**Verification performed:** Confirmed the Cloud project is healthy on Postgres 17.6, its migration history contains exactly the two committed DB-02 migrations, `public.profiles` has RLS enabled, and `public.knowledge_objects` does not exist. Reviewed current Supabase RLS/Data API grant guidance and the July 2026 breaking-change notice.
+**Outstanding Work:** Resolve whether `knowledge_objects.owner_id → profiles.id` uses `ON DELETE CASCADE`. Recommendation: cascade, because default `NO ACTION` would prevent the documented final Auth-user deletion while owned Knowledge Objects exist. Record the chosen action in `docs/04_DATABASE.md §4.2`, then return DB-03 to `Claimed (Codex)` and implement the migration, policies, indexes, and Cloud denial test.
+**Known Bugs:** None.
+**Risks:** Choosing cascade without updating the structural schema would repeat the DB-02 spec/schema drift that required reviewer repair; choosing `NO ACTION` leaves the account-deletion flow internally inconsistent.
+**Suggested Next Task:** Resume DB-03 after architect/human resolution; do not start DB-04 or another DB task while DB-03 is blocked.
+**Estimated Context Needed:** `docs/04_DATABASE.md §4.2, §6–7, §11`; `docs/05_API.md §11`; DB-03 queue row.
+
+---
+
 ## 2026-07-17 — Claude (TPM) — ADR-13: CI-04 mechanism decided, task unblocked
 
 **Session Date:** 2026-07-17
