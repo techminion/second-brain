@@ -21,6 +21,26 @@ Estimated Context Needed:
 
 ---
 
+## 2026-07-17 — Codex (Database) — DB-03 implementation complete
+
+**Session Date:** 2026-07-17
+**Agent:** Codex, database implementation role
+**Objective:** Implement DB-03 (`knowledge_objects` envelope table) after ADR-14 resolved the owner-FK delete action.
+**Files Modified:** `.ai/TASK_QUEUE.md` (DB-03 → In Review), `docs/PROJECT_STATE.md` (implementation state), `docs/AI_HANDOFF.md` (this entry).
+**Files Added:** `supabase/migrations/20260716200215_create_knowledge_objects.sql`, `supabase/migrations/20260716200451_restrict_knowledge_objects_privileges.sql`, `tests/integration/knowledge-objects-rls.integration.test.ts`.
+**Architecture Decisions:** None. Implemented `docs/04_DATABASE.md §4.2`, ADR-14, and GOV-6 exactly. The second migration is a forward-only least-privilege correction after live inspection showed legacy Supabase default privileges had also granted `REFERENCES`, `TRIGGER`, and `TRUNCATE`.
+**Migrations applied:** `20260716200215_create_knowledge_objects`; `20260716200451_restrict_knowledge_objects_privileges`. Repository filenames exactly match Cloud migration history.
+**Policies created:** `knowledge_objects_select_own`, `knowledge_objects_insert_own`, `knowledge_objects_update_own` (with `USING` and `WITH CHECK`), `knowledge_objects_delete_own`; all target `authenticated` and compare initplan-cached `(select auth.uid())` with `owner_id`.
+**Indexes created:** `knowledge_objects_pkey`; `knowledge_objects_owner_id_deleted_at_idx`; `knowledge_objects_owner_id_type_idx`.
+**Verification performed:** Migration SQL first executed inside a rolled-back Cloud transaction. After applying, live catalog inspection confirmed all seven documented columns, UUID/timestamp defaults, the `note|attachment` CHECK, `owner_id → profiles.id ON DELETE CASCADE`, RLS enabled, four policies, the two composite indexes, and CRUD-only grants for `authenticated`/`service_role` with no `anon` grants. DB-03 Cloud test passed independently (2 tests); full integration suite passed (2 files, 3 tests). Local format, typecheck, lint, and unit tests passed; final build/static checks run before commit. Security advisors returned no findings. Performance advisor reported one expected INFO-only unused-index notice on the new `(owner_id, deleted_at)` index; the index is explicitly required by §4.2 and has no production traffic yet.
+**Outstanding Work:** Independent reviewer must verify the PR and Cloud-attested state before merge. DB-03 remains In Review; no subsequent DB task was started.
+**Known Bugs:** None.
+**Risks:** The default shell still resolves Node 20; Cloud tests were intentionally run with installed Node 23.6.0 to satisfy the repository's Node ≥22.12 requirement. One initial full-suite run hit a transient Cloud `JWT issued at future` response in the pre-existing profiles test; an immediate complete rerun passed.
+**Suggested Next Task:** Review DB-03. After merge, DB-04 becomes claimable; DB-05 is already dependency-ready but should not be claimed concurrently with this database review.
+**Estimated Context Needed:** DB-03 diff; `docs/04_DATABASE.md §4 intro, §4.2, §7, §11`; ADR-14; GOV-6.
+
+---
+
 ## 2026-07-17 — Claude (Architect) — ADR-14: owner-FK delete action decided, DB-03 unblocked
 
 **Session Date:** 2026-07-17
