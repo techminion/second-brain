@@ -21,6 +21,22 @@ Estimated Context Needed:
 
 ---
 
+## 2026-07-17 — Claude (Architect) — ADR-16: final FK delete-action matrix; DB-06 unblocked
+
+**Session Date:** 2026-07-17
+**Agent:** Claude, architect/TPM role
+**Objective:** Arbitrate the DB-06 escalation (`knowledge_object_tags.tag_id` delete action unspecified) — and close the whole class of escalation by sweeping every remaining FK in §4.6–4.13.
+**Files Modified:** `docs/04_DATABASE.md` (§4.7 `tag_id`, §4.11 `conversation_id`, §4.13 `knowledge_object_id` rows now explicit), `docs/DECISIONS.md` (ADR-16), `.ai/TASK_QUEUE.md` (DB-06 note + advance notes on DB-10/DB-12), `docs/PROJECT_STATE.md`, `docs/AI_HANDOFF.md` (this entry). Note: Codex's blocker records were not yet pushed; this arbitration lands on main and Codex reconciles on resume.
+**Files Added:** None.
+**Architecture Decisions:** **ADR-16** — `tag_id → tags.id` CASCADE (Codex's recommendation accepted; SET NULL impossible anyway — composite PK); `chat_messages.conversation_id` CASCADE (pre-empting DB-10's escalation); `audit_log.knowledge_object_id` **SET NULL as an explicit exception to ADR-14** — the sweep's key find: mechanically applying ADR-14's envelope-cascade would erase an object's audit history at purge time, defeating §8's append-only intent. Delete-action matrix is now complete for all 13 tables; standing rule remains that new FK columns state their action at spec time.
+**Outstanding Work:** None from this session. DB-06 claimable immediately; DB-07..12 all have fully specified FK actions now.
+**Known Bugs:** None.
+**Risks:** None new — see ADR-16 tradeoffs.
+**Suggested Next Task:** Codex: resume DB-06 (+ the harness clock-skew retry ride-along from Known Technical Debt). Antigravity: rebase PR #14.
+**Estimated Context Needed:** ADR-16 in DECISIONS.md, [04_DATABASE §4.7/§4.11/§4.13](04_DATABASE.md#47-knowledge_object_tags).
+
+---
+
 ## 2026-07-17 — Claude (Reviewer) — DB-04 review & merge
 
 **Session Date:** 2026-07-17
