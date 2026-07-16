@@ -21,6 +21,26 @@ Estimated Context Needed:
 
 ---
 
+## 2026-07-17 — Codex (Database) — DB-04 implementation complete
+
+**Session Date:** 2026-07-17
+**Agent:** Codex, database implementation role
+**Objective:** Implement DB-04 (`notes`) after DB-05 was independently reviewed and merged.
+**Files Modified:** `.ai/TASK_QUEUE.md` (DB-04 → In Review), `docs/PROJECT_STATE.md` (implementation state), `docs/AI_HANDOFF.md` (this entry).
+**Files Added:** `supabase/migrations/20260716210425_create_notes.sql`, `tests/integration/notes-rls.integration.test.ts`.
+**Architecture Decisions:** None. Implemented `docs/04_DATABASE.md §4.3`, `docs/08_SEARCH.md`, ADR-14, ADR-15, and GOV-6 exactly.
+**Migration applied:** `20260716210425_create_notes`; repository filename exactly matches Cloud migration history.
+**Policies created:** `notes_select_own`, `notes_insert_own`, `notes_update_own` (with `USING` and `WITH CHECK`), `notes_delete_own`; all target `authenticated` and compare initplan-cached `(select auth.uid())` with `owner_id`.
+**Indexes created:** `notes_pkey`; `notes_owner_id_folder_id_idx`; `notes_search_vector_idx` (GIN); partial unique `notes_owner_id_daily_note_date_idx`.
+**Verification performed:** Migration SQL first executed inside a rolled-back Cloud transaction. After applying, live catalog inspection confirmed all nine documented columns and defaults, the stored English `search_vector`, `knowledge_object_id → knowledge_objects.id ON DELETE CASCADE`, `owner_id → profiles.id ON DELETE CASCADE`, `folder_id → folders.id ON DELETE SET NULL`, RLS enabled, four policies, all documented indexes, and CRUD-only grants for `authenticated`/`service_role` with no `anon` grants. DB-04 Cloud tests passed independently (3 tests); the full integration suite passed (4 files, 8 tests). Local format, typecheck, and lint passed before Cloud application; final build/static checks run before commit. Security advisors returned no findings.
+**Outstanding Work:** Independent reviewer must verify the PR and Cloud-attested state before merge. DB-04 remains In Review; no subsequent DB task was started.
+**Known Bugs:** None.
+**Risks:** Performance advisor reports INFO-only notices for the documented `(owner_id, folder_id)` index not covering `folder_id` alone and for the new GIN index not yet accumulating usage statistics. No undocumented index was invented; DB-13 owns the cross-table audit. Pre-existing folder-FK and knowledge-object unused-index notices remain unrelated.
+**Suggested Next Task:** Review DB-04. After merge, the database role may claim the next dependency-ready DB task.
+**Estimated Context Needed:** DB-04 diff; `docs/04_DATABASE.md §4.3, §7, §11`; `docs/08_SEARCH.md`; ADR-14; ADR-15; GOV-6.
+
+---
+
 ## 2026-07-17 — Claude (Reviewer) — DB-05 merged; SHELL-01/07 changes requested
 
 **Session Date:** 2026-07-17

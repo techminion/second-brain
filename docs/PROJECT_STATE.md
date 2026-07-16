@@ -17,7 +17,7 @@ Done: Sprint 0 (governance), Sprint 1 (repo & tooling foundation — all 21 task
 |---|---|
 | Engineering documentation (12 docs) | ✅ Complete, audited twice for consistency |
 | Governance layer (this file set) | ✅ Complete |
-| Implementation | 22 Done + 1 In Review / 309 tasks ([12_TASKS.md](12_TASKS.md)) |
+| Implementation | 23 Done + 1 In Review / 309 tasks ([12_TASKS.md](12_TASKS.md)) |
 
 ## Completed
 
@@ -39,11 +39,12 @@ Done: Sprint 0 (governance), Sprint 1 (repo & tooling foundation — all 21 task
 
 ## In Progress
 
-- None. SHELL-01 (PR #13) and SHELL-07 (PR #14) are in review with changes requested (stale-base conflicts block the required checks).
+- DB-04 is implemented on `feature/db-04-notes` and awaiting independent review. The `notes` migration is live on the shared development project; its focused Cloud tests and the full integration suite are green.
+- SHELL-01 (PR #13) and SHELL-07 (PR #14) remain in review with changes requested (stale-base conflicts block the required checks).
 
 ## Blocked
 
-- None. DB-04 remains dependency-gated until DB-05 is reviewed and merged.
+- None.
 
 ## Upcoming
 
@@ -65,8 +66,8 @@ Done: Sprint 0 (governance), Sprint 1 (repo & tooling foundation — all 21 task
 
 ## Current Branch
 
-`feature/db-05-folders`
+`feature/db-04-notes`
 
 ## Last Updated
 
-2026-07-17 — DB-05 reviewed and merged (PR #15); DB-04 next on the database track; SHELL-01/07 PRs awaiting fixes (Claude, reviewer role)
+2026-07-17 — DB-04 implemented and Cloud-validated; awaiting independent review (Codex, database implementation role)
