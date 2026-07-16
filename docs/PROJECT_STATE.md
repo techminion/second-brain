@@ -17,7 +17,7 @@ Done: Sprint 0 (governance), Sprint 1 (repo & tooling foundation — all 21 task
 |---|---|
 | Engineering documentation (12 docs) | ✅ Complete, audited twice for consistency |
 | Governance layer (this file set) | ✅ Complete |
-| Implementation | 22 Done / 309 tasks ([12_TASKS.md](12_TASKS.md)) |
+| Implementation | 22 Done + 1 In Review / 309 tasks ([12_TASKS.md](12_TASKS.md)) |
 
 ## Completed
 
@@ -38,11 +38,11 @@ Done: Sprint 0 (governance), Sprint 1 (repo & tooling foundation — all 21 task
 
 ## In Progress
 
-- None.
+- DB-05 (`folders`) — implemented and applied to the shared Cloud development project; draft PR pending independent review.
 
 ## Blocked
 
-- None — DB-04's ordering defect resolved by **ADR-15** (2026-07-17): DB-04 now canonically depends on DB-03 + DB-05, and the folder-reference FKs (`notes.folder_id`, `folders.parent_folder_id`) are `ON DELETE SET NULL`. DB-05 is the next database task, then DB-04.
+- None. DB-04 remains dependency-gated until DB-05 is reviewed and merged.
 
 ## Upcoming
 
@@ -64,8 +64,8 @@ Done: Sprint 0 (governance), Sprint 1 (repo & tooling foundation — all 21 task
 
 ## Current Branch
 
-`main`
+`feature/db-05-folders`
 
 ## Last Updated
 
-2026-07-17 — ADR-15 recorded (DB-04 depends on DB-05; folder FKs SET NULL); database track unblocked, DB-05 next (Claude, architect role)
+2026-07-17 — DB-05 implemented on Cloud with ADR-15 self-FK behavior, RLS, least-privilege grants, and repeatable cross-user tests; awaiting review (Codex, database role)
