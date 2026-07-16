@@ -30,10 +30,11 @@ Next: **Sprint 1 — Repo & tooling foundation** (scope defined in [.ai/TASK_QUE
 - DB-16: Supabase browser/server-session/service-role client factories, static public-env access (publishable key), and the ADR-12 Cloud integration harness with the `profiles` cross-user RLS test. **Reviewed and verified 2026-07-16** — reviewer ran the Cloud integration test live (green, cleanup confirmed), verified the dev-project hostname pin, fail-closed behavior, and that `src/` cannot import test code.
 
 - CI-01: GitHub Actions PR gate — four independent checks (Typecheck, Lint, Format, Unit tests) on Node 22.12. **Reviewed and merged 2026-07-17** via PR #1 (`38c1282`) — the first task through the full branch → PR → review → merge pipeline.
+- CI-02: Vercel Git integration — preview deployment per PR, production deployment from `main`; `vercel.json` pins the Next.js framework. **Reviewed and merged 2026-07-17** via PR #2 (`2a634a0`) — reviewer probed the preview URL live (HTTP 200) and confirmed the first production deployment succeeded on the merge commit. Env vars deferred to CI-07.
 
 ## In Progress
 
-- CI-02: Vercel is connected to `techminion/second-brain`; PR previews and production deployments from `main` are configured. The test PR preview is Ready and the task awaits review in PR #2.
+- None.
 
 ## Blocked
 
@@ -41,7 +42,7 @@ Next: **Sprint 1 — Repo & tooling foundation** (scope defined in [.ai/TASK_QUE
 
 ## Upcoming
 
-- Sprint 1: CI-03 and OBS-01 (see [.ai/TASK_QUEUE.md](../.ai/TASK_QUEUE.md)); CI-02 remains in review.
+- Sprint 1: CI-03 and OBS-01 (see [.ai/TASK_QUEUE.md](../.ai/TASK_QUEUE.md)). CI-03 is the last Sprint 1 P0.
 
 ## Known Technical Debt
 
@@ -60,8 +61,8 @@ Next: **Sprint 1 — Repo & tooling foundation** (scope defined in [.ai/TASK_QUE
 
 ## Current Branch
 
-`chore/ci-02-vercel`
+`main`
 
 ## Last Updated
 
-2026-07-17 — CI-02 reconciled with the reviewed CI-01 merge; PR #2 awaits review with current-base checks (Codex, backend implementation role)
+2026-07-17 — CI-02 reviewed and merged (PR #2); production deploy verified; Sprint 1 remaining: CI-03 (P0), OBS-01 (Claude, reviewer role)

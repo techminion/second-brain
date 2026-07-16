@@ -21,6 +21,24 @@ Estimated Context Needed:
 
 ---
 
+## 2026-07-17 — Claude (Reviewer) — CI-02 review & merge
+
+**Session Date:** 2026-07-17
+**Agent:** Claude, reviewer role (TPM/governance)
+**Objective:** Review PR #2 (CI-02: Vercel Git integration), merge if sound, close out the governance record.
+**Files Modified:** `.ai/TASK_QUEUE.md` (CI-02 → Done, Completed entry), `docs/PROJECT_STATE.md`, `docs/AI_HANDOFF.md` (this entry).
+**Files Added:** None.
+**Architecture Decisions:** None. `vercel.json` (`framework: nextjs` only) is corrective configuration, not new infrastructure — consistent with [03_ARCHITECTURE §8](03_ARCHITECTURE.md).
+**Verification performed:** Diff reviewed in full (5 files, +44/−5, no secrets, no app-code changes). All six PR checks green including the Vercel deployment context. Reviewer probed the preview URL live — HTTP 200. Squash-merged as `2a634a0` with branch deletion, then **watched the merge commit's Vercel status until the first production deployment reported `success`** — the one path the PR itself could not exercise. Spec conformance checked against 03_ARCHITECTURE's environment table (preview per PR / prod on `main` / secrets in Vercel env vars deferred to CI-07).
+**Process notes:** Clean session — proper branch + PR, task left In Review rather than self-marked Done, the base was reconciled with `main` after CI-01 merged, and the Vercel framework-misclassification incident was reported honestly. The decision-reporting gap from earlier sessions did not recur.
+**Outstanding Work:** CI-03 (last Sprint 1 P0 — branch protection with the four required contexts + up-to-date-branches) and OBS-01. CI-04 mechanism decision still open before Sprint 2.
+**Known Bugs:** None.
+**Risks:** Preview deployments are publicly reachable (no Vercel Deployment Protection). Harmless while previews carry no env vars; revisit when CI-07 attaches the shared dev Supabase env. Direct pushes to `main` remain possible until CI-03.
+**Suggested Next Task:** CI-03 — it converts the now fully-exercised pipeline (CI checks + Vercel deploys) from voluntary to enforced.
+**Estimated Context Needed:** This entry, `.ai/TASK_QUEUE.md` CI-03 row, CI-01 review entry (required-context names).
+
+---
+
 ## 2026-07-17 — Codex (Backend Engineer) — CI-02 conflict resolution
 
 **Session Date:** 2026-07-17
