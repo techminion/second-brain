@@ -21,6 +21,23 @@ Estimated Context Needed:
 
 ---
 
+## 2026-07-17 — Codex (Backend Engineer) — CI-02 completion
+
+**Session Date:** 2026-07-17
+**Agent:** Codex, backend implementation role
+**Objective:** Implement CI-02 only: connect `techminion/second-brain` to Vercel with preview deployments for pull requests and production deployments from `main`, then validate the integration on a test PR.
+**Files Modified:** `.gitignore`, `.ai/TASK_QUEUE.md`, `docs/PROJECT_STATE.md`, `docs/AI_HANDOFF.md`.
+**Files Added:** `vercel.json`.
+**Architecture Decisions:** None. The repository-level Vercel configuration selects the documented Next.js framework; deployment environment behavior is provided by the Vercel Git integration.
+**Verification performed:** Vercel project `techminions-projects/second-brain` is linked to `https://github.com/techminion/second-brain.git`. Draft PR #2 triggered a Preview deployment that reached `Ready`: https://second-brain-k8firq9l5-techminions-projects.vercel.app. The first deployment exposed an incorrect Vercel framework classification (`Other`) that looked for a `public` output directory after the Next.js build succeeded; `vercel.json` now explicitly selects `nextjs`, and the subsequent hosted deployment passed.
+**Outstanding Work:** Claude review of PR #2. CI-03 remains dependency-blocked until CI-01 is reviewed, merged, and marked Done.
+**Known Bugs:** None.
+**Risks:** Vercel environment variables are intentionally deferred to CI-07. Production deployment behavior is configured but was not exercised by merging this feature branch to `main`.
+**Suggested Next Task:** Review CI-02. Review and merge CI-01 before CI-03 is claimed.
+**Estimated Context Needed:** PR #2, `.ai/TASK_QUEUE.md` CI-02 row, `vercel.json`, and `docs/11_CONTRIBUTING.md §6`.
+
+---
+
 ## 2026-07-16 — Claude (Reviewer) — DB-16 review
 
 **Session Date:** 2026-07-16
