@@ -4,7 +4,11 @@
       "Bash(gh api *)",
       "Bash(echo \"scan-exit:$?\")",
       "Bash(git commit -m 'Record CI-03 review outcome and GOV-7 \\(public repository\\) *)",
-      "Bash(echo \"push-exit:$?\")"
+      "Bash(echo \"push-exit:$?\")",
+      "Bash(git fetch *)",
+      "Bash(git reset *)",
+      "Bash(python3 -)",
+      "Bash(git commit -q -m 'Fold production Supabase provisioning into CI-07 scope *)"
     ]
   }
 }
