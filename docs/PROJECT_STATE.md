@@ -29,6 +29,8 @@ Next: **Sprint 1 — Repo & tooling foundation** (scope defined in [.ai/TASK_QUE
 - DB-02: applied the `profiles` table and Auth signup trigger to the shared Cloud project, with `id = auth.uid()` SELECT/UPDATE RLS policies. The cross-user denial check passed against Cloud; security and performance advisors are clean. **Review condition cleared 2026-07-16** — the owed repeatable test was delivered by DB-16.
 - DB-16: Supabase browser/server-session/service-role client factories, static public-env access (publishable key), and the ADR-12 Cloud integration harness with the `profiles` cross-user RLS test. **Reviewed and verified 2026-07-16** — reviewer ran the Cloud integration test live (green, cleanup confirmed), verified the dev-project hostname pin, fail-closed behavior, and that `src/` cannot import test code.
 
+- CI-01: GitHub Actions PR gate — four independent checks (Typecheck, Lint, Format, Unit tests) on Node 22.12. **Reviewed and merged 2026-07-17** via PR #1 (`38c1282`) — the first task through the full branch → PR → review → merge pipeline.
+
 ## In Progress
 
 - CI-02: Vercel is connected to `techminion/second-brain`; PR previews and production deployments from `main` are configured. The test PR preview is Ready and the task awaits review in PR #2.
@@ -39,7 +41,7 @@ Next: **Sprint 1 — Repo & tooling foundation** (scope defined in [.ai/TASK_QUE
 
 ## Upcoming
 
-- Sprint 1: CI-01, CI-03, and OBS-01 (see [.ai/TASK_QUEUE.md](../.ai/TASK_QUEUE.md)).
+- Sprint 1: CI-03 and OBS-01 (see [.ai/TASK_QUEUE.md](../.ai/TASK_QUEUE.md)); CI-02 remains in review.
 
 ## Known Technical Debt
 
@@ -62,4 +64,4 @@ Next: **Sprint 1 — Repo & tooling foundation** (scope defined in [.ai/TASK_QUE
 
 ## Last Updated
 
-2026-07-17 — CI-02 implementation completed; Vercel Git integration and a successful PR preview await review (Codex, backend implementation role)
+2026-07-17 — CI-02 reconciled with the reviewed CI-01 merge; PR #2 awaits review with current-base checks (Codex, backend implementation role)
