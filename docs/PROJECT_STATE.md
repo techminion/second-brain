@@ -17,7 +17,7 @@ Done: Sprint 0 (governance), Sprint 1 (repo & tooling foundation — all 21 task
 |---|---|
 | Engineering documentation (12 docs) | ✅ Complete, audited twice for consistency |
 | Governance layer (this file set) | ✅ Complete |
-| Implementation | 21 Done / 309 tasks ([12_TASKS.md](12_TASKS.md)) |
+| Implementation | 22 Done / 309 tasks ([12_TASKS.md](12_TASKS.md)) |
 
 ## Completed
 
@@ -34,18 +34,15 @@ Done: Sprint 0 (governance), Sprint 1 (repo & tooling foundation — all 21 task
 - CI-03: `main` branch protection — strict up-to-date requirement, the four CI-01 contexts required, admin enforcement, force-push/deletion disabled. **Reviewed and merged 2026-07-17** via PR #3 (`64e0c2c`) — protection read back live from the GitHub API and the direct-push block proven empirically. Repo made public to enable protection (user decision, GOV-7; full-history secret scan clean). **All Sprint 1 P0s are Done — the pipeline is now enforced, not voluntary.**
 
 - OBS-01: dependency-free structured JSON logger — content-free enforced structurally (metadata admits only boolean/number/null), request id + user id required, injection- and serialization-hook-resistant. **Reviewed and merged 2026-07-17** via PR #5 (`f367cc1`) — reviewer re-ran the test suite locally. **Sprint 1 complete.**
-
-## In Review
-
-- SHELL-01: Root layout setup (fonts, ThemeProvider, toaster) - In Review.
+- DB-03: `knowledge_objects` envelope table live on the shared Cloud project — uniform RLS, ADR-14 cascade FK, least-privilege grants, cross-user denial test (GOV-6). **Reviewed and merged 2026-07-17** via PR #10 (`318f958`) — reviewer ran the Cloud integration suite live (green). First Sprint 2 task done; DB-04 and DB-06..10 unblocked.
 
 ## In Progress
 
-- None.
+- SHELL-01: Root layout setup (fonts, theme provider, toaster) (In Review)
 
 ## Blocked
 
-- None — DB-03's FK delete-action gap resolved by **ADR-14** (2026-07-17): all `owner_id` FKs and all FKs referencing `knowledge_objects.id` are `ON DELETE CASCADE`, recorded in [04_DATABASE §4](04_DATABASE.md#4-schema-reference). The rule is uniform, so DB-04..12 won't re-raise it. DB-03 is claimable again.
+- None.
 
 ## Upcoming
 
@@ -71,4 +68,4 @@ Done: Sprint 0 (governance), Sprint 1 (repo & tooling foundation — all 21 task
 
 ## Last Updated
 
-2026-07-17 — ADR-14 recorded (uniform ON DELETE CASCADE for owner and envelope-child FKs); DB-03 unblocked (Claude, architect role)
+2026-07-17 — DB-03 reviewed and merged (PR #10); DB-04 and DB-06..10 claimable (Claude, reviewer role)

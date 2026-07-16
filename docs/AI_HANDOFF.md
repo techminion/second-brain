@@ -37,6 +37,45 @@ Estimated Context Needed:
 
 ---
 
+## 2026-07-17 — Claude (Reviewer) — DB-03 review & merge
+
+**Session Date:** 2026-07-17
+**Agent:** Claude, reviewer role (TPM/governance)
+**Objective:** Review PR #10 (DB-03: `knowledge_objects` envelope), merge if sound.
+**Files Modified:** `.ai/TASK_QUEUE.md` (DB-03 → Done, Completed entry), `docs/PROJECT_STATE.md`, `docs/AI_HANDOFF.md` (this entry).
+**Files Added:** None.
+**Architecture Decisions:** None. The second forward-only migration (revoke-all + re-grant CRUD, stripping legacy `REFERENCES`/`TRIGGER`/`TRUNCATE` default privileges) is a least-privilege correction within spec, correctly reported.
+**Verification performed:** (1) Migration SQL reviewed line-by-line against 04 §4.2: seven columns with documented defaults, `note|attachment` CHECK, `owner_id → profiles.id ON DELETE CASCADE` (ADR-14 — first table to exercise it), both composite indexes, RLS in the uniform §7 shape with initplan-cached `(select auth.uid())`, policies scoped `to authenticated`. (2) Second migration fetched in full to confirm the re-grant line accompanies the `revoke all`. (3) **Reviewer ran the Cloud integration suite live on the PR branch: green (2 files, 3 tests)** — cross-user read/update/delete denial via empty-result semantics, cross-owner insert `42501`, CHECK rejection `23514`, owner self-access; also reconfirmed the harness fails closed when env is absent. (4) All four required CI contexts green. Squash-merged as `318f958`.
+**Process notes:** Exemplary session — rolled-back-transaction dry run before applying, live catalog inspection after, advisors checked, the transient Cloud `JWT issued at future` flake disclosed rather than hidden, and no follow-on DB task started while awaiting review. Repo↔Cloud migration-history match remains implementer-attested until CI-04 lands.
+**Outstanding Work:** DB-04 and DB-06..10 are now dependency-ready (database role, serialized per GOV-5). DB-05/11/12 were already ready.
+**Known Bugs:** None.
+**Risks:** Watch for recurrence of the Cloud JWT clock-skew flake in integration runs; if it repeats, the harness may need a small issued-at tolerance or retry.
+**Suggested Next Task:** Database: DB-04 (`notes` subtype — critical path). Frontend (Antigravity): SHELL-01/07 remain open. Backend: AUTH-01, CI-04.
+**Estimated Context Needed:** This entry, the DB-03 Completed entry in the queue, [04_DATABASE §4.3](04_DATABASE.md#43-notes) for DB-04.
+
+---
+
+## 2026-07-17 — Codex (Database) — DB-03 implementation complete
+
+**Session Date:** 2026-07-17
+**Agent:** Codex, database implementation role
+**Objective:** Implement DB-03 (`knowledge_objects` envelope table) after ADR-14 resolved the owner-FK delete action.
+**Files Modified:** `.ai/TASK_QUEUE.md` (DB-03 → In Review), `docs/PROJECT_STATE.md` (implementation state), `docs/AI_HANDOFF.md` (this entry).
+**Files Added:** `supabase/migrations/20260716200215_create_knowledge_objects.sql`, `supabase/migrations/20260716200451_restrict_knowledge_objects_privileges.sql`, `tests/integration/knowledge-objects-rls.integration.test.ts`.
+**Architecture Decisions:** None. Implemented `docs/04_DATABASE.md §4.2`, ADR-14, and GOV-6 exactly. The second migration is a forward-only least-privilege correction after live inspection showed legacy Supabase default privileges had also granted `REFERENCES`, `TRIGGER`, and `TRUNCATE`.
+**Migrations applied:** `20260716200215_create_knowledge_objects`; `20260716200451_restrict_knowledge_objects_privileges`. Repository filenames exactly match Cloud migration history.
+**Policies created:** `knowledge_objects_select_own`, `knowledge_objects_insert_own`, `knowledge_objects_update_own` (with `USING` and `WITH CHECK`), `knowledge_objects_delete_own`; all target `authenticated` and compare initplan-cached `(select auth.uid())` with `owner_id`.
+**Indexes created:** `knowledge_objects_pkey`; `knowledge_objects_owner_id_deleted_at_idx`; `knowledge_objects_owner_id_type_idx`.
+**Verification performed:** Migration SQL first executed inside a rolled-back Cloud transaction. After applying, live catalog inspection confirmed all seven documented columns, UUID/timestamp defaults, the `note|attachment` CHECK, `owner_id → profiles.id ON DELETE CASCADE`, RLS enabled, four policies, the two composite indexes, and CRUD-only grants for `authenticated`/`service_role` with no `anon` grants. DB-03 Cloud test passed independently (2 tests); full integration suite passed (2 files, 3 tests). Local format, typecheck, lint, and unit tests passed; final build/static checks run before commit. Security advisors returned no findings. Performance advisor reported one expected INFO-only unused-index notice on the new `(owner_id, deleted_at)` index; the index is explicitly required by §4.2 and has no production traffic yet.
+**Outstanding Work:** Independent reviewer must verify the PR and Cloud-attested state before merge. DB-03 remains In Review; no subsequent DB task was started.
+**Known Bugs:** None.
+**Risks:** The default shell still resolves Node 20; Cloud tests were intentionally run with installed Node 23.6.0 to satisfy the repository's Node ≥22.12 requirement. One initial full-suite run hit a transient Cloud `JWT issued at future` response in the pre-existing profiles test; an immediate complete rerun passed.
+**Suggested Next Task:** Review DB-03. After merge, DB-04 becomes claimable; DB-05 is already dependency-ready but should not be claimed concurrently with this database review.
+**Estimated Context Needed:** DB-03 diff; `docs/04_DATABASE.md §4 intro, §4.2, §7, §11`; ADR-14; GOV-6.
+>>>>>>> main
+
+---
+
 ## 2026-07-17 — Claude (Architect) — ADR-14: owner-FK delete action decided, DB-03 unblocked
 
 **Session Date:** 2026-07-17
