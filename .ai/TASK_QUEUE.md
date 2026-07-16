@@ -16,21 +16,21 @@ Goal: a scaffolded, linted, tested, CI-gated repo with a provisioned Supabase pr
 
 | ID | Title | Priority | Cx | Depends on | Owner | Status | Milestone | Acceptance criteria |
 |---|---|---|---|---|---|---|---|---|
-| SETUP-01 | Next.js 15 + React 19 + TS strict scaffold | P0 | S | — | backend | Queued | M0 | Per [12_TASKS](../docs/12_TASKS.md); builds clean with strict TS |
+| SETUP-01 | Next.js 15 + React 19 + TS strict scaffold | P0 | S | — | backend | Done | M0 | Per [12_TASKS](../docs/12_TASKS.md); builds clean with strict TS |
 | DB-01 | Supabase project + local CLI stack | P0 | M | — | database | Queued | M0 | Local stack runs; workflow documented |
-| SETUP-02 | Tailwind + semantic token scaffold | P0 | M | SETUP-01 | designer | Queued | M0 | Tokens + values per [10_DESIGN §3.3](../docs/10_DESIGN.md#33-color) (ADR-8), incl. automated contrast check of the listed pairs |
-| SETUP-04 | ESLint: strict TS + import boundaries | P0 | M | SETUP-01 | backend | Queued | M0 | Boundary rules per [11_CONTRIBUTING §2](../docs/11_CONTRIBUTING.md#2-folder-structure) |
-| SETUP-05 | Prettier + import sorting | P1 | S | SETUP-01 | backend | Queued | M0 | Format check script wired |
-| SETUP-06 | Feature-first folder skeleton | P0 | S | SETUP-01 | backend | Queued | M0 | Matches [11_CONTRIBUTING §2](../docs/11_CONTRIBUTING.md#2-folder-structure) |
-| SETUP-03 | Vendor shadcn/ui base primitives | P1 | S | SETUP-02 | frontend | Queued | M0 | Six named primitives themed by tokens |
-| SETUP-07 | Lint rule: no Tailwind arbitrary values | P1 | S | SETUP-04 | backend | Queued | M0 | `p-[13px]` fails lint |
-| SETUP-08 | Lint rule: no `NEXT_PUBLIC_` secrets | P1 | S | SETUP-04 | backend | Queued | M0 | Violation fails CI |
-| SETUP-09 | Vitest + Testing Library setup | P0 | S | SETUP-01 | backend | Queued | M0 | Colocated test convention works |
-| SETUP-10 | Playwright + dev-server smoke test | P1 | M | SETUP-01 | backend | Queued | M0 | Smoke test green |
-| SETUP-11 | Shared error taxonomy classes | P0 | S | SETUP-06 | backend | Queued | M0 | All 8 errors from [05_API §3](../docs/05_API.md#3-error-taxonomy) |
-| SETUP-12 | Shared envelope/pagination types | P0 | S | SETUP-06 | backend | Queued | M0 | Types per [05_API §2](../docs/05_API.md#2-conventions) |
-| SETUP-13 | Dark mode plumbing | P1 | M | SETUP-02 | frontend | Queued | M0 | `.dark` class strategy + cookie-persisted override, SSR-stamped, no first-paint flash (ADR-9) |
-| SETUP-14 | Env var docs + typed accessor | P1 | S | SETUP-06 | backend | Queued | M0 | No untyped `process.env` access |
+| SETUP-02 | Tailwind + semantic token scaffold | P0 | M | SETUP-01 | designer | Done | M0 | Tokens + values per [10_DESIGN §3.3](../docs/10_DESIGN.md#33-color) (ADR-8), incl. automated contrast check of the listed pairs |
+| SETUP-04 | ESLint: strict TS + import boundaries | P0 | M | SETUP-01 | backend | Done | M0 | Boundary rules per [11_CONTRIBUTING §2](../docs/11_CONTRIBUTING.md#2-folder-structure) |
+| SETUP-05 | Prettier + import sorting | P1 | S | SETUP-01 | backend | Done | M0 | Format check script wired |
+| SETUP-06 | Feature-first folder skeleton | P0 | S | SETUP-01 | backend | Done | M0 | Matches [11_CONTRIBUTING §2](../docs/11_CONTRIBUTING.md#2-folder-structure) |
+| SETUP-03 | Vendor shadcn/ui base primitives | P1 | S | SETUP-02 | frontend | Done | M0 | Six named primitives themed by tokens |
+| SETUP-07 | Lint rule: no Tailwind arbitrary values | P1 | S | SETUP-04 | backend | Done | M0 | `p-[13px]` fails lint |
+| SETUP-08 | Lint rule: no `NEXT_PUBLIC_` secrets | P1 | S | SETUP-04 | backend | Done | M0 | Violation fails CI |
+| SETUP-09 | Vitest + Testing Library setup | P0 | S | SETUP-01 | backend | Done | M0 | Colocated test convention works |
+| SETUP-10 | Playwright + dev-server smoke test | P1 | M | SETUP-01 | backend | Done | M0 | Smoke test green |
+| SETUP-11 | Shared error taxonomy classes | P0 | S | SETUP-06 | backend | Done | M0 | All 8 errors from [05_API §3](../docs/05_API.md#3-error-taxonomy) |
+| SETUP-12 | Shared envelope/pagination types | P0 | S | SETUP-06 | backend | Done | M0 | Types per [05_API §2](../docs/05_API.md#2-conventions) |
+| SETUP-13 | Dark mode plumbing | P1 | M | SETUP-02 | frontend | Done | M0 | `.dark` class strategy + cookie-persisted override, SSR-stamped, no first-paint flash (ADR-9) |
+| SETUP-14 | Env var docs + typed accessor | P1 | S | SETUP-06 | backend | Done | M0 | No untyped `process.env` access |
 | DB-02 | `profiles` migration + signup trigger | P1 | S | DB-01 | database | Queued | M0 | Per [04_DATABASE §4.1](../docs/04_DATABASE.md#41-profiles) |
 | DB-16 | Typed Supabase client factories | P1 | M | DB-01, SETUP-06 | database | Queued | M0 | Browser/session/service-role factories in `shared/lib` |
 | OBS-01 | Structured logging module | P1 | M | SETUP-06 | backend | Queued | M0 | Request id + user id, content-free |

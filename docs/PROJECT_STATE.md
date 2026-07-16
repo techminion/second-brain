@@ -17,13 +17,14 @@ Next: **Sprint 1 — Repo & tooling foundation** (scope defined in [.ai/TASK_QUE
 |---|---|
 | Engineering documentation (12 docs) | ✅ Complete, audited twice for consistency |
 | Governance layer (this file set) | ✅ Complete |
-| Implementation | 0 / 309 tasks ([12_TASKS.md](12_TASKS.md)) |
+| Implementation | 14 / 309 tasks ([12_TASKS.md](12_TASKS.md)) |
 
 ## Completed
 
 - 12-document engineering spec (`docs/01`–`docs/12` + `DOCUMENT_INDEX.md`), committed through `c559cca`.
 - Two consistency audits: 84 stale cross-references repaired; 8 contradictions resolved (FTS scope, export FR-KO-6, embedding freshness budget, rename propagation, and others — see commit `c559cca`).
 - Governance layer: roadmap, milestones, state/handoff/decision/changelog files, `.ai/` context set, `.github/` templates, `agents/` role definitions.
+- SETUP-01..14: strict Next.js foundation, semantic Tailwind tokens, shadcn primitives, feature-first structure, typed shared modules, theme plumbing, and test tooling.
 
 ## In Progress
 
@@ -35,7 +36,7 @@ Next: **Sprint 1 — Repo & tooling foundation** (scope defined in [.ai/TASK_QUE
 
 ## Upcoming
 
-- Sprint 1: SETUP-01..14, DB-01, DB-02, DB-16, CI-01..03, OBS-01 (see [.ai/TASK_QUEUE.md](../.ai/TASK_QUEUE.md)).
+- Sprint 1: DB-01, DB-02, DB-16, CI-01..03, OBS-01 (see [.ai/TASK_QUEUE.md](../.ai/TASK_QUEUE.md)).
 
 ## Known Technical Debt
 
@@ -55,4 +56,4 @@ Next: **Sprint 1 — Repo & tooling foundation** (scope defined in [.ai/TASK_QUE
 
 ## Last Updated
 
-2026-07-16 — SETUP-02/SETUP-13 blockers resolved via ADR-8/ADR-9; Sprint 1 unblocked (Claude, TPM role)
+2026-07-16 — SETUP-01..14 completed (Codex, Lead Software Engineer)

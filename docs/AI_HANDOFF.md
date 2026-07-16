@@ -21,6 +21,22 @@ Estimated Context Needed:
 
 ---
 
+## 2026-07-16 — Codex (Lead Software Engineer) — SETUP completion
+
+**Session Date:** 2026-07-16
+**Agent:** Codex, Lead Software Engineer
+**Objective:** Implement M0 SETUP-01 through SETUP-14 only.
+**Files Modified:** `.gitignore`; `.ai/TASK_QUEUE.md`; `docs/PROJECT_STATE.md`; `docs/CHANGELOG.md`; `docs/AI_HANDOFF.md`.
+**Files Added:** Next.js application/configuration, Tailwind/shadcn design foundation, lint/format/test configuration, feature-first skeleton, shared errors/types/env/theme modules, and unit/E2E smoke tests.
+**Architecture Decisions:** None; ADR-8 and ADR-9 supplied the token and theme decisions.
+**Outstanding Work:** DB-01, DB-02, DB-16, CI-01..03, and OBS-01 remain queued. Do not start them as part of this change.
+**Known Bugs:** None.
+**Risks:** Next.js emits a non-failing advisory that its ESLint plugin is not configured; the project ESLint configuration implements the task-required strict TypeScript, import-boundary, arbitrary-value, and public-secret rules.
+**Suggested Next Task:** DB-01, owned by the database role.
+**Estimated Context Needed:** `docs/04_DATABASE.md`, `.ai/TASK_QUEUE.md`, and the current project configuration.
+
+---
+
 ## 2026-07-16 — Claude (TPM / governance) — blocker resolution
 
 **Session Date:** 2026-07-16

@@ -1,0 +1,12 @@
+.ai/
+.claude/
+.github/
+agents/
+docs/
+README.md
+node_modules/
+.next/
+coverage/
+playwright-report/
+test-results/
+package-lock.json
