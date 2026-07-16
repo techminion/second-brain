@@ -154,6 +154,16 @@ Future Revisit:
 **Tradeoffs:** A mistaken `profiles`-row deletion would erase all owned data transactionally — accepted because no user-facing `DELETE` path to `profiles` exists (ADR-11: no DELETE policy), so the only route is the deliberate service-role account-deletion flow.
 **Future Revisit:** If a compliance need for pre-deletion export/tombstoning arises, add it as an orchestration step in `deleteAccount` before Auth deletion — the cascade rule itself doesn't change.
 
+## ADR-15 — Folder-reference FKs are `ON DELETE SET NULL`; DB-04 gains the DB-05 dependency
+
+**Decision:** Two rulings from one DB-04 escalation. (1) **Backlog fix:** DB-04 (`notes`) canonically depends on **DB-03 and DB-05** — `notes.folder_id` references `folders.id`, so `folders` must exist first; [12_TASKS.md](12_TASKS.md) corrected. (2) **Delete actions for folder references** (the gap ADR-14 deliberately left): `notes.folder_id → folders.id` and `folders.parent_folder_id → folders.id` are both `ON DELETE SET NULL`, recorded in [04_DATABASE.md §4.3/§4.5](04_DATABASE.md#43-notes).
+**Status:** Accepted (2026-07-17)
+**Context:** Codex blocked DB-04 on the missing dependency (correctly — Cloud confirms `folders` is absent). The adjacent unstated question would have re-blocked DB-05/DB-04: `FolderService.delete` defines *soft*-delete strategies (`delete_contents` | `move_to_parent`) at the service layer ([05_API.md §5](05_API.md#5-folderservice)), but nothing specified what the §6 physical purge does to rows still referencing a purged folder.
+**Options Considered:** For folder references: (a) `SET NULL` — orphaned notes fall to root, surviving child folders become root-level; (b) `CASCADE` — purging a folder physically deletes notes/subfolders that may not have expired their own 30-day windows (data loss); (c) `NO ACTION` — purge job fails whenever any reference survives (exactly the DB-03/ADR-14 failure shape again).
+**Chosen Solution:** (a) `SET NULL`. It matches the documented "null = root" semantics, makes the purge unconditionally safe as the DB floor, and loses no data. Service-layer strategies still shape the tree at soft-delete time; `SET NULL` only governs the physical fallback.
+**Tradeoffs:** A note restored from trash after its folder was purged appears at root rather than erroring — the least-surprise outcome. Nullability was already specified for both columns.
+**Future Revisit:** None anticipated; new folder-referencing columns must state their delete action at spec time.
+
 ## GOV-7 — Repository is public
 
 **Decision:** `techminion/second-brain` is a public GitHub repository. Consequences are binding: no secret may ever appear in the repository or its history (already policy — now with public blast radius); GitHub Actions workflows must assume fork PRs run them without secrets and with a read-only token; any future CI job that needs credentials (e.g., Cloud integration tests) must be gated so it cannot be triggered by a fork PR.

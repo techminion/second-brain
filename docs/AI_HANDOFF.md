@@ -21,19 +21,92 @@ Estimated Context Needed:
 
 ---
 
-## 2026-07-17 — Antigravity (Frontend) — SHELL-01: configure root layout with fonts, ThemeProvider, and sonner Toaster
+## 2026-07-17 — Antigravity (Frontend) — SHELL-01: configure root layout with fonts, ThemeProvider, and sonner Toaster (Updated)
 
 **Session Date:** 2026-07-17
 **Agent:** Antigravity, frontend implementation role
-**Objective:** Implement SHELL-01 (root layout: fonts, theme provider, toaster).
-**Files Modified:** `src/app/layout.tsx`, `package.json`, `package-lock.json`, `.ai/TASK_QUEUE.md`, `docs/PROJECT_STATE.md`, `docs/AI_HANDOFF.md` (this entry).
-**Files Added:** `src/shared/lib/theme-provider.tsx`, `src/shared/lib/theme-provider.test.tsx`.
-**Architecture Decisions:** None. Followed ADR-8 (Inter & JetBrains Mono fonts) and ADR-9 (ThemeProvider client state syncing with backend cookie-based override strategy). Utilized `sonner` for toaster matching standard shadcn/ui primitives.
-**Outstanding Work:** Review and merge SHELL-01. Move on to SHELL-07.
+**Objective:** Address changes requested on SHELL-01 (Toaster theme support, deduplicated theme resolver, and merge conflict resolution).
+**Files Modified:** `src/app/layout.tsx`, `src/shared/lib/theme-provider.tsx`, `src/shared/lib/theme.ts`, `.ai/TASK_QUEUE.md`, `docs/PROJECT_STATE.md`, `docs/AI_HANDOFF.md` (this entry).
+**Files Added:** `src/shared/lib/theme-provider.test.tsx`, `src/shared/ui/toast.tsx`, `src/shared/ui/toast.test.tsx` (toast primitives).
+**Architecture Decisions:** Extracted `resolveTheme` to `src/shared/lib/theme.ts` to de-duplicate the theme resolution code. Rendered `sonner`'s `<Toaster>` inside the client-side `ThemeProvider` component and passed it the dynamic client-side `theme` state, making notifications follow light/dark/system transitions.
+**Outstanding Work:** Review and merge SHELL-01. Update SHELL-07.
 **Known Bugs:** None.
 **Risks:** None.
-**Suggested Next Task:** Claim and implement SHELL-07.
-**Estimated Context Needed:** `docs/10_DESIGN.md`, `package.json`, `src/app/layout.tsx`.
+**Suggested Next Task:** Rebase and update SHELL-07 on top of SHELL-01.
+**Estimated Context Needed:** `docs/10_DESIGN.md`, `src/app/layout.tsx`.
+
+---
+
+## 2026-07-17 — Claude (Reviewer) — DB-05 merged; SHELL-01/07 changes requested
+
+**Session Date:** 2026-07-17
+**Agent:** Claude, reviewer role (TPM/governance)
+**Objective:** Review PR #15 (DB-05: `folders`) and PRs #13/#14 (SHELL-01/SHELL-07, Antigravity's first submissions).
+**Files Modified:** `.ai/TASK_QUEUE.md` (DB-05 → Done, Completed entry), `docs/PROJECT_STATE.md`, `docs/AI_HANDOFF.md` (this entry).
+**Files Added:** None.
+**Architecture Decisions:** None new. DB-05 is the first migration to exercise ADR-15 (`parent_folder_id ON DELETE SET NULL`).
+**Verification performed — DB-05 (merged `0b30c56`):** SQL line-checked against 04 §4.5 (all seven columns, ADR-14 cascade, ADR-15 SET NULL, composite index, uniform RLS); the DB-03 review lesson was pre-applied (legacy default privileges revoked in the same migration — no follow-up migration needed this time). **Cloud suite run live by the reviewer from an isolated worktree (never touching the shared checkout): green, 3 files / 5 tests,** including the ADR-15 behavior (physically deleted parent → child falls to root). Non-blocking note routed to DB-13's audit: FK constraints bypass RLS — composite same-owner FKs are a hardening option for reference columns.
+**Verification performed — SHELL-01/07 (changes requested on both, comments on the PRs):** substance approved on both (fonts wire correctly into the token vars; ThemeProvider uses the existing `/api/theme` route per ADR-9; TanStack defaults sane; dependency decisions honestly reported). Blocked because both branches are stale-based and DIRTY — GitHub cannot build the merge ref, so **the four required checks never ran**. Both must reconcile with `main`; #14 additionally waits on #13 (both edit `layout.tsx`). Both also invented an `## In Review` PROJECT_STATE section — flagged; status belongs in the queue.
+**Outstanding Work:** Antigravity: fix #13, then #14. Database: DB-04 is fully unblocked (critical path). Backend: AUTH-01, CI-04 remain unclaimed.
+**Known Bugs:** None.
+**Risks:** Sonner toaster doesn't follow `.dark` yet (non-blocking fix requested on #13).
+**Suggested Next Task:** Database: DB-04. Frontend: rework #13 per review comments.
+**Estimated Context Needed:** This entry, review comments on PRs #13/#14, DB-05 Completed entry.
+
+---
+
+## 2026-07-17 — Codex (Database) — DB-05 implementation complete
+
+**Session Date:** 2026-07-17
+**Agent:** Codex, database implementation role
+**Objective:** Implement DB-05 (`folders`) after ADR-15 placed it before DB-04 and decided folder-reference delete actions.
+**Files Modified:** `.ai/TASK_QUEUE.md` (DB-05 → In Review), `docs/PROJECT_STATE.md` (implementation state), `docs/AI_HANDOFF.md` (this entry).
+**Files Added:** `supabase/migrations/20260716204620_create_folders.sql`, `tests/integration/folders-rls.integration.test.ts`.
+**Architecture Decisions:** None. Implemented `docs/04_DATABASE.md §4.5`, ADR-14, ADR-15, and GOV-6 exactly.
+**Migration applied:** `20260716204620_create_folders`; repository filename exactly matches Cloud migration history.
+**Policies created:** `folders_select_own`, `folders_insert_own`, `folders_update_own` (with `USING` and `WITH CHECK`), `folders_delete_own`; all target `authenticated` and compare initplan-cached `(select auth.uid())` with `owner_id`.
+**Indexes created:** `folders_pkey`; `folders_owner_id_parent_folder_id_idx`.
+**Verification performed:** Migration SQL first executed inside a rolled-back Cloud transaction. After applying, live catalog inspection confirmed all seven documented columns, UUID/timestamp defaults, `owner_id → profiles.id ON DELETE CASCADE`, self-referencing `parent_folder_id → folders.id ON DELETE SET NULL`, RLS enabled, four policies, the documented composite index, and CRUD-only grants for `authenticated`/`service_role` with no `anon` grants. DB-05 Cloud test passed independently (2 tests); full integration suite passed (3 files, 5 tests). Local format, typecheck, lint, and unit tests passed; final build/static checks run before commit. Security advisors returned no findings.
+**Outstanding Work:** Independent reviewer must verify the PR and Cloud-attested state before merge. DB-05 remains In Review; DB-04 must not begin until DB-05 is Done.
+**Known Bugs:** None.
+**Risks:** Performance advisor reports an INFO-only `unindexed_foreign_keys` notice because the documented `(owner_id, parent_folder_id)` index does not lead with `parent_folder_id`. No extra index was invented because §4.5 specifies the exact index set; reviewer/architect may decide whether a future spec change is warranted. The pre-existing unused-index INFO for `knowledge_objects` remains unrelated.
+**Suggested Next Task:** Review DB-05. After merge, DB-04 becomes dependency-ready.
+**Estimated Context Needed:** DB-05 diff; `docs/04_DATABASE.md §4.5, §7, §11`; ADR-14; ADR-15; GOV-6.
+
+---
+
+## 2026-07-17 — Claude (Architect) — ADR-15: DB-04 dependency corrected, folder-FK delete actions decided
+
+**Session Date:** 2026-07-17
+**Agent:** Claude, architect/TPM role
+**Objective:** Arbitrate the DB-04 escalation (entry below): the canonical dependency graph omitted DB-05 even though `notes.folder_id` references `folders.id`.
+**Files Modified:** `docs/12_TASKS.md` (DB-04 deps → DB-03, DB-05), `docs/04_DATABASE.md` (§4.3 `folder_id` and §4.5 `parent_folder_id` gain explicit `ON DELETE SET NULL`), `docs/DECISIONS.md` (ADR-15), `.ai/TASK_QUEUE.md` (DB-04 Blocked → Queued with corrected deps; DB-05 flagged as next), `docs/PROJECT_STATE.md`, `docs/AI_HANDOFF.md` (this entry).
+**Files Added:** None.
+**Architecture Decisions:** **ADR-15** — (1) DB-04 canonically depends on DB-03 + DB-05 (backlog defect confirmed against both the spec and live Cloud state); (2) `notes.folder_id → folders.id` and `folders.parent_folder_id → folders.id` are `ON DELETE SET NULL` — the gap ADR-14 deliberately left, decided now so DB-05/DB-04 don't re-escalate. Rationale: matches "null = root" semantics, keeps the §6 physical purge unconditionally safe, loses no data; `CASCADE` would delete unexpired content, `NO ACTION` recreates the ADR-14 failure shape. Service-layer `FolderService.delete` strategies (05_API §5) still govern soft-delete-time tree shaping.
+**Process notes:** Codex's escalation was again correct-by-the-book: verified spec + live Cloud state, rejected the two shortcut resolutions (omitting the FK; folding DB-05 into DB-04) for the right reasons, changed nothing itself.
+**Outstanding Work:** None from this session. Database role: implement DB-05, then DB-04.
+**Known Bugs:** None.
+**Risks:** None new — see ADR-15 tradeoffs.
+**Suggested Next Task:** Database: DB-05 (`folders`) — now on the critical path ahead of DB-04.
+**Estimated Context Needed:** ADR-15 in DECISIONS.md, [04_DATABASE §4.3/§4.5](04_DATABASE.md#43-notes), the escalation entry below.
+
+---
+
+## 2026-07-17 — Codex (Database) — DB-04 blocked on missing DB-05 dependency
+
+**Session Date:** 2026-07-17
+**Agent:** Codex, database implementation role
+**Objective:** Begin DB-04 (`notes` subtype table) after DB-03 review and merge.
+**Files Modified:** `.ai/TASK_QUEUE.md` (DB-04 marked blocked), `docs/PROJECT_STATE.md` (dependency conflict recorded), `docs/AI_HANDOFF.md` (this entry).
+**Files Added:** None.
+**Architecture Decisions:** None. Implementation stopped for architect/human resolution.
+**Verification performed:** Read DB-04 and DB-05 canonical rows plus `04_DATABASE §4.3`; confirmed `notes.folder_id` is a required FK to `folders.id`. Inspected the shared Cloud project: only `profiles` and `knowledge_objects` exist, with exactly the four reviewed migrations; `public.folders` is absent.
+**Outstanding Work:** Correct the canonical dependency graph so DB-04 depends on DB-05, then implement DB-05 before DB-04. Alternative approaches were rejected: omitting the FK contradicts §4.3; creating `folders` inside DB-04 violates one-task scope and duplicates DB-05.
+**Known Bugs:** None in deployed code; this is a backlog dependency defect.
+**Risks:** Applying DB-04 as currently ordered would fail at `references public.folders (id)` or silently weaken the schema if the FK were omitted.
+**Suggested Next Task:** Architect updates `docs/12_TASKS.md` and the queue so DB-04 depends on DB-03 + DB-05; database role then implements DB-05.
+**Estimated Context Needed:** `docs/12_TASKS.md` DB-04/05 rows, `docs/04_DATABASE.md §4.3/4.5`, this handoff entry.
+>>>>>>> origin/main
 
 ---
 
