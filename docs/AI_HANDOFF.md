@@ -21,6 +21,40 @@ Estimated Context Needed:
 
 ---
 
+## 2026-07-16 — Codex (Database Engineer) — DB-16 completion
+
+**Session Date:** 2026-07-16
+**Agent:** Codex, database implementation role
+**Objective:** Implement DB-16 only: typed Supabase client factories, static public-environment access, and the ADR-12 Cloud integration harness with the owed `profiles` cross-user RLS test.
+**Files Modified:** `.gitignore`; `package.json`; `package-lock.json`; `src/shared/lib/env.ts`; `vitest.config.ts`; `docs/09_SECURITY.md`; `.ai/TASK_QUEUE.md`; `docs/PROJECT_STATE.md`; `docs/CHANGELOG.md`; `docs/AI_HANDOFF.md`.
+**Files Added:** `.env.example`; `src/shared/lib/env.test.ts`; browser, server-session, and service-role Supabase client factories in `src/shared/lib`; `vitest.integration.config.ts`; `tests/integration/supabase-test-harness.ts`; `tests/integration/profiles-rls.integration.test.ts`.
+**Architecture Decisions:** None. Implemented ADR-12. The public contract uses Supabase's current publishable key (`NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`) instead of the legacy anon key. Node is pinned to `>=22.12.0`, satisfying both Vite's current engine floor and the integration runner's native `--env-file-if-exists` support while CI-provided environment variables retain precedence.
+**Verification performed:** Under Node 24: format check, strict typecheck, lint, unit tests (5), production build, and the Cloud integration test pass. The test created two isolated users, verified user B could neither read nor update user A's profile while retaining self-access, and deleted both users. Post-test verification found zero `db16-*` Auth users and zero profile rows. The Cloud `profiles` table has RLS enabled and matches the documented columns/PK/FK; security and performance advisors returned no findings. `npm audit --omit=dev --audit-level=high` passed with two pre-existing moderate Next.js/PostCSS findings.
+**Outstanding Work:** Claude review. No implementation work remains in DB-16.
+**Known Bugs:** None.
+**Risks:** The integration harness legitimately uses a privileged development-project key under ADR-12. It remains confined to test code, validates the exact development-project hostname, fails closed without credentials, and cleans up isolated users.
+**Suggested Next Task:** Review DB-16. Do not begin another task from this session.
+**Estimated Context Needed:** `.ai/TASK_QUEUE.md` DB-16 row; `docs/09_SECURITY.md §5`; `docs/04_DATABASE.md §11`; `tests/integration/`.
+
+---
+
+## 2026-07-16 — Codex (Database Engineer) — DB-16 implementation hold
+
+**Session Date:** 2026-07-16
+**Agent:** Codex, database implementation role
+**Objective:** Implement DB-16 only: typed Supabase client factories, the static public-environment fix, and the ADR-12 Cloud integration harness with the owed `profiles` cross-user RLS test.
+**Files Modified:** `package.json`, `package-lock.json`, `src/shared/lib/env.ts`, `vitest.config.ts`, `.ai/TASK_QUEUE.md`, `docs/PROJECT_STATE.md`, `docs/AI_HANDOFF.md`.
+**Files Added:** `src/shared/lib/env.test.ts`; browser, server-session, and service-role Supabase client factories in `src/shared/lib`; `vitest.integration.config.ts`; and the integration harness plus `profiles` RLS test under `tests/integration/`.
+**Architecture Decisions:** None. Used the client packages and constrained test-harness service-role access approved in ADR-12. The package engine is now Node `>=22.0.0`, matching the approved current Supabase packages.
+**Verification performed:** Under Node 24: format check, strict typecheck, lint, unit tests (4), and production build all pass. The Cloud project is `ACTIVE_HEALTHY`; `public.profiles` matches the documented columns/PK/FK and has RLS enabled; security and performance advisors returned no findings. `npm audit --omit=dev --audit-level=high` passed; it reports two pre-existing moderate findings nested under Next.js, with only a breaking Next version change offered. The integration suite correctly fails closed because no development-project credentials are available to the test process.
+**Outstanding Work:** Set `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, and the development-project-only `SUPABASE_SERVICE_ROLE_KEY` in the test environment, then run `npm run test:integration`. If green, move DB-16 to `In Review` and commit the completed task.
+**Known Bugs:** None in local validation. Live Cloud test execution is unverified, not skipped.
+**Risks:** The service-role key must remain dev-project-only and must never be configured for production test environments, per ADR-12. The local `.env.example` is ignored and has blank values; it does not provide test credentials.
+**Suggested Next Task:** Resume DB-16 validation after the credentials are available; do not begin another task from this session.
+**Estimated Context Needed:** `.ai/TASK_QUEUE.md` DB-16 row; `docs/09_SECURITY.md §5`; `docs/04_DATABASE.md §11`; `tests/integration/`.
+
+---
+
 ## 2026-07-16 — Claude (Architect) — DB-16 conflict resolution
 
 **Session Date:** 2026-07-16

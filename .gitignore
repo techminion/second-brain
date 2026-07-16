@@ -3,6 +3,7 @@
 .claude/CLAUDE.local.md
 .env
 .env.*
+!.env.example
 
 # OS noise
 .DS_Store

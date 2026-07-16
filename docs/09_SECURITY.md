@@ -55,7 +55,7 @@ The MCP server is explicitly **not** on this list ([06_MCP.md §9](06_MCP.md#9-s
 | Rule | Detail |
 |---|---|
 | Storage | Vercel environment variables, scoped per environment (preview vs. production values are distinct) — per [03_ARCHITECTURE.md §8](03_ARCHITECTURE.md#8-deployment-architecture). |
-| Inventory | Supabase service-role key, OpenAI API key, webhook shared secret (§3). The Supabase anon key and URL are public by design (RLS is the protection, not key secrecy) — but the *service-role* key must never ship in any client bundle; only code running in Route Handlers/server components may read it. |
+| Inventory | Supabase service-role key, OpenAI API key, webhook shared secret (§3). The Supabase publishable key and URL are public by design (RLS is the protection, not key secrecy) — but the *service-role* key must never ship in any client bundle; only code running in Route Handlers/server components may read it. |
 | Client exposure | No secret is ever prefixed `NEXT_PUBLIC_`. CI lint rule enforces this mechanically ([11_CONTRIBUTING.md](11_CONTRIBUTING.md)). |
 | Logs | Structured logs carry request id + user id, never tokens, note content, or signed URLs ([03_ARCHITECTURE.md §9](03_ARCHITECTURE.md#9-cross-cutting-concerns)). |
 | Rotation | All three secrets are rotatable without a schema change; rotation is a Vercel env-var update + redeploy. On any suspected exposure, rotate first, investigate second. |

@@ -17,7 +17,7 @@ Next: **Sprint 1 — Repo & tooling foundation** (scope defined in [.ai/TASK_QUE
 |---|---|
 | Engineering documentation (12 docs) | ✅ Complete, audited twice for consistency |
 | Governance layer (this file set) | ✅ Complete |
-| Implementation | 15 / 309 tasks ([12_TASKS.md](12_TASKS.md)) |
+| Implementation | 16 Done + 1 In Review / 309 tasks ([12_TASKS.md](12_TASKS.md)) |
 
 ## Completed
 
@@ -30,7 +30,7 @@ Next: **Sprint 1 — Repo & tooling foundation** (scope defined in [.ai/TASK_QUE
 
 ## In Progress
 
-- None. The two SETUP blockers were resolved by ADR-8 (concrete token values, now in [10_DESIGN.md §3.3](10_DESIGN.md#33-color)) and ADR-9 (cookie-based theme persistence, [10_DESIGN.md §7](10_DESIGN.md#7-dark-mode)) — Sprint 1 is fully unblocked.
+- DB-16 is in review: Supabase browser, server-session, and service-role factories; static public-environment access using Supabase's publishable key; and the Cloud integration harness with the `profiles` cross-user RLS test. The live cross-user test passed against the shared Cloud development project and cleaned up both isolated users.
 
 ## Blocked
 
@@ -38,12 +38,10 @@ Next: **Sprint 1 — Repo & tooling foundation** (scope defined in [.ai/TASK_QUE
 
 ## Upcoming
 
-- Sprint 1: DB-16, CI-01..03, OBS-01 (see [.ai/TASK_QUEUE.md](../.ai/TASK_QUEUE.md)).
+- Sprint 1: CI-01..03 and OBS-01 (see [.ai/TASK_QUEUE.md](../.ai/TASK_QUEUE.md)).
 
 ## Known Technical Debt
 
-- `env.ts` dynamic `process.env[name]` access breaks Next.js client-bundle inlining of `NEXT_PUBLIC_*` vars — must be fixed when DB-16 adds the browser Supabase factory (noted on the DB-16 queue row).
-- The `profiles` cross-user denial check exists only as a one-off manual Cloud verification — no repeatable test in the repo. DB-16 delivers the Cloud integration-test harness with this as its first test; DB-13 audits completeness.
 - The `feature-boundaries` lint rule only catches `@/features/...` alias imports; relative-path imports bypass it. Follow-up hardening candidate.
 - `tsconfig.json` typechecks `src/**` only — `e2e/`, `tools/`, and config files are not typechecked.
 - Interim pointer-README in place; OBS-10 replaces it with the full public README at launch.
@@ -63,4 +61,4 @@ Next: **Sprint 1 — Repo & tooling foundation** (scope defined in [.ai/TASK_QUE
 
 ## Last Updated
 
-2026-07-16 — DB-16 spec conflict resolved via ADR-12 (service-role in test harness, constrained; Supabase client packages approved); DB-16 unblocked (Claude, architect role)
+2026-07-16 — DB-16 implemented and live-validated against Supabase Cloud; moved to In Review (Codex, database implementation role)
