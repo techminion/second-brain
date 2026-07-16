@@ -33,7 +33,7 @@ MCP clients ──────────────> MCP Server (route handle
 
 Load-bearing facts:
 - **All business logic lives in the service layer** (8 services, [docs/05_API.md](../docs/05_API.md)). UI and route handlers are thin. The MCP server calls the *same* services as the web app — that's what guarantees FR-MCP-2 parity.
-- **Postgres RLS is the authorization floor** (`owner_id = auth.uid()` on every table, [docs/04_DATABASE.md §7](../docs/04_DATABASE.md#7-row-level-security-rls-policies)). The service-role key is allowed in exactly two places ([docs/09_SECURITY.md §5](../docs/09_SECURITY.md#5-service-role-key-usage)).
+- **Postgres RLS is the authorization floor** (`owner_id = auth.uid()` on every table, [docs/04_DATABASE.md §7](../docs/04_DATABASE.md#7-row-level-security-rls-policies)). The service-role key is allowed only in the contexts enumerated in [docs/09_SECURITY.md §5](../docs/09_SECURITY.md#5-service-role-key-usage) (webhook endpoint, retention purge, integration-test harness).
 - **Embeddings are asynchronous**: note save → DB webhook → Vercel endpoint → OpenAI → pgvector. Never synchronous on save.
 - **Schema**: class-table inheritance — `knowledge_objects` envelope + `notes`/`attachments` subtypes; 13 tables ([docs/04_DATABASE.md](../docs/04_DATABASE.md)).
 - **Search**: tsvector full-text + pgvector HNSW semantic, merged with Reciprocal Rank Fusion, run concurrently ([docs/08_SEARCH.md](../docs/08_SEARCH.md)).

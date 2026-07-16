@@ -32,7 +32,7 @@ The canonical statement of the MVP stack. Documents 04–12 reference this table
 | Data fetching / forms | TanStack Query, React Hook Form |
 | Editor | Tiptap |
 | Graph rendering | React Flow |
-| Backend platform | Supabase: PostgreSQL (+ pgvector), Auth, Storage, RLS |
+| Backend platform | Supabase: PostgreSQL (+ pgvector), Auth, Storage, RLS — clients: `@supabase/supabase-js`, `@supabase/ssr` |
 | AI provider | OpenAI (Responses API for chat; embeddings endpoint for vectors) |
 | Hosting | Vercel |
 

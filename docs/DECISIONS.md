@@ -124,6 +124,16 @@ Future Revisit:
 **Tradeoffs:** DB-02..DB-12 each grow slightly; DB-13 shrinks to verification. Net effort unchanged.
 **Future Revisit:** None anticipated.
 
+## ADR-12 — Service-role key permitted in the Cloud integration-test harness; Supabase client packages approved
+
+**Decision:** [09_SECURITY.md §5](09_SECURITY.md#5-service-role-key-usage) gains a third enumerated service-role context: the Cloud integration-test harness, for test-user lifecycle (create/delete via the GoTrue admin API) and test-data cleanup. Constraints: test code only, never importable from `src/`; targets only the shared Cloud *development* project; the production key is never configured in test environments. Additionally, `@supabase/supabase-js` and `@supabase/ssr` are the approved client packages (recorded in [03_ARCHITECTURE.md §2.1](03_ARCHITECTURE.md#21-technology-stack)).
+**Status:** Accepted (2026-07-16)
+**Context:** DB-16 was blocked: GOV-6's repeatable cross-user tests require creating and deleting isolated Auth users, which is service-role-only — but §5's enumeration didn't include it. Session-scoped Next.js clients also require `@supabase/ssr`, which no doc had named.
+**Options Considered:** (a) extend §5 with a tightly-constrained test-harness context; (b) create test users via anon-key `signUp()` and leave cleanup unsolved (accumulating orphan users in the shared dev project); (c) a `SECURITY DEFINER` SQL function deleting from `auth.users` callable by tests (a standing privilege-escalation footgun worse than the key itself).
+**Chosen Solution:** (a). The enumeration's value is that every use is *documented and constrained*, not that the count stays at two.
+**Tradeoffs:** The service-role key now exists in test environments; contained by the dev-project-only constraint and SEC-04's audit (updated to include verifying harness code isn't importable from `src/`).
+**Future Revisit:** If Supabase ships scoped admin credentials (test-user management without full service role), adopt them and supersede this context.
+
 ## GOV-5 — Agent ownership follows task-area prefixes
 
 **Decision:** Each [agents/](../agents/) role owns the task areas listed in its file (e.g., `mcp` owns MCP-*); the reviewer role owns no implementation area and reviews everything.

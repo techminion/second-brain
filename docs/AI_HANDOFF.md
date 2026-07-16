@@ -21,6 +21,22 @@ Estimated Context Needed:
 
 ---
 
+## 2026-07-16 — Claude (Architect) — DB-16 conflict resolution
+
+**Session Date:** 2026-07-16
+**Agent:** Claude (Claude Code), architect role
+**Objective:** Resolve the DB-16 conflict escalated by the database agent: the integration harness needs the service-role key (GoTrue admin API for test-user lifecycle), but 09_SECURITY §5 enumerated only two permitted contexts; `@supabase/ssr` was also undocumented.
+**Files Modified:** `docs/09_SECURITY.md` (§2 principle reworded to defer to the enumeration; §5 gains the constrained test-harness context), `docs/03_ARCHITECTURE.md` (§2.1 names the approved client packages), `docs/11_CONTRIBUTING.md` (two hardcoded "two contexts" phrasings now defer to §5), `docs/12_TASKS.md` (SEC-04 audits against the enumeration + harness importability check), `.ai/ARCHITECTURE_RULES.md`, `.ai/PROJECT_CONTEXT.md`, `docs/DOCUMENT_INDEX.md` (digests synced per GOV-4), `docs/DECISIONS.md` (ADR-12), `.ai/TASK_QUEUE.md` (DB-16 row), `docs/PROJECT_STATE.md`, `docs/CHANGELOG.md`.
+**Files Added:** None.
+**Architecture Decisions:** ADR-12 — third service-role context: the Cloud integration-test harness, constrained to test code (never importable from `src/`), dev project only, production key never in test environments. Rejected alternatives: anon-key `signUp()` without cleanup (orphan accumulation in the shared dev project), and a `SECURITY DEFINER` delete function callable by tests (a worse standing footgun than the key). Also approved `@supabase/supabase-js` + `@supabase/ssr`.
+**Outstanding Work:** DB-16 unblocked and claimable with its full expanded scope (client factories + env-inlining fix + harness + owed profiles test). CI-04 mechanism decision still open.
+**Known Bugs:** None.
+**Risks:** Service-role key now legitimately present in test environments — contained by the dev-only constraint and SEC-04's updated audit. Hardcoded counts ("exactly two places") were repeated across five files; all now defer to the §5 enumeration so the next addition edits one place.
+**Suggested Next Task:** DB-16 (database role); CI-01..03 (backend role) in parallel.
+**Estimated Context Needed:** DB-16 queue row + `docs/09_SECURITY.md §5` + `docs/04_DATABASE.md §11` + the SETUP review's env-inlining note.
+
+---
+
 ## 2026-07-16 — Claude (Reviewer) — DB-02 review
 
 **Session Date:** 2026-07-16

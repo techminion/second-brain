@@ -13,7 +13,7 @@ This document is the authority on how Second Brain protects user data. Where an 
 1. **The database is the enforcement floor.** Authorization is enforced by Postgres RLS ([04_DATABASE.md §7](04_DATABASE.md#7-row-level-security-rls-policies)), not by application code remembering to check. Application-layer checks are additional, never a substitute.
 2. **Every caller is untrusted equally.** The web app, the MCP server, and any future surface authenticate to the same identity system and run under the same RLS-scoped context. There is no "trusted internal caller" that bypasses ownership checks ([03_ARCHITECTURE.md §6.6](03_ARCHITECTURE.md#66-mcp-request-flow)).
 3. **Secrets have one home per environment and appear nowhere else.** No secret in code, git history, client bundles, or logs.
-4. **Least privilege for the service role.** The Supabase service-role key (which bypasses RLS) is used only where RLS-scoped access is structurally impossible — currently exactly two places (§5).
+4. **Least privilege for the service role.** The Supabase service-role key (which bypasses RLS) is used only where RLS-scoped access is structurally impossible — the contexts enumerated exhaustively in §5, and nowhere else.
 5. **Fail closed.** Missing policy, unverifiable token, ambiguous ownership → the request fails. There is no permissive default anywhere in the stack.
 
 ## 3. Authentication
@@ -46,6 +46,7 @@ The Supabase service-role key bypasses RLS entirely, so its use is enumerated ex
 |---|---|
 | Embedding pipeline endpoint ([03_ARCHITECTURE.md §6.4](03_ARCHITECTURE.md#64-embedding-pipeline)) | Triggered by a database webhook, not a user request — there is no user JWT to run under. The endpoint derives `owner_id` from the note row itself and writes only `embeddings` rows for that object. |
 | Scheduled retention purge ([04_DATABASE.md §6](04_DATABASE.md#6-soft-deletes)) | A `pg_cron` job with no user in the loop, deleting rows already 30 days past soft-deletion across all users. |
+| Cloud integration-test harness (ADR-12, [DECISIONS.md](DECISIONS.md)) | Creating and deleting isolated test users requires the GoTrue admin API, which is service-role-only; the harness also cleans up test data across those users. Constraints: lives in test code only, never importable from `src/` application code; targets only the shared Cloud *development* project — the production project's key is never configured in any test environment. |
 
 The MCP server is explicitly **not** on this list ([06_MCP.md §9](06_MCP.md#9-security-considerations)) — it resolves a user and runs RLS-scoped, always.
 

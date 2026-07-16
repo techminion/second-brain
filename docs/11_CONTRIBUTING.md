@@ -49,7 +49,7 @@ supabase/
 | TypeScript strict mode; no `any` at service boundaries ([03_ARCHITECTURE.md §2](03_ARCHITECTURE.md#2-architectural-style--constraints)); `unknown` + narrowing where typing is genuinely dynamic | `tsc --noEmit` in CI; ESLint `no-explicit-any` |
 | All service methods `async`, throwing only taxonomy errors ([05_API.md §3](05_API.md#3-error-taxonomy)) | Review against the taxonomy; new error types require updating 05_API.md first |
 | No hardcoded design values — Tailwind tokens only, no arbitrary values (`p-[13px]`) | ESLint/Tailwind plugin ([10_DESIGN.md §3.2](10_DESIGN.md#32-spacing--layout)) |
-| No secret ever prefixed `NEXT_PUBLIC_`; service-role key imported only in the two permitted server contexts ([09_SECURITY.md §5](09_SECURITY.md#5-service-role-key-usage)) | Lint rule + review |
+| No secret ever prefixed `NEXT_PUBLIC_`; service-role key imported only in the server contexts enumerated in [09_SECURITY.md §5](09_SECURITY.md#5-service-role-key-usage) | Lint rule + review |
 | Comments state constraints the code can't (`// RLS returns zero rows here, not an error`), never narrate what the next line does | Review |
 | Formatting is Prettier's; imports sorted mechanically | CI — formatting is never a review topic |
 
@@ -123,7 +123,7 @@ The hard floor. Each item links to why:
 | Never | Why |
 |---|---|
 | Disable, weaken, or "temporarily" bypass an RLS policy | The enforcement floor ([09_SECURITY.md §2](09_SECURITY.md#2-security-principles)); there is no temporary. |
-| Use the service-role key outside the two enumerated contexts | [09_SECURITY.md §5](09_SECURITY.md#5-service-role-key-usage) is exhaustive by design. |
+| Use the service-role key outside the enumerated contexts | [09_SECURITY.md §5](09_SECURITY.md#5-service-role-key-usage) is exhaustive by design. |
 | Commit a secret, or log tokens/note content/signed URLs | [09_SECURITY.md §6](09_SECURITY.md#6-secrets-management); note content in logs also violates the privacy commitments in §11 there. |
 | Introduce Docker, Redis, Kafka, Kubernetes, RabbitMQ, a microservice, or a second component library | [03_ARCHITECTURE.md §12](03_ARCHITECTURE.md#12-explicitly-excluded-infrastructure), [10_DESIGN.md §2.4](10_DESIGN.md#2-design-principles). |
 | Write to a table owned by another feature's service | [05_API.md §12](05_API.md#12-cross-service-interaction-rules), rule 4. |

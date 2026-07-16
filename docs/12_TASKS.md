@@ -461,7 +461,7 @@ Two areas span phases deliberately: OBS-01 (structured logging) lives in Phase 0
 | SEC-01 | Security headers middleware: full [09_SECURITY.md §8](09_SECURITY.md#8-security-headers) set incl. CSP | M | SETUP-01 |
 | SEC-02 | CSP verification: app functions fully under the restrictive policy | M | SEC-01, AICH-11, GRAPH-04 |
 | SEC-03 | Full threat-model review: T1–T9 mitigations verified against implementation ([09_SECURITY.md §9](09_SECURITY.md#9-threat-model)) | L | all Phase 4 |
-| SEC-04 | Service-role usage audit: exactly two permitted contexts, mechanically greppable ([09_SECURITY.md §5](09_SECURITY.md#5-service-role-key-usage)) | S | EMB-05, DB-15 |
+| SEC-04 | Service-role usage audit against the contexts enumerated in [09_SECURITY.md §5](09_SECURITY.md#5-service-role-key-usage), mechanically greppable (incl. verifying test-harness code is not importable from `src/`) | S | EMB-05, DB-15 |
 | SEC-05 | Rate-limit verification: all four §7 policies trip correctly and return 429/MCP errors | M | AICH-08, MCP-13, EMB-07 |
 | SEC-06 | Log audit: no tokens, content, or signed URLs in any log path ([09_SECURITY.md §6](09_SECURITY.md#6-secrets-management)) | M | OBS-02 |
 | SEC-07 | Dependency audit + pinning review | S | CI-05 |

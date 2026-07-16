@@ -10,7 +10,7 @@
 4. **Never use `any`** at service boundaries; `unknown` + narrowing where typing is genuinely dynamic.
 5. **Never accept `userId` from request input.** It comes from the verified session/token, always the first service-method parameter.
 6. **Never disable, weaken, or "temporarily" bypass an RLS policy.** RLS is the authorization floor.
-7. **Never use the Supabase service-role key** outside the two enumerated contexts ([docs/09_SECURITY.md §5](../docs/09_SECURITY.md#5-service-role-key-usage)): the embedding webhook endpoint and the retention purge job.
+7. **Never use the Supabase service-role key** outside the contexts enumerated in [docs/09_SECURITY.md §5](../docs/09_SECURITY.md#5-service-role-key-usage): the embedding webhook endpoint, the retention purge job, and the Cloud integration-test harness (test code only, dev project only — ADR-12).
 8. **Never introduce excluded infrastructure** — Docker, Redis, Kafka, Kubernetes, RabbitMQ, microservices, or a second component library — without a human-approved ADR.
 9. **Never let AI write to the graph outside chat history** (FR-AI-5). Future write-back features use the confirm-gated pattern only.
 10. **Never call the embedding pipeline synchronously on save**; it is DB-webhook-driven by design.

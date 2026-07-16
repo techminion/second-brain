@@ -63,4 +63,4 @@ Next: **Sprint 1 — Repo & tooling foundation** (scope defined in [.ai/TASK_QUE
 
 ## Last Updated
 
-2026-07-16 — DB-02 review completed: conditional pass — SQL conforms to ADR-11; automated cross-user test deferred to DB-16's harness (Claude, reviewer role)
+2026-07-16 — DB-16 spec conflict resolved via ADR-12 (service-role in test harness, constrained; Supabase client packages approved); DB-16 unblocked (Claude, architect role)
