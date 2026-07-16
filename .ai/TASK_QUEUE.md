@@ -35,7 +35,7 @@ Goal: a scaffolded, linted, tested, CI-gated repo with a provisioned Supabase pr
 | DB-16 | Typed Supabase client factories | P1 | M | DB-01, SETUP-06 | database | Done | M0 | Delivered in full incl. env-inlining fix, ADR-12 harness, and the DB-02-owed profiles test — reviewer-verified live against Cloud (see Completed) |
 | OBS-01 | Structured logging module | P1 | M | SETUP-06 | backend | Queued | M0 | Request id + user id, content-free |
 | CI-01 | CI: typecheck/lint/format/tests on PR | P0 | M | SETUP-04, SETUP-09 | backend | Done | M0 | Merged via PR #1 (`38c1282`) after review — four green checks on GitHub runners, Node 22.12 pinned (see Completed) |
-| CI-02 | Vercel: preview per PR, prod on main | P0 | S | SETUP-01 | backend | Queued | M0 | Preview URL on a test PR |
+| CI-02 | Vercel: preview per PR, prod on main | P0 | S | SETUP-01 | backend | In Review | M0 | Preview URL on a test PR: https://second-brain-git-chore-ci-02-vercel-techminions-projects.vercel.app |
 | CI-03 | Branch protection + required checks | P0 | S | CI-01 | backend | Queued | M0 | Direct pushes to main blocked; require the four CI-01 contexts (Typecheck, Lint, Format, Unit tests). **Also require branches to be up to date before merge** — the CI-01 workflow runs on `pull_request` only, so without this, post-merge `main` is never re-validated (CI-01 review finding) |
 
 ## Next Up (Sprint 2 candidates — not yet claimable)

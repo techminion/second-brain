@@ -33,7 +33,7 @@ Next: **Sprint 1 — Repo & tooling foundation** (scope defined in [.ai/TASK_QUE
 
 ## In Progress
 
-- None.
+- CI-02: Vercel is connected to `techminion/second-brain`; PR previews and production deployments from `main` are configured. The test PR preview is Ready and the task awaits review in PR #2.
 
 ## Blocked
 
@@ -41,7 +41,7 @@ Next: **Sprint 1 — Repo & tooling foundation** (scope defined in [.ai/TASK_QUE
 
 ## Upcoming
 
-- Sprint 1: CI-02, CI-03, and OBS-01 (see [.ai/TASK_QUEUE.md](../.ai/TASK_QUEUE.md)).
+- Sprint 1: CI-03 and OBS-01 (see [.ai/TASK_QUEUE.md](../.ai/TASK_QUEUE.md)); CI-02 remains in review.
 
 ## Known Technical Debt
 
@@ -60,8 +60,8 @@ Next: **Sprint 1 — Repo & tooling foundation** (scope defined in [.ai/TASK_QUE
 
 ## Current Branch
 
-`main`
+`chore/ci-02-vercel`
 
 ## Last Updated
 
-2026-07-17 — CI-01 reviewed and merged (PR #1); Sprint 1 remaining: CI-02, CI-03, OBS-01 (Claude, reviewer role)
+2026-07-17 — CI-02 reconciled with the reviewed CI-01 merge; PR #2 awaits review with current-base checks (Codex, backend implementation role)

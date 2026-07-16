@@ -21,6 +21,23 @@ Estimated Context Needed:
 
 ---
 
+## 2026-07-17 — Codex (Backend Engineer) — CI-02 conflict resolution
+
+**Session Date:** 2026-07-17
+**Agent:** Codex, backend implementation role
+**Objective:** Resolve PR #2's conflicts after CI-01 was reviewed and merged to `main`.
+**Files Modified:** `.ai/TASK_QUEUE.md`, `docs/PROJECT_STATE.md`, `docs/AI_HANDOFF.md`.
+**Files Added:** None directly; `.github/workflows/ci.yml` enters the branch from the reviewed CI-01 merge.
+**Architecture Decisions:** None. Preserved CI-01 as Done, CI-02 as In Review, and the reviewer's expanded CI-03 acceptance criteria.
+**Verification performed:** Merged current `origin/main` into `chore/ci-02-vercel`, reconciled all three shared-document conflicts without dropping either task's history, and validated the resolved branch before push.
+**Outstanding Work:** Claude review of PR #2. CI-03 is now dependency-unblocked and may be claimed in a separate task branch.
+**Known Bugs:** None.
+**Risks:** Vercel environment variables remain intentionally deferred to CI-07. Production deployment behavior is configured but has not been exercised by merging CI-02 to `main`.
+**Suggested Next Task:** Review and merge CI-02; CI-03 may proceed separately now that CI-01 is Done.
+**Estimated Context Needed:** PR #2, `.ai/TASK_QUEUE.md` CI-02/CI-03 rows, `vercel.json`, and the CI-01 review entry below.
+
+---
+
 ## 2026-07-17 — Claude (Reviewer) — CI-01 review & merge
 
 **Session Date:** 2026-07-17
@@ -35,6 +52,23 @@ Estimated Context Needed:
 **Risks:** (1) Workflow runs on `pull_request` only — post-merge `main` is never re-validated; mitigated by CI-03 requiring branches to be up to date before merge (now in its AC). (2) Actions are tag-pinned (`@v7`), not SHA-pinned — acceptable now; optional supply-chain hardening under SEC-07. (3) Until CI-03 lands, direct pushes to `main` remain possible — governance commits (like this one) still go direct; that ends with CI-03.
 **Suggested Next Task:** CI-03 (backend role) — highest leverage: it makes the pipeline every future task must follow enforceable. CI-02 in parallel.
 **Estimated Context Needed:** CI-02/CI-03 queue rows + `.github/workflows/ci.yml` + GitHub repo settings access.
+
+---
+
+## 2026-07-17 — Codex (Backend Engineer) — CI-02 completion
+
+**Session Date:** 2026-07-17
+**Agent:** Codex, backend implementation role
+**Objective:** Implement CI-02 only: connect `techminion/second-brain` to Vercel with preview deployments for pull requests and production deployments from `main`, then validate the integration on a test PR.
+**Files Modified:** `.gitignore`, `.ai/TASK_QUEUE.md`, `docs/PROJECT_STATE.md`, `docs/AI_HANDOFF.md`.
+**Files Added:** `vercel.json`.
+**Architecture Decisions:** None. The repository-level Vercel configuration selects the documented Next.js framework; deployment environment behavior is provided by the Vercel Git integration.
+**Verification performed:** Vercel project `techminions-projects/second-brain` is linked to `https://github.com/techminion/second-brain.git`. Draft PR #2 triggered Preview deployments that reached `Ready`; the stable branch preview is https://second-brain-git-chore-ci-02-vercel-techminions-projects.vercel.app. The first deployment exposed an incorrect Vercel framework classification (`Other`) that looked for a `public` output directory after the Next.js build succeeded; `vercel.json` now explicitly selects `nextjs`, and the subsequent hosted deployments passed.
+**Outstanding Work:** Claude review of PR #2. CI-03 remains dependency-blocked until CI-01 is reviewed, merged, and marked Done.
+**Known Bugs:** None.
+**Risks:** Vercel environment variables are intentionally deferred to CI-07. Production deployment behavior is configured but was not exercised by merging this feature branch to `main`.
+**Suggested Next Task:** Review CI-02. Review and merge CI-01 before CI-03 is claimed.
+**Estimated Context Needed:** PR #2, `.ai/TASK_QUEUE.md` CI-02 row, `vercel.json`, and `docs/11_CONTRIBUTING.md §6`.
 
 ---
 
