@@ -21,6 +21,23 @@ Estimated Context Needed:
 
 ---
 
+## 2026-07-16 — Codex (Database Engineer) — DB-02 completion
+
+**Session Date:** 2026-07-16
+**Agent:** Codex, Database Engineer
+**Objective:** Implement DB-02 only.
+**Files Modified:** `supabase/migrations/20260716151142_create_profiles.sql`; `supabase/migrations/20260716151241_revoke_profile_trigger_execute.sql`; `.ai/TASK_QUEUE.md`; `docs/PROJECT_STATE.md`; `docs/AI_HANDOFF.md`.
+**Files Added:** Two forward-only Cloud migrations: the `profiles` table, Auth signup trigger, and RLS policies; then an explicit function-execute privilege revocation required by the Cloud security advisor.
+**Architecture Decisions:** None. Implemented ADR-11 and GOV-6 as specified.
+**Verification performed:** Confirmed the pre-migration Cloud baseline was empty; applied both migrations to `zkzyfwclvquiargnwgtw`; confirmed migration history, documented columns, primary-key index, RLS enablement, two policies, Auth trigger, and function ACL. A transaction-scoped Cloud test inserted two isolated Auth users, verified the trigger created both profiles, and verified user B could not read or update user A while retaining access to their own profile; it rolled back all test data. Supabase security and performance advisors returned no findings.
+**Outstanding Work:** DB-03 and DB-05 are now unblocked by DB-02; DB-16 remains independently ready.
+**Known Bugs:** None.
+**Risks:** The Cloud migration API timestamps migrations in UTC; repository filenames use the exact versions recorded in Cloud to preserve history alignment.
+**Suggested Next Task:** DB-16, CI-01, CI-02, CI-03, or OBS-01 according to Sprint 1 priority; do not begin DB-03/DB-05 until promoted from Sprint 2.
+**Estimated Context Needed:** `.ai/TASK_QUEUE.md`, `docs/04_DATABASE.md`, and the relevant task specifications.
+
+---
+
 ## 2026-07-16 — Claude (Reviewer) — SETUP-01..14 review
 
 **Session Date:** 2026-07-16

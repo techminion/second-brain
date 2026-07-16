@@ -26,6 +26,7 @@ Next: **Sprint 1 — Repo & tooling foundation** (scope defined in [.ai/TASK_QUE
 - Governance layer: roadmap, milestones, state/handoff/decision/changelog files, `.ai/` context set, `.github/` templates, `agents/` role definitions.
 - SETUP-01..14: strict Next.js foundation, semantic Tailwind tokens, shadcn primitives, feature-first structure, typed shared modules, theme plumbing, and test tooling. **Reviewed and verified 2026-07-16** (typecheck/lint/format/tests/build green; lint rules probe-verified; ADR-8/9 conformance confirmed).
 - DB-01: provisioned the `second-brain` Supabase Cloud development project (`zkzyfwclvquiargnwgtw`), validated its clean baseline, and adopted the Cloud-only workflow in ADR-10. **Reviewed 2026-07-16** (spec edits consistent, no secrets committed, three ADR-10 ripple gaps fixed in review; cloud-side state not independently verifiable from the repo).
+- DB-02: applied the `profiles` table and Auth signup trigger to the shared Cloud project, with `id = auth.uid()` SELECT/UPDATE RLS policies. The cross-user denial check passed against Cloud; security and performance advisors are clean.
 
 ## In Progress
 
@@ -37,7 +38,7 @@ Next: **Sprint 1 — Repo & tooling foundation** (scope defined in [.ai/TASK_QUE
 
 ## Upcoming
 
-- Sprint 1: DB-02, DB-16, CI-01..03, OBS-01 (see [.ai/TASK_QUEUE.md](../.ai/TASK_QUEUE.md)).
+- Sprint 1: DB-16, CI-01..03, OBS-01 (see [.ai/TASK_QUEUE.md](../.ai/TASK_QUEUE.md)).
 
 ## Known Technical Debt
 
@@ -61,4 +62,4 @@ Next: **Sprint 1 — Repo & tooling foundation** (scope defined in [.ai/TASK_QUE
 
 ## Last Updated
 
-2026-07-16 — DB-02 spec conflict resolved via ADR-11 (`profiles` RLS exception) and GOV-6 (RLS ships per-table, DB-13 becomes an audit); DB-02 unblocked (Claude, architect role)
+2026-07-16 — DB-02 implemented: `profiles`, signup trigger, RLS policies, and Cloud cross-user denial validation completed (Codex, database role)
