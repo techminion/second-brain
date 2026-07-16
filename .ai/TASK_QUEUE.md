@@ -10,37 +10,52 @@
 - **Priorities:** `P0` — on the critical path of the current sprint; `P1` — this sprint, parallelizable; `P2` — next in line, claimable if idle.
 - When the sprint's queue empties, the architect role promotes the next dependency-ready wave from [docs/12_TASKS.md](../docs/12_TASKS.md).
 
-## Current Sprint: Sprint 1 — Repo & Tooling Foundation (M0)
+## Current Sprint: Sprint 2 — Schema, Auth Core & App Shell (M0)
 
-Goal: a scaffolded, linted, tested, CI-gated repo with a provisioned Supabase project — the substrate every other M0 phase needs.
+Goal: the full 13-table schema live (with per-table RLS + cross-user tests, GOV-6), a working signup/login/session flow, and the three-zone app shell — everything M1's note features build on.
+
+Promoted 2026-07-17 by the architect role after Sprint 1 closed. Within each area the dependency chain serializes work (GOV-5: one agent per prefix at a time); P0 marks the critical path.
 
 | ID | Title | Priority | Cx | Depends on | Owner | Status | Milestone | Acceptance criteria |
 |---|---|---|---|---|---|---|---|---|
-| SETUP-01 | Next.js 15 + React 19 + TS strict scaffold | P0 | S | — | backend | Done | M0 | Per [12_TASKS](../docs/12_TASKS.md); builds clean with strict TS |
-| DB-01 | Supabase Cloud project + migration workflow | P0 | M | — | database | Done | M0 | Cloud project active; migration workflow documented; no local Docker stack (ADR-10) |
-| SETUP-02 | Tailwind + semantic token scaffold | P0 | M | SETUP-01 | designer | Done | M0 | Tokens + values per [10_DESIGN §3.3](../docs/10_DESIGN.md#33-color) (ADR-8), incl. automated contrast check of the listed pairs |
-| SETUP-04 | ESLint: strict TS + import boundaries | P0 | M | SETUP-01 | backend | Done | M0 | Boundary rules per [11_CONTRIBUTING §2](../docs/11_CONTRIBUTING.md#2-folder-structure) |
-| SETUP-05 | Prettier + import sorting | P1 | S | SETUP-01 | backend | Done | M0 | Format check script wired |
-| SETUP-06 | Feature-first folder skeleton | P0 | S | SETUP-01 | backend | Done | M0 | Matches [11_CONTRIBUTING §2](../docs/11_CONTRIBUTING.md#2-folder-structure) |
-| SETUP-03 | Vendor shadcn/ui base primitives | P1 | S | SETUP-02 | frontend | Done | M0 | Six named primitives themed by tokens |
-| SETUP-07 | Lint rule: no Tailwind arbitrary values | P1 | S | SETUP-04 | backend | Done | M0 | `p-[13px]` fails lint |
-| SETUP-08 | Lint rule: no `NEXT_PUBLIC_` secrets | P1 | S | SETUP-04 | backend | Done | M0 | Violation fails CI |
-| SETUP-09 | Vitest + Testing Library setup | P0 | S | SETUP-01 | backend | Done | M0 | Colocated test convention works |
-| SETUP-10 | Playwright + dev-server smoke test | P1 | M | SETUP-01 | backend | Done | M0 | Smoke test green |
-| SETUP-11 | Shared error taxonomy classes | P0 | S | SETUP-06 | backend | Done | M0 | All 8 errors from [05_API §3](../docs/05_API.md#3-error-taxonomy) |
-| SETUP-12 | Shared envelope/pagination types | P0 | S | SETUP-06 | backend | Done | M0 | Types per [05_API §2](../docs/05_API.md#2-conventions) |
-| SETUP-13 | Dark mode plumbing | P1 | M | SETUP-02 | frontend | Done | M0 | `.dark` class strategy + cookie-persisted override, SSR-stamped, no first-paint flash (ADR-9) |
-| SETUP-14 | Env var docs + typed accessor | P1 | S | SETUP-06 | backend | Done | M0 | No untyped `process.env` access |
-| DB-02 | `profiles` migration + signup trigger | P1 | S | DB-01 | database | Done | M0 | Per [04_DATABASE §4.1, §7](../docs/04_DATABASE.md#41-profiles) (ADR-11, GOV-6). **Review note:** the cross-user denial check was performed manually against Cloud, not committed as a repeatable test — the automated test is owed by DB-16's harness (see that row) |
-| DB-16 | Typed Supabase client factories | P1 | M | DB-01, SETUP-06 | database | Done | M0 | Delivered in full incl. env-inlining fix, ADR-12 harness, and the DB-02-owed profiles test — reviewer-verified live against Cloud (see Completed) |
-| OBS-01 | Structured logging module | P1 | M | SETUP-06 | backend | In Review | M0 | Request id + user id, content-free |
-| CI-01 | CI: typecheck/lint/format/tests on PR | P0 | M | SETUP-04, SETUP-09 | backend | Done | M0 | Merged via PR #1 (`38c1282`) after review — four green checks on GitHub runners, Node 22.12 pinned (see Completed) |
-| CI-02 | Vercel: preview per PR, prod on main | P0 | S | SETUP-01 | backend | Done | M0 | Merged via PR #2 (`2a634a0`) after review — preview URL probed live by the reviewer (HTTP 200); first production deploy verified on the merge commit (see Completed) |
-| CI-03 | Branch protection + required checks | P0 | S | CI-01 | backend | Done | M0 | Merged via PR #3 (`64e0c2c`) after review — protection read back live from the GitHub API (strict + four contexts + admin enforcement); reviewer also proved the block by attempting a direct push (rejected). Repo made public to enable protection (GOV-7) |
+| DB-03 | Migration: `knowledge_objects` envelope table | P0 | M | DB-02 | database | Queued | M0 | Per [04_DATABASE §4.2](../docs/04_DATABASE.md#42-knowledge_objects); RLS + cross-user denial test in the same migration (GOV-6) |
+| DB-04 | Migration: `notes` subtype table | P0 | M | DB-03 | database | Queued | M0 | Per [04_DATABASE §4.3](../docs/04_DATABASE.md#43-notes) incl. generated `search_vector`, GIN index, daily-note unique constraint; GOV-6 applies |
+| DB-05 | Migration: `folders` | P0 | S | DB-02 | database | Queued | M0 | Per [04_DATABASE §4.5](../docs/04_DATABASE.md#45-folders); GOV-6 applies |
+| DB-06 | Migration: `tags` + `knowledge_object_tags` | P0 | S | DB-03 | database | Queued | M0 | Per [04_DATABASE §4.6–4.7](../docs/04_DATABASE.md#46-tags); GOV-6 applies |
+| DB-07 | Migration: `links` | P0 | S | DB-03 | database | Queued | M0 | Per [04_DATABASE §4.8](../docs/04_DATABASE.md#48-links) incl. unique pair constraint + both direction indexes; GOV-6 applies |
+| DB-08 | Migration: pgvector + `embeddings` | P0 | M | DB-03 | database | Queued | M0 | Per [04_DATABASE §4.9](../docs/04_DATABASE.md#49-embeddings) + [08_SEARCH §3](../docs/08_SEARCH.md#3-semantic-search-pgvector) (HNSW index); GOV-6 applies |
+| DB-09 | Migration: `attachments` + private storage bucket | P0 | M | DB-03 | database | Queued | M0 | Per [04_DATABASE §4.4](../docs/04_DATABASE.md#44-attachments) incl. owner-scoped path policy; GOV-6 applies |
+| DB-10 | Migration: `chat_conversations` + `chat_messages` | P0 | S | DB-03 | database | Queued | M0 | Per [04_DATABASE §4.10–4.11](../docs/04_DATABASE.md#410-chat_conversations); GOV-6 applies |
+| DB-11 | Migration: `mcp_credentials` | P0 | S | DB-02 | database | Queued | M0 | Per [04_DATABASE §4.12](../docs/04_DATABASE.md#412-mcp_credentials); GOV-6 applies |
+| DB-12 | Migration: `audit_log` (append-only) | P0 | S | DB-02 | database | Queued | M0 | Per [04_DATABASE §4.13](../docs/04_DATABASE.md#413-audit_log); GOV-6 applies |
+| DB-13 | RLS audit across all tables | P0 | M | DB-03..12 | database | Queued | M0 | Audit role per GOV-6: verify every table's policy shape per [04_DATABASE §7](../docs/04_DATABASE.md#7-row-level-security-rls-policies) |
+| DB-14 | Cross-user RLS integration suite (one denial test per table) | P1 | M | DB-13 | database | Queued | M0 | Per [09_SECURITY §9](../docs/09_SECURITY.md#9-threat-model) T1 |
+| DB-15 | Migration: `pg_cron` retention purge job | P1 | M | DB-13 | database | Queued | M0 | Per [04_DATABASE §6](../docs/04_DATABASE.md#6-soft-deletes) (30-day window) |
+| AUTH-01 | Supabase Auth config: email/password + templates | P0 | S | DB-01 | backend | Queued | M0 | Per [12_TASKS](../docs/12_TASKS.md) |
+| AUTH-02 | Signup page + form | P0 | M | SETUP-03, AUTH-01 | frontend | Queued | M0 | FR-AUTH-1; React Hook Form + zod |
+| AUTH-03 | Login page + form | P0 | M | AUTH-02 | frontend | Queued | M0 | FR-AUTH-1 |
+| AUTH-04 | Session cookie handling + middleware refresh | P0 | M | AUTH-01, DB-16 | backend | Queued | M0 | Per [09_SECURITY §3](../docs/09_SECURITY.md#3-authentication) (`HttpOnly`/`Secure`/`SameSite=Lax`); FR-AUTH-4 |
+| AUTH-05 | Auth middleware: protect `(app)` routes | P0 | S | AUTH-04 | backend | Queued | M0 | Unauthenticated → redirect |
+| AUTH-06 | Password reset flow | P1 | M | AUTH-01 | frontend | Queued | M0 | FR-AUTH-3 |
+| AUTH-07 | Google OAuth provider | P1 | M | AUTH-04 | backend | Queued | M0 | FR-AUTH-2 |
+| AUTH-08 | Logout (server-side refresh-token revocation) | P1 | S | AUTH-04 | backend | Queued | M0 | Per [09_SECURITY §3](../docs/09_SECURITY.md#3-authentication) |
+| AUTH-09 | `UserService.getProfile` / `updateProfile` | P1 | S | DB-02, SETUP-11 | backend | Queued | M0 | Per [05_API §11](../docs/05_API.md#11-userservice) |
+| AUTH-14 | Auth error states | P2 | S | AUTH-03, AUTH-06 | frontend | Queued | M0 | Wrong password, existing email, expired reset link |
+| SHELL-01 | Root layout: fonts, theme provider, toaster | P0 | S | SETUP-02, SETUP-13 | frontend | Queued | M0 | Inter + JetBrains Mono |
+| SHELL-02 | Three-zone app shell | P0 | L | SHELL-01 | frontend | Queued | M0 | Per [10_DESIGN §3.2](../docs/10_DESIGN.md#32-spacing--layout); **L — split into sub-units at claim time** |
+| SHELL-03 | Sidebar navigation frame | P1 | M | SHELL-02 | frontend | Queued | M0 | Sections for folders/tags/daily note (populated by later phases) |
+| SHELL-07 | TanStack Query provider + defaults | P1 | S | SETUP-01 | frontend | Queued | M0 | Retries + staleness defaults |
+| SHELL-10 | Motion tokens + `prefers-reduced-motion` | P2 | S | SETUP-02 | frontend | Queued | M0 | Per [10_DESIGN §9](../docs/10_DESIGN.md#9-motion--animation) |
+| CI-04 | Supabase migration check in CI | P0 | M | DB-01, CI-01 | backend | Blocked (mechanism decision pending — see PROJECT_STATE) | M0 | Validate every migration before it reaches the shared Cloud project |
+| CI-05 | `npm audit` gate (high severity) | P1 | S | CI-01 | backend | Queued | M0 | Per [11_CONTRIBUTING §6](../docs/11_CONTRIBUTING.md#6-commit--pr-conventions) |
+| CI-07 | Per-environment env vars (preview vs. production) | P1 | S | CI-02 | backend | Queued | M0 | Per [09_SECURITY §6](../docs/09_SECURITY.md#6-secrets-management). **GOV-7 constraint:** credentialed CI jobs must not be fork-triggerable; revisit Vercel Deployment Protection when previews gain env vars (CI-02 review note) |
+| OBS-02 | Request logging across Web API/MCP/webhook boundaries | P1 | M | OBS-01 | backend | Queued | M0 | Wire the OBS-01 logger; every boundary gets request id + user id |
 
-## Next Up (Sprint 2 candidates — not yet claimable)
+Deferred to Sprint 3 (dependencies not yet Done or naturally later): AUTH-10..13 (need SHELL-03 / DB-13 / SHELL-02), SHELL-04..06, SHELL-08..09 (need SHELL-02), CI-06 (E2E against previews), CI-08 (needs CI-06).
 
-Remaining M0: DB-03..15 (schema + RLS + cross-user tests), AUTH-01..14, SHELL-01..10, CI-04..08. Promotion happens when Sprint 1's P0s are `Done`.
+## Sprint 1 — Repo & Tooling Foundation (M0) — ✅ Complete 2026-07-17
+
+All 21 tasks Done (SETUP-01..14, DB-01, DB-02, DB-16, OBS-01, CI-01..03) — see Completed below for per-task review records.
 
 ## Completed
 
@@ -50,4 +65,5 @@ Remaining M0: DB-03..15 (schema + RLS + cross-user tests), AUTH-01..14, SHELL-01
 - **CI-01** — implemented by Codex (PR #1, merged `38c1282`), reviewed and merged by Claude (reviewer role) on 2026-07-17: four independent jobs with stable context names for CI-03, Node 22.12 pinned, least-privilege permissions, per-PR concurrency cancellation; all checks green on GitHub runners. First task through the full branch → PR → review → merge pipeline. Non-blocking findings: no `push: main` trigger (mitigate via CI-03's up-to-date-branches requirement); actions tag-pinned rather than SHA-pinned (optional hardening, SEC-07 territory).
 - **CI-02** — implemented by Codex (PR #2, merged `2a634a0`), reviewed and merged by Claude (reviewer role) on 2026-07-17: `vercel.json` pins `framework: nextjs` (fixing Vercel's `Other` misclassification), `.vercel` ignored, no secrets or new infra introduced. Reviewer probed the PR preview URL live (HTTP 200) and verified the **first production deployment succeeded on the merge commit** — the one path the PR itself couldn't exercise. Env vars intentionally deferred to CI-07. Non-blocking note: preview deployments are publicly reachable; revisit Vercel Deployment Protection when CI-07 attaches the shared dev Supabase env to previews.
 - **CI-03** — implemented by Codex (PR #3, merged `64e0c2c`), reviewed and merged by Claude (reviewer role) on 2026-07-17: live protection read back from the GitHub API — `strict: true` (up-to-date branches, per the CI-01 review finding), exactly the four required contexts pinned to the GitHub Actions app, `enforce_admins: true`, force pushes and deletions disabled. Reviewer proved the block empirically: a direct push to `main` was rejected, and this review record itself merged through the gated PR path. Repository made public by explicit user decision to enable protection — recorded as GOV-7 with a clean full-history secret scan and the standing fork-PR constraint (credentialed CI jobs must never be fork-triggerable). No review-count requirement was added (correctly, not in the AC). Sprint 1 P0s complete.
+- **OBS-01** — implemented by Codex (PR #5, merged `f367cc1`), reviewed and merged by Claude (reviewer role) on 2026-07-17: content-free logging enforced structurally — metadata values admit only boolean/number/null (strings unrepresentable at type and runtime level), events must match a stable-identifier pattern, identifiers validated against injection (newline-forgery rejected), `toJSON` serialization-hook smuggling defeated by plain-copy serialization, context snapshot immune to caller mutation. Zero dependencies (JSON lines to console per 03 §9's open mechanism — no infra added). Reviewer re-ran the 11-test suite locally: green. Unauthenticated requests log `userId: null` rather than an invented identity. Known limit (honestly reported): the module boundary can be bypassed with direct `console` calls — SEC-06 owns that audit; OBS-02 wires request boundaries. Sprint 1 complete.
 - **DB-16** — implemented by Codex (`f4be50b`), reviewed and verified by Claude (reviewer role) on 2026-07-16: typecheck/lint/format/unit tests/build green; **Cloud integration test run live by the reviewer and passed** (two isolated users, cross-user read/update denied, self-access preserved, cleanup verified) under Node 23; harness pins the dev-project hostname and fails closed; `src/` provably does not import test code; env-inlining bug fixed with static references; anon→publishable-key rename ripple complete. Two implementation decisions (publishable-key naming, Node ≥ 22.12 engine floor) were made without DECISIONS entries — accepted post-hoc in review, noted as a recurring reporting gap.
