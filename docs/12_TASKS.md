@@ -55,7 +55,7 @@ Two areas span phases deliberately: OBS-01 (structured logging) lives in Phase 0
 | DB-01 | Provision Supabase Cloud development project; configure versioned migration workflow without a local Docker stack; document Cloud workflow | M | — |
 | DB-02 | Migration: `profiles` table + signup trigger creating a profile row, incl. its `id = auth.uid()` RLS policy and cross-user test ([04_DATABASE.md §4.1, §7](04_DATABASE.md#41-profiles), ADR-11) | S | DB-01 |
 | DB-03 | Migration: `knowledge_objects` envelope table with type CHECK, indexes ([04_DATABASE.md §4.2](04_DATABASE.md#42-knowledge_objects)) | M | DB-02 |
-| DB-04 | Migration: `notes` subtype table with generated `search_vector`, GIN index, daily-note unique constraint ([04_DATABASE.md §4.3](04_DATABASE.md#43-notes)) | M | DB-03 |
+| DB-04 | Migration: `notes` subtype table with generated `search_vector`, GIN index, daily-note unique constraint ([04_DATABASE.md §4.3](04_DATABASE.md#43-notes)) | M | DB-03, DB-05 |
 | DB-05 | Migration: `folders` table ([04_DATABASE.md §4.5](04_DATABASE.md#45-folders)) | S | DB-02 |
 | DB-06 | Migration: `tags` + `knowledge_object_tags` tables ([04_DATABASE.md §4.6–4.7](04_DATABASE.md#46-tags)) | S | DB-03 |
 | DB-07 | Migration: `links` table with unique pair constraint + both direction indexes ([04_DATABASE.md §4.8](04_DATABASE.md#48-links)) | S | DB-03 |

@@ -21,6 +21,40 @@ Estimated Context Needed:
 
 ---
 
+## 2026-07-17 — Claude (Architect) — ADR-15: DB-04 dependency corrected, folder-FK delete actions decided
+
+**Session Date:** 2026-07-17
+**Agent:** Claude, architect/TPM role
+**Objective:** Arbitrate the DB-04 escalation (entry below): the canonical dependency graph omitted DB-05 even though `notes.folder_id` references `folders.id`.
+**Files Modified:** `docs/12_TASKS.md` (DB-04 deps → DB-03, DB-05), `docs/04_DATABASE.md` (§4.3 `folder_id` and §4.5 `parent_folder_id` gain explicit `ON DELETE SET NULL`), `docs/DECISIONS.md` (ADR-15), `.ai/TASK_QUEUE.md` (DB-04 Blocked → Queued with corrected deps; DB-05 flagged as next), `docs/PROJECT_STATE.md`, `docs/AI_HANDOFF.md` (this entry).
+**Files Added:** None.
+**Architecture Decisions:** **ADR-15** — (1) DB-04 canonically depends on DB-03 + DB-05 (backlog defect confirmed against both the spec and live Cloud state); (2) `notes.folder_id → folders.id` and `folders.parent_folder_id → folders.id` are `ON DELETE SET NULL` — the gap ADR-14 deliberately left, decided now so DB-05/DB-04 don't re-escalate. Rationale: matches "null = root" semantics, keeps the §6 physical purge unconditionally safe, loses no data; `CASCADE` would delete unexpired content, `NO ACTION` recreates the ADR-14 failure shape. Service-layer `FolderService.delete` strategies (05_API §5) still govern soft-delete-time tree shaping.
+**Process notes:** Codex's escalation was again correct-by-the-book: verified spec + live Cloud state, rejected the two shortcut resolutions (omitting the FK; folding DB-05 into DB-04) for the right reasons, changed nothing itself.
+**Outstanding Work:** None from this session. Database role: implement DB-05, then DB-04.
+**Known Bugs:** None.
+**Risks:** None new — see ADR-15 tradeoffs.
+**Suggested Next Task:** Database: DB-05 (`folders`) — now on the critical path ahead of DB-04.
+**Estimated Context Needed:** ADR-15 in DECISIONS.md, [04_DATABASE §4.3/§4.5](04_DATABASE.md#43-notes), the escalation entry below.
+
+---
+
+## 2026-07-17 — Codex (Database) — DB-04 blocked on missing DB-05 dependency
+
+**Session Date:** 2026-07-17
+**Agent:** Codex, database implementation role
+**Objective:** Begin DB-04 (`notes` subtype table) after DB-03 review and merge.
+**Files Modified:** `.ai/TASK_QUEUE.md` (DB-04 marked blocked), `docs/PROJECT_STATE.md` (dependency conflict recorded), `docs/AI_HANDOFF.md` (this entry).
+**Files Added:** None.
+**Architecture Decisions:** None. Implementation stopped for architect/human resolution.
+**Verification performed:** Read DB-04 and DB-05 canonical rows plus `04_DATABASE §4.3`; confirmed `notes.folder_id` is a required FK to `folders.id`. Inspected the shared Cloud project: only `profiles` and `knowledge_objects` exist, with exactly the four reviewed migrations; `public.folders` is absent.
+**Outstanding Work:** Correct the canonical dependency graph so DB-04 depends on DB-05, then implement DB-05 before DB-04. Alternative approaches were rejected: omitting the FK contradicts §4.3; creating `folders` inside DB-04 violates one-task scope and duplicates DB-05.
+**Known Bugs:** None in deployed code; this is a backlog dependency defect.
+**Risks:** Applying DB-04 as currently ordered would fail at `references public.folders (id)` or silently weaken the schema if the FK were omitted.
+**Suggested Next Task:** Architect updates `docs/12_TASKS.md` and the queue so DB-04 depends on DB-03 + DB-05; database role then implements DB-05.
+**Estimated Context Needed:** `docs/12_TASKS.md` DB-04/05 rows, `docs/04_DATABASE.md §4.3/4.5`, this handoff entry.
+
+---
+
 ## 2026-07-17 — Claude (Reviewer) — DB-03 review & merge
 
 **Session Date:** 2026-07-17

@@ -95,7 +95,7 @@ The supertype table — the common envelope for every object in the graph ([01_P
 | `owner_id` | `uuid` | No | Denormalized (§9, ADR-DB-1) |
 | `title` | `text` | No | Denormalized mirror of `knowledge_objects.title` (§9, ADR-DB-2) — enables `search_vector` below |
 | `body` | `text` | No | Markdown source; default `''` |
-| `folder_id` | `uuid` | Yes | FK → `folders.id`; null = root |
+| `folder_id` | `uuid` | Yes | FK → `folders.id` `ON DELETE SET NULL` (ADR-15) — physical folder purge moves notes to root, never deletes them; null = root |
 | `daily_note_date` | `date` | Yes | Non-null only for daily notes (FR-DAILY-3: still an ordinary note row, distinguished by this column, not a separate type). A `date` rather than an `is_daily` boolean — the date itself is the datum (§2) |
 | `search_vector` | `tsvector` | No | Generated from `title \|\| body`; GIN-indexed |
 | `created_at` | `timestamptz` | No | |
@@ -126,7 +126,7 @@ The supertype table — the common envelope for every object in the graph ([01_P
 |---|---|---|---|
 | `id` | `uuid` | No | PK |
 | `owner_id` | `uuid` | No | FK → `profiles.id` |
-| `parent_folder_id` | `uuid` | Yes | FK → `folders.id`; null = root-level folder |
+| `parent_folder_id` | `uuid` | Yes | FK → `folders.id` `ON DELETE SET NULL` (ADR-15) — surviving children of a purged folder become root-level; null = root-level folder |
 | `name` | `text` | No | |
 | `created_at` | `timestamptz` | No | |
 | `updated_at` | `timestamptz` | No | |
