@@ -36,10 +36,11 @@ Done: Sprint 0 (governance), Sprint 1 (repo & tooling foundation — all 21 task
 - OBS-01: dependency-free structured JSON logger — content-free enforced structurally (metadata admits only boolean/number/null), request id + user id required, injection- and serialization-hook-resistant. **Reviewed and merged 2026-07-17** via PR #5 (`f367cc1`) — reviewer re-ran the test suite locally. **Sprint 1 complete.**
 - DB-03: `knowledge_objects` envelope table live on the shared Cloud project — uniform RLS, ADR-14 cascade FK, least-privilege grants, cross-user denial test (GOV-6). **Reviewed and merged 2026-07-17** via PR #10 (`318f958`) — reviewer ran the Cloud integration suite live (green). First Sprint 2 task done; DB-04 and DB-06..10 unblocked.
 - DB-05: `folders` table live — ADR-14 cascade + first ADR-15 `SET NULL` FK, uniform RLS, GOV-6 test incl. live parent-purge behavior. **Reviewed and merged 2026-07-17** via PR #15 (`0b30c56`) — reviewer ran the Cloud suite live from an isolated worktree (5 tests green). DB-04 fully unblocked.
+- SHELL-01: root layout — Inter/JetBrains Mono wired to token vars, cookie-coordinated ThemeProvider (ADR-9), theme-bound sonner Toaster. **Reviewed and merged 2026-07-17** via PR #13 (`f016273`) — first Antigravity task through the pipeline; reviewer fixup for stray conflict markers. SHELL-02 claimable.
 
 ## In Progress
 
-- SHELL-01 (PR #13) and SHELL-07 (PR #14) are in review (SHELL-01 updated, SHELL-07 pending base rebase).
+- SHELL-07 (PR #14) — awaiting rebase onto main now that SHELL-01 is merged; substance already approved.
 
 ## Blocked
 
@@ -69,4 +70,4 @@ Done: Sprint 0 (governance), Sprint 1 (repo & tooling foundation — all 21 task
 
 ## Last Updated
 
-2026-07-17 — DB-05 reviewed and merged (PR #15); DB-04 next on the database track; SHELL-01/07 PRs awaiting fixes (Claude, reviewer role)
+2026-07-17 — SHELL-01 reviewed and merged (PR #13); SHELL-07 rebase next; DB-04 open on the database track (Claude, reviewer role)
