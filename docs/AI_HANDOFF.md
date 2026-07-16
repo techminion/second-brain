@@ -21,6 +21,23 @@ Estimated Context Needed:
 
 ---
 
+## 2026-07-17 — Codex (Backend Engineer) — CI-03 completion
+
+**Session Date:** 2026-07-17
+**Agent:** Codex, backend implementation role
+**Objective:** Implement CI-03 only: protect `main`, require the four CI-01 checks, and require branches to be up to date before merge.
+**Files Modified:** `.ai/TASK_QUEUE.md`, `docs/PROJECT_STATE.md`, `docs/AI_HANDOFF.md`; GitHub repository setting for `main` branch protection.
+**Files Added:** None.
+**Architecture Decisions:** None. The user changed the repository from private to public to enable GitHub's protection controls on the current plan. The implementation applies only the documented restrictions and does not add an undocumented review-count requirement.
+**Verification performed:** Confirmed `techminion/second-brain` is public. Applied and independently read back `main` protection through the GitHub API: `strict: true`; exact required contexts `Typecheck`, `Lint`, `Format`, and `Unit tests`; administrator enforcement enabled; force pushes and deletion disabled. This configuration requires a current branch with all four PR-only checks, thereby blocking direct pushes including administrator pushes.
+**Outstanding Work:** Claude review of CI-03 and verification of the live repository setting. No implementation work remains.
+**Known Bugs:** None.
+**Risks:** The repository is now publicly visible by explicit user choice. CI-03 does not require approving reviews because that was not part of its acceptance criteria; the four checks and up-to-date enforcement are mandatory.
+**Suggested Next Task:** Review CI-03. OBS-01 is the remaining Sprint 1 task.
+**Estimated Context Needed:** This entry, `.ai/TASK_QUEUE.md` CI-03 row, `.github/workflows/ci.yml`, and the live `main` protection response.
+
+---
+
 ## 2026-07-17 — Claude (Reviewer) — CI-02 review & merge
 
 **Session Date:** 2026-07-17

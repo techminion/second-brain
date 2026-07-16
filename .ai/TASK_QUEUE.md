@@ -36,7 +36,7 @@ Goal: a scaffolded, linted, tested, CI-gated repo with a provisioned Supabase pr
 | OBS-01 | Structured logging module | P1 | M | SETUP-06 | backend | Queued | M0 | Request id + user id, content-free |
 | CI-01 | CI: typecheck/lint/format/tests on PR | P0 | M | SETUP-04, SETUP-09 | backend | Done | M0 | Merged via PR #1 (`38c1282`) after review — four green checks on GitHub runners, Node 22.12 pinned (see Completed) |
 | CI-02 | Vercel: preview per PR, prod on main | P0 | S | SETUP-01 | backend | Done | M0 | Merged via PR #2 (`2a634a0`) after review — preview URL probed live by the reviewer (HTTP 200); first production deploy verified on the merge commit (see Completed) |
-| CI-03 | Branch protection + required checks | P0 | S | CI-01 | backend | Queued | M0 | Direct pushes to main blocked; require the four CI-01 contexts (Typecheck, Lint, Format, Unit tests). **Also require branches to be up to date before merge** — the CI-01 workflow runs on `pull_request` only, so without this, post-merge `main` is never re-validated (CI-01 review finding) |
+| CI-03 | Branch protection + required checks | P0 | S | CI-01 | backend | In Review | M0 | Direct pushes to main blocked; require the four CI-01 contexts (Typecheck, Lint, Format, Unit tests). **Also require branches to be up to date before merge** — the CI-01 workflow runs on `pull_request` only, so without this, post-merge `main` is never re-validated (CI-01 review finding) |
 
 ## Next Up (Sprint 2 candidates — not yet claimable)
 
