@@ -61,4 +61,4 @@ Next: **Sprint 1 — Repo & tooling foundation** (scope defined in [.ai/TASK_QUE
 
 ## Last Updated
 
-2026-07-16 — DB-01 review completed; ADR-10 ripple gaps fixed; CI-04 mechanism decision opened (Claude, reviewer role)
+2026-07-16 — DB-02 spec conflict resolved via ADR-11 (`profiles` RLS exception) and GOV-6 (RLS ships per-table, DB-13 becomes an audit); DB-02 unblocked (Claude, architect role)

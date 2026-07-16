@@ -38,6 +38,22 @@ Estimated Context Needed:
 
 ---
 
+## 2026-07-16 — Claude (Architect) — DB-02 conflict resolution
+
+**Session Date:** 2026-07-16
+**Agent:** Claude (Claude Code), architect role
+**Objective:** Resolve the DB-02 documentation conflict escalated by the database agent (profiles has no `owner_id`, yet §7 claimed uniform `owner_id` policies; DB-13 batched RLS vs. the same-PR rule).
+**Files Modified:** `docs/04_DATABASE.md` (§4.1 row-creation/RLS note; §7 explicit `profiles` exception), `docs/12_TASKS.md` (DB-02 includes RLS+test; DB-13 redefined as audit), `docs/DECISIONS.md` (ADR-11, GOV-6), `.ai/TASK_QUEUE.md` (DB-02 acceptance criteria), `docs/PROJECT_STATE.md`, `docs/CHANGELOG.md`.
+**Files Added:** None.
+**Architecture Decisions:** ADR-11 — `profiles` policy is `id = auth.uid()` (SELECT/UPDATE only; INSERT via `SECURITY DEFINER` signup trigger; DELETE via account-deletion path only); rejected adding a self-referential `owner_id` for fake uniformity. GOV-6 — RLS + cross-user test ship inside each table's own migration; DB-13 becomes verification. The same-PR rule matters more under ADR-10: tables land in the shared Cloud project, so batched RLS would leave real tables briefly unprotected.
+**Outstanding Work:** DB-02 is unblocked and claimable. CI-04 mechanism decision still open (pre-Sprint 2).
+**Known Bugs:** None.
+**Risks:** None new.
+**Suggested Next Task:** DB-02 (database role) — apply the Cloud migration per the updated acceptance criteria and commit it.
+**Estimated Context Needed:** `docs/04_DATABASE.md §4.1, §7, §11` + the DB-02 queue row.
+
+---
+
 ## 2026-07-16 — Claude (Reviewer) — DB-01 review
 
 **Session Date:** 2026-07-16

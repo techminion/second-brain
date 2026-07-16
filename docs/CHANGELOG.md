@@ -7,6 +7,7 @@ All notable changes to Second Brain are documented here, following [Keep a Chang
 ## [Unreleased]
 
 ### Changed
+- **2026-07-16** — Database spec conflict resolved: `profiles` RLS policy explicitly defined as `id = auth.uid()` — the sole exception to the uniform `owner_id` shape (ADR-11) — and RLS now ships inside each table's own migration with DB-13 redefined as an audit task (GOV-6).
 - **2026-07-16** — Design spec unblocked for implementation: concrete light/dark token values added to `10_DESIGN.md §3.3` (ADR-8) and theme-override persistence corrected from "per user" to cookie-based per-browser with SSR stamping (ADR-9), resolving the SETUP-02/SETUP-13 blockers.
 
 ### Added

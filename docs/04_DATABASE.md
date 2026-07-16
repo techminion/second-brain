@@ -65,6 +65,8 @@ Application-specific user data, 1:1 with Supabase's `auth.users`.
 | `display_name` | `text` | Yes | |
 | `created_at` | `timestamptz` | No | |
 
+**Row creation:** a trigger on `auth.users` insert creates the matching `profiles` row (`SECURITY DEFINER` — the signup context is not a user session). **RLS:** `id = auth.uid()` for `SELECT`/`UPDATE`; no user-facing `INSERT` or `DELETE` — the one documented exception to the uniform `owner_id` policy shape (§7, ADR-11).
+
 ### 4.2 `knowledge_objects`
 
 The supertype table — the common envelope for every object in the graph ([01_PRODUCT §2](01_PRODUCT.md#2-the-knowledge-object)).
@@ -275,9 +277,11 @@ Full revision history (undo beyond a single restore) is explicitly not this mech
 
 ## 7. Row-Level Security (RLS) Policies
 
-RLS is enabled on every table in this document. Because every table carries `owner_id` directly (§9, ADR-DB-1), the policy shape is uniform and auditable at a glance:
+RLS is enabled on every table in this document. Because every table except `profiles` carries `owner_id` directly (§9, ADR-DB-1), the policy shape is uniform and auditable at a glance:
 
 > A row is selectable/mutable only where `owner_id = auth.uid()`.
+
+**The one exception — `profiles` (ADR-11, [DECISIONS.md](DECISIONS.md)):** `profiles` is the identity root; its primary key *is* the auth user id, so an `owner_id` column would be self-referential. Its policy is `id = auth.uid()` for `SELECT` and `UPDATE`. There is no user-facing `INSERT` policy — rows are created exclusively by the signup trigger (§4.1) — and no user-facing `DELETE` policy — removal happens only through the account-deletion path ([05_API.md §11](05_API.md#11-userservice)).
 
 | Rule | Detail |
 |---|---|

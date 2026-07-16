@@ -53,7 +53,7 @@ Two areas span phases deliberately: OBS-01 (structured logging) lives in Phase 0
 | ID | Task | Cx | Depends on |
 |---|---|---|---|
 | DB-01 | Provision Supabase Cloud development project; configure versioned migration workflow without a local Docker stack; document Cloud workflow | M | — |
-| DB-02 | Migration: `profiles` table + signup trigger creating a profile row ([04_DATABASE.md §4.1](04_DATABASE.md#41-profiles)) | S | DB-01 |
+| DB-02 | Migration: `profiles` table + signup trigger creating a profile row, incl. its `id = auth.uid()` RLS policy and cross-user test ([04_DATABASE.md §4.1, §7](04_DATABASE.md#41-profiles), ADR-11) | S | DB-01 |
 | DB-03 | Migration: `knowledge_objects` envelope table with type CHECK, indexes ([04_DATABASE.md §4.2](04_DATABASE.md#42-knowledge_objects)) | M | DB-02 |
 | DB-04 | Migration: `notes` subtype table with generated `search_vector`, GIN index, daily-note unique constraint ([04_DATABASE.md §4.3](04_DATABASE.md#43-notes)) | M | DB-03 |
 | DB-05 | Migration: `folders` table ([04_DATABASE.md §4.5](04_DATABASE.md#45-folders)) | S | DB-02 |
@@ -64,7 +64,7 @@ Two areas span phases deliberately: OBS-01 (structured logging) lives in Phase 0
 | DB-10 | Migration: `chat_conversations` + `chat_messages` ([04_DATABASE.md §4.10–4.11](04_DATABASE.md#410-chat_conversations)) | S | DB-03 |
 | DB-11 | Migration: `mcp_credentials` ([04_DATABASE.md §4.12](04_DATABASE.md#412-mcp_credentials)) | S | DB-02 |
 | DB-12 | Migration: `audit_log`, append-only policy shape ([04_DATABASE.md §4.13](04_DATABASE.md#413-audit_log)) | S | DB-02 |
-| DB-13 | RLS policies for every table above (`owner_id = auth.uid()` shape, [04_DATABASE.md §7](04_DATABASE.md#7-row-level-security-rls-policies)) | M | DB-02..DB-12 |
+| DB-13 | RLS audit: verify every table above has its policy, in the correct shape ([04_DATABASE.md §7](04_DATABASE.md#7-row-level-security-rls-policies)); policies themselves ship inside each table's own migration (GOV-6 — DB-02..DB-12 each include RLS + its cross-user test) | M | DB-02..DB-12 |
 | DB-14 | Cross-user RLS integration test suite — one denial test per table ([09_SECURITY.md §9](09_SECURITY.md#9-threat-model), T1) | M | DB-13 |
 | DB-15 | Migration: `pg_cron` retention purge job for 30-day soft-delete window ([04_DATABASE.md §6](04_DATABASE.md#6-soft-deletes)) | M | DB-13 |
 | DB-16 | Typed Supabase client factories (browser anon, server session-scoped, service-role) in `shared/lib` | M | DB-01, SETUP-06 |

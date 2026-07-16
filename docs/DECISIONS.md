@@ -104,6 +104,26 @@ Future Revisit:
 **Tradeoffs:** Cloud integration tests require network access and disciplined test-data isolation; they cannot be run offline. The project avoids Docker disk and memory use on contributor machines.
 **Future Revisit:** Revisit only if isolation, latency, or Cloud cost makes a local stack necessary; restoring it requires superseding this ADR and restoring the associated testing/deployment guidance.
 
+## ADR-11 — `profiles` RLS policy is `id = auth.uid()`
+
+**Decision:** `profiles` uses `id = auth.uid()` for `SELECT`/`UPDATE`, with no user-facing `INSERT` (signup trigger only, `SECURITY DEFINER`) or `DELETE` (account-deletion path only). Documented in [04_DATABASE.md §4.1, §7](04_DATABASE.md#41-profiles) as the sole exception to the uniform `owner_id = auth.uid()` shape.
+**Status:** Accepted (2026-07-16)
+**Context:** DB-02 was blocked: §7 claimed *every* table carries `owner_id`, but `profiles` (§4.1) has none — its PK *is* the auth user id. The spec overlooked its own identity-root table.
+**Options Considered:** (a) add a redundant self-referential `owner_id` to `profiles` for uniformity; (b) document `id = auth.uid()` as an explicit exception.
+**Chosen Solution:** (b). A column that always equals the PK is noise that would itself need explaining forever.
+**Tradeoffs:** The "uniform at a glance" audit property now has exactly one documented exception. Acceptable — an explicit exception beats a fake column.
+**Future Revisit:** None anticipated; shared-graph work ([04_DATABASE.md §10](04_DATABASE.md#10-future-schema-considerations)) revisits all policies anyway.
+
+## GOV-6 — RLS ships inside each table's own migration; DB-13 is an audit
+
+**Decision:** Every schema migration that creates a table includes that table's RLS enablement, policy, and cross-user denial test in the same PR — [11_CONTRIBUTING.md §7.4](11_CONTRIBUTING.md#7-architecture-rules-load-bearing) wins over DB-13's original batch framing. DB-13 is redefined as a verification/audit task.
+**Status:** Accepted (2026-07-16)
+**Context:** 12_TASKS structured RLS as one batch task (DB-13) after all tables (DB-02..12), contradicting the rulebook's same-PR rule. Under ADR-10 the contradiction became dangerous: tables now land in the *shared Cloud project*, so a batched-RLS sequencing would leave real tables unprotected between merges.
+**Options Considered:** (a) batch RLS in DB-13 as written; (b) per-table RLS in the same migration, DB-13 becomes the audit.
+**Chosen Solution:** (b). "A table without correct RLS never reaches `main`" must hold at every commit, not at end-of-phase.
+**Tradeoffs:** DB-02..DB-12 each grow slightly; DB-13 shrinks to verification. Net effort unchanged.
+**Future Revisit:** None anticipated.
+
 ## GOV-5 — Agent ownership follows task-area prefixes
 
 **Decision:** Each [agents/](../agents/) role owns the task areas listed in its file (e.g., `mcp` owns MCP-*); the reviewer role owns no implementation area and reviews everything.

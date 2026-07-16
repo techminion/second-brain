@@ -31,7 +31,7 @@ Goal: a scaffolded, linted, tested, CI-gated repo with a provisioned Supabase pr
 | SETUP-12 | Shared envelope/pagination types | P0 | S | SETUP-06 | backend | Done | M0 | Types per [05_API §2](../docs/05_API.md#2-conventions) |
 | SETUP-13 | Dark mode plumbing | P1 | M | SETUP-02 | frontend | Done | M0 | `.dark` class strategy + cookie-persisted override, SSR-stamped, no first-paint flash (ADR-9) |
 | SETUP-14 | Env var docs + typed accessor | P1 | S | SETUP-06 | backend | Done | M0 | No untyped `process.env` access |
-| DB-02 | `profiles` migration + signup trigger | P1 | S | DB-01 | database | Queued | M0 | Per [04_DATABASE §4.1](../docs/04_DATABASE.md#41-profiles) |
+| DB-02 | `profiles` migration + signup trigger | P1 | S | DB-01 | database | Queued | M0 | Per [04_DATABASE §4.1, §7](../docs/04_DATABASE.md#41-profiles): table + `SECURITY DEFINER` signup trigger + `id = auth.uid()` RLS (ADR-11) + cross-user test, one migration (GOV-6) |
 | DB-16 | Typed Supabase client factories | P1 | M | DB-01, SETUP-06 | database | Queued | M0 | Browser/session/service-role factories in `shared/lib`. **Known issue to resolve here:** `env.ts` reads `process.env[name]` dynamically — Next.js only inlines *static* `process.env.NEXT_PUBLIC_*` references into client bundles, so `getPublicEnvironment()` will throw in the browser. The browser factory must use static references (see 2026-07-16 review entry in [AI_HANDOFF](../docs/AI_HANDOFF.md)) |
 | OBS-01 | Structured logging module | P1 | M | SETUP-06 | backend | Queued | M0 | Request id + user id, content-free |
 | CI-01 | CI: typecheck/lint/format/tests on PR | P0 | M | SETUP-04, SETUP-09 | backend | Queued | M0 | All four checks gate PRs |
