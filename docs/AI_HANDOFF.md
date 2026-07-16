@@ -21,6 +21,26 @@ Estimated Context Needed:
 
 ---
 
+## 2026-07-17 — Codex (Database) — DB-05 implementation complete
+
+**Session Date:** 2026-07-17
+**Agent:** Codex, database implementation role
+**Objective:** Implement DB-05 (`folders`) after ADR-15 placed it before DB-04 and decided folder-reference delete actions.
+**Files Modified:** `.ai/TASK_QUEUE.md` (DB-05 → In Review), `docs/PROJECT_STATE.md` (implementation state), `docs/AI_HANDOFF.md` (this entry).
+**Files Added:** `supabase/migrations/20260716204620_create_folders.sql`, `tests/integration/folders-rls.integration.test.ts`.
+**Architecture Decisions:** None. Implemented `docs/04_DATABASE.md §4.5`, ADR-14, ADR-15, and GOV-6 exactly.
+**Migration applied:** `20260716204620_create_folders`; repository filename exactly matches Cloud migration history.
+**Policies created:** `folders_select_own`, `folders_insert_own`, `folders_update_own` (with `USING` and `WITH CHECK`), `folders_delete_own`; all target `authenticated` and compare initplan-cached `(select auth.uid())` with `owner_id`.
+**Indexes created:** `folders_pkey`; `folders_owner_id_parent_folder_id_idx`.
+**Verification performed:** Migration SQL first executed inside a rolled-back Cloud transaction. After applying, live catalog inspection confirmed all seven documented columns, UUID/timestamp defaults, `owner_id → profiles.id ON DELETE CASCADE`, self-referencing `parent_folder_id → folders.id ON DELETE SET NULL`, RLS enabled, four policies, the documented composite index, and CRUD-only grants for `authenticated`/`service_role` with no `anon` grants. DB-05 Cloud test passed independently (2 tests); full integration suite passed (3 files, 5 tests). Local format, typecheck, lint, and unit tests passed; final build/static checks run before commit. Security advisors returned no findings.
+**Outstanding Work:** Independent reviewer must verify the PR and Cloud-attested state before merge. DB-05 remains In Review; DB-04 must not begin until DB-05 is Done.
+**Known Bugs:** None.
+**Risks:** Performance advisor reports an INFO-only `unindexed_foreign_keys` notice because the documented `(owner_id, parent_folder_id)` index does not lead with `parent_folder_id`. No extra index was invented because §4.5 specifies the exact index set; reviewer/architect may decide whether a future spec change is warranted. The pre-existing unused-index INFO for `knowledge_objects` remains unrelated.
+**Suggested Next Task:** Review DB-05. After merge, DB-04 becomes dependency-ready.
+**Estimated Context Needed:** DB-05 diff; `docs/04_DATABASE.md §4.5, §7, §11`; ADR-14; ADR-15; GOV-6.
+
+---
+
 ## 2026-07-17 — Claude (Architect) — ADR-15: DB-04 dependency corrected, folder-FK delete actions decided
 
 **Session Date:** 2026-07-17
