@@ -18,7 +18,7 @@ Promoted 2026-07-17 by the architect role after Sprint 1 closed. Within each are
 
 | ID | Title | Priority | Cx | Depends on | Owner | Status | Milestone | Acceptance criteria |
 |---|---|---|---|---|---|---|---|---|
-| DB-03 | Migration: `knowledge_objects` envelope table | P0 | M | DB-02 | database | Queued | M0 | Per [04_DATABASE §4.2](../docs/04_DATABASE.md#42-knowledge_objects); RLS + cross-user denial test in the same migration (GOV-6) |
+| DB-03 | Migration: `knowledge_objects` envelope table | P0 | M | DB-02 | database | Queued | M0 | Per [04_DATABASE §4.2](../docs/04_DATABASE.md#42-knowledge_objects); RLS + cross-user denial test in the same migration (GOV-6). **Unblocked 2026-07-17 by ADR-14:** all `owner_id` FKs and all FKs referencing `knowledge_objects.id` are `ON DELETE CASCADE` — uniform rule, applies to DB-04..12 too |
 | DB-04 | Migration: `notes` subtype table | P0 | M | DB-03 | database | Queued | M0 | Per [04_DATABASE §4.3](../docs/04_DATABASE.md#43-notes) incl. generated `search_vector`, GIN index, daily-note unique constraint; GOV-6 applies |
 | DB-05 | Migration: `folders` | P0 | S | DB-02 | database | Queued | M0 | Per [04_DATABASE §4.5](../docs/04_DATABASE.md#45-folders); GOV-6 applies |
 | DB-06 | Migration: `tags` + `knowledge_object_tags` | P0 | S | DB-03 | database | Queued | M0 | Per [04_DATABASE §4.6–4.7](../docs/04_DATABASE.md#46-tags); GOV-6 applies |

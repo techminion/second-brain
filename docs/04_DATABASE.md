@@ -55,6 +55,8 @@ erDiagram
 
 Every table below carries an `owner_id` column, even where it could be derived by joining through `knowledge_objects`. This is deliberate — see §9, ADR-DB-1.
 
+**Delete actions (ADR-14, [DECISIONS.md](DECISIONS.md)):** every `owner_id` FK is `ON DELETE CASCADE`, and every FK referencing `knowledge_objects.id` (subtype tables, `embeddings`, `links`, `knowledge_object_tags`) is likewise `ON DELETE CASCADE`. This is what makes two documented behaviors work: the §6 hard-delete purge (which relies on envelope-row deletion cascading to children) and the FR-AUTH-6 final account deletion, which cascades `auth.users` → `profiles` → all owned rows after the grace period ([05_API.md §11](05_API.md#11-userservice)). The cascade fires only on physical row deletion — soft deletes (§6) never trigger it.
+
 ### 4.1 `profiles`
 
 Application-specific user data, 1:1 with Supabase's `auth.users`.
@@ -74,7 +76,7 @@ The supertype table — the common envelope for every object in the graph ([01_P
 | Column | Type | Nullable | Notes |
 |---|---|---|---|
 | `id` | `uuid` | No | PK |
-| `owner_id` | `uuid` | No | FK → `profiles.id` |
+| `owner_id` | `uuid` | No | FK → `profiles.id` `ON DELETE CASCADE` (§4 intro, ADR-14) |
 | `type` | `text` | No | `CHECK (type IN ('note', 'attachment'))` — see §10 for how this grows |
 | `title` | `text` | No | |
 | `created_at` | `timestamptz` | No | |

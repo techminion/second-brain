@@ -144,6 +144,16 @@ Future Revisit:
 **Tradeoffs:** A pinned image can drift slightly from the managed platform (rare; mitigated by pinning and bumping alongside Cloud upgrades). Full-history replay time grows with migration count — trivial for years at this project's scale.
 **Future Revisit:** If per-PR isolated integration testing becomes valuable (e.g., DB-14 suite contention on the shared dev project), revisit option (a) preview branching as its own decision.
 
+## ADR-14 — All `owner_id` FKs and `knowledge_objects.id`-referencing FKs are `ON DELETE CASCADE`
+
+**Decision:** Uniform rule, recorded once so it never re-blocks a DB task: every `owner_id` FK → `profiles.id` is `ON DELETE CASCADE`, and every FK referencing `knowledge_objects.id` (subtype tables, `embeddings`, `links`, `knowledge_object_tags`) is `ON DELETE CASCADE`. Recorded in [04_DATABASE.md §4](04_DATABASE.md#4-schema-reference) intro; applies to DB-03..DB-12.
+**Status:** Accepted (2026-07-17)
+**Context:** DB-03 blocked: §4.2 declared `owner_id` FK → `profiles.id` with no delete action. With Postgres's default `NO ACTION`, the FR-AUTH-6 final account deletion ([05_API.md §11](05_API.md#11-userservice): grace period, then Supabase Auth deletion → cascades to `profiles`) would fail for any user owning a single physical row — and soft-deleted rows are physical rows, so it would fail for essentially every real user. §6's hard-delete purge also already *assumed* child cascades that were never specified.
+**Options Considered:** (a) `ON DELETE CASCADE` everywhere; (b) `NO ACTION` + service-layer hard-delete of every owned row before Auth deletion (post-session, so service-role — more moving parts, and one missed table blocks deletion forever); (c) `SET NULL` (impossible: `owner_id` is `NOT NULL`).
+**Chosen Solution:** (a). It is the only option consistent with §4.1's existing `auth.users → profiles` cascade, §6's purge assumptions, and 05_API §11's deletion orchestration; it also matches [09_SECURITY.md](09_SECURITY.md)'s data-deletion posture. Safety: the cascade fires only on physical deletion, which per 05_API §11 happens only after the grace period — soft deletes never touch it.
+**Tradeoffs:** A mistaken `profiles`-row deletion would erase all owned data transactionally — accepted because no user-facing `DELETE` path to `profiles` exists (ADR-11: no DELETE policy), so the only route is the deliberate service-role account-deletion flow.
+**Future Revisit:** If a compliance need for pre-deletion export/tombstoning arises, add it as an orchestration step in `deleteAccount` before Auth deletion — the cascade rule itself doesn't change.
+
 ## GOV-7 — Repository is public
 
 **Decision:** `techminion/second-brain` is a public GitHub repository. Consequences are binding: no secret may ever appear in the repository or its history (already policy — now with public blast radius); GitHub Actions workflows must assume fork PRs run them without secrets and with a read-only token; any future CI job that needs credentials (e.g., Cloud integration tests) must be gated so it cannot be triggered by a fork PR.
