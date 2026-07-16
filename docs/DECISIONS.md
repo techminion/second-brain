@@ -94,6 +94,16 @@ Future Revisit:
 **Tradeoffs:** No cross-device sync — a user's laptop and desktop can disagree on theme. Minor for MVP.
 **Future Revisit:** If cross-device theme sync is ever requested, add a nullable `profiles` column (additive migration) and treat the cookie as a cache of it.
 
+## ADR-10 — Supabase Cloud-only development workflow
+
+**Decision:** Second Brain uses a shared Supabase Cloud development project for development, integration testing, and previews. No local Supabase Docker stack is used.
+**Status:** Accepted (2026-07-16)
+**Context:** The project owner explicitly does not want local Supabase containers or images consuming computer resources. A Cloud project is already part of the documented architecture; the local stack was a convenience rather than a product requirement.
+**Options Considered:** (a) local Docker stack plus Cloud production; (b) shared Supabase Cloud development project only.
+**Chosen Solution:** (b). All schema changes are versioned migrations committed to the repository, reviewed, and then applied to the Cloud development project. Dashboard and ad-hoc Cloud-schema edits are prohibited to prevent migration drift.
+**Tradeoffs:** Cloud integration tests require network access and disciplined test-data isolation; they cannot be run offline. The project avoids Docker disk and memory use on contributor machines.
+**Future Revisit:** Revisit only if isolation, latency, or Cloud cost makes a local stack necessary; restoring it requires superseding this ADR and restoring the associated testing/deployment guidance.
+
 ## GOV-5 — Agent ownership follows task-area prefixes
 
 **Decision:** Each [agents/](../agents/) role owns the task areas listed in its file (e.g., `mcp` owns MCP-*); the reviewer role owns no implementation area and reviews everything.

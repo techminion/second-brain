@@ -10,6 +10,7 @@
 # Will be extended by the project scaffold (SETUP-01): node_modules, .next, coverage, etc.
 node_modules/
 .next/
+supabase/.temp/
 tsconfig.tsbuildinfo
 coverage/
 playwright-report/

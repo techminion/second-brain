@@ -17,7 +17,7 @@ Goal: a scaffolded, linted, tested, CI-gated repo with a provisioned Supabase pr
 | ID | Title | Priority | Cx | Depends on | Owner | Status | Milestone | Acceptance criteria |
 |---|---|---|---|---|---|---|---|---|
 | SETUP-01 | Next.js 15 + React 19 + TS strict scaffold | P0 | S | — | backend | Done | M0 | Per [12_TASKS](../docs/12_TASKS.md); builds clean with strict TS |
-| DB-01 | Supabase project + local CLI stack | P0 | M | — | database | Queued | M0 | Local stack runs; workflow documented |
+| DB-01 | Supabase Cloud project + migration workflow | P0 | M | — | database | Done | M0 | Cloud project active; migration workflow documented; no local Docker stack (ADR-10) |
 | SETUP-02 | Tailwind + semantic token scaffold | P0 | M | SETUP-01 | designer | Done | M0 | Tokens + values per [10_DESIGN §3.3](../docs/10_DESIGN.md#33-color) (ADR-8), incl. automated contrast check of the listed pairs |
 | SETUP-04 | ESLint: strict TS + import boundaries | P0 | M | SETUP-01 | backend | Done | M0 | Boundary rules per [11_CONTRIBUTING §2](../docs/11_CONTRIBUTING.md#2-folder-structure) |
 | SETUP-05 | Prettier + import sorting | P1 | S | SETUP-01 | backend | Done | M0 | Format check script wired |

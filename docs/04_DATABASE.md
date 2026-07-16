@@ -321,11 +321,14 @@ Not built now — recorded so a future change doesn't have to rediscover these i
 
 | Rule | Detail |
 |---|---|
-| Tooling | Supabase CLI migrations — versioned SQL files, applied via the standard Supabase migration workflow. |
+| Tooling | Supabase Cloud migrations — versioned SQL files, applied to the shared Cloud development project through the Supabase migration workflow; no local Docker stack is used (ADR-10). |
 | File naming | `YYYYMMDDHHMMSS_description.sql`, one logical change per file. |
 | Direction | Forward-only in production. Rollback is a new forward migration that reverses the change, not a `down` script relied upon in prod. |
 | Review | Every migration is reviewed in the same PR as any code that depends on it (see [11_CONTRIBUTING.md](11_CONTRIBUTING.md) for PR requirements generally). |
 | Deploy ordering | Per [03_ARCHITECTURE.md §8](03_ARCHITECTURE.md#8-deployment-architecture): additive migrations (new nullable column, new table) ship *before* the application code that reads/writes them; destructive migrations (drop column/table) ship only after no deployed code references them. This is the binding rule for every change to this document. |
+| Drift prevention | Never edit the Cloud schema through the dashboard or ad-hoc SQL. Every change starts as a reviewed migration committed to this repository, then is applied to the Cloud development project. |
+
+**Cloud workflow:** author one forward-only migration in `supabase/migrations/`; review the SQL with its dependent code; apply that exact SQL to the shared Cloud development project through the Supabase migration API; then verify migration history, schema objects, RLS policies, indexes, and Supabase advisors. Cloud integration tests use isolated test users and clean up their own data.
 
 ## 12. Related Documents
 

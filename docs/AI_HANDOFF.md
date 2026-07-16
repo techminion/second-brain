@@ -38,6 +38,22 @@ Estimated Context Needed:
 
 ---
 
+## 2026-07-16 — Codex (Database Engineer) — DB-01 completion
+
+**Session Date:** 2026-07-16
+**Agent:** Codex, Database Engineer
+**Objective:** Implement DB-01 only.
+**Files Modified:** `.gitignore`; `.ai/TASK_QUEUE.md`; `docs/03_ARCHITECTURE.md`; `docs/04_DATABASE.md`; `docs/11_CONTRIBUTING.md`; `docs/12_TASKS.md`; `docs/DECISIONS.md`; `docs/PROJECT_STATE.md`; `docs/AI_HANDOFF.md`.
+**Files Added:** None. No migration was created because DB-01 provisions infrastructure only.
+**Architecture Decisions:** ADR-10 accepted at the project owner's direction: use the shared Supabase Cloud development project only; no local Docker-based Supabase stack.
+**Outstanding Work:** DB-02 and DB-16 are now dependency-ready. No schema tables, RLS policies, indexes, storage buckets, or application authentication configuration has been created yet.
+**Known Bugs:** None.
+**Risks:** Cloud integration tests require isolated test users and cleanup; they cannot run offline.
+**Suggested Next Task:** DB-02 — `profiles` migration and signup trigger.
+**Estimated Context Needed:** `docs/04_DATABASE.md §§4.1, 7, 11`, `docs/09_SECURITY.md`, `.ai/TASK_QUEUE.md`.
+
+---
+
 ## 2026-07-16 — Codex (Lead Software Engineer) — SETUP completion
 
 **Session Date:** 2026-07-16

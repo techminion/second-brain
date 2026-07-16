@@ -254,7 +254,7 @@ Markdown Note content is **not** stored as files in Storage. Treating Postgres a
 
 | Environment | Vercel | Supabase |
 |---|---|---|
-| Local development | `next dev` | Local Supabase stack (Supabase CLI) or a shared dev project |
+| Development and preview | `next dev` / Vercel preview | Shared Supabase Cloud development project |
 | Preview (per PR) | Vercel preview deployment | Shared dev/staging Supabase project |
 | Production | Vercel production deployment | Production Supabase project |
 
@@ -262,6 +262,7 @@ Markdown Note content is **not** stored as files in Storage. Treating Postgres a
 - **Schema changes ship before dependent code.** Because Vercel deploys and Supabase migrations aren't transactionally coupled, additive schema changes (new nullable column, new table) must be deployed and migrated *before* the application code that depends on them; destructive changes (drop column, drop table) must only ship after no deployed code references them. This ordering rule is binding for every change touching [04_DATABASE.md](04_DATABASE.md).
 - **Secrets** (Supabase service role key, OpenAI API key) live in Vercel environment variables, scoped per environment, never committed. Full policy in [09_SECURITY.md](09_SECURITY.md).
 - **The MCP server ships as part of the same Vercel deployment** as the web app (§11, ADR-3) — there is no separate release cadence to manage.
+- **No local Supabase stack.** Development and integration testing use the shared Supabase Cloud development project. Migrations remain versioned in this repository and are applied to Cloud only after review; direct dashboard edits are prohibited to prevent drift (ADR-10, [04_DATABASE.md §11](04_DATABASE.md#11-migration-strategy)).
 
 ## 9. Cross-Cutting Concerns
 

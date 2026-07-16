@@ -52,7 +52,7 @@ Two areas span phases deliberately: OBS-01 (structured logging) lives in Phase 0
 
 | ID | Task | Cx | Depends on |
 |---|---|---|---|
-| DB-01 | Initialize Supabase project + local CLI stack; document local workflow | M | — |
+| DB-01 | Provision Supabase Cloud development project; configure versioned migration workflow without a local Docker stack; document Cloud workflow | M | — |
 | DB-02 | Migration: `profiles` table + signup trigger creating a profile row ([04_DATABASE.md §4.1](04_DATABASE.md#41-profiles)) | S | DB-01 |
 | DB-03 | Migration: `knowledge_objects` envelope table with type CHECK, indexes ([04_DATABASE.md §4.2](04_DATABASE.md#42-knowledge_objects)) | M | DB-02 |
 | DB-04 | Migration: `notes` subtype table with generated `search_vector`, GIN index, daily-note unique constraint ([04_DATABASE.md §4.3](04_DATABASE.md#43-notes)) | M | DB-03 |
