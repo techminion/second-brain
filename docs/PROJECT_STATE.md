@@ -35,10 +35,11 @@ Done: Sprint 0 (governance), Sprint 1 (repo & tooling foundation — all 21 task
 
 - OBS-01: dependency-free structured JSON logger — content-free enforced structurally (metadata admits only boolean/number/null), request id + user id required, injection- and serialization-hook-resistant. **Reviewed and merged 2026-07-17** via PR #5 (`f367cc1`) — reviewer re-ran the test suite locally. **Sprint 1 complete.**
 - DB-03: `knowledge_objects` envelope table live on the shared Cloud project — uniform RLS, ADR-14 cascade FK, least-privilege grants, cross-user denial test (GOV-6). **Reviewed and merged 2026-07-17** via PR #10 (`318f958`) — reviewer ran the Cloud integration suite live (green). First Sprint 2 task done; DB-04 and DB-06..10 unblocked.
+- DB-05: `folders` table live — ADR-14 cascade + first ADR-15 `SET NULL` FK, uniform RLS, GOV-6 test incl. live parent-purge behavior. **Reviewed and merged 2026-07-17** via PR #15 (`0b30c56`) — reviewer ran the Cloud suite live from an isolated worktree (5 tests green). DB-04 fully unblocked.
 
 ## In Progress
 
-- DB-05 (`folders`) — implemented and applied to the shared Cloud development project; draft PR pending independent review.
+- None. SHELL-01 (PR #13) and SHELL-07 (PR #14) are in review with changes requested (stale-base conflicts block the required checks).
 
 ## Blocked
 
@@ -68,4 +69,4 @@ Done: Sprint 0 (governance), Sprint 1 (repo & tooling foundation — all 21 task
 
 ## Last Updated
 
-2026-07-17 — DB-05 implemented on Cloud with ADR-15 self-FK behavior, RLS, least-privilege grants, and repeatable cross-user tests; awaiting review (Codex, database role)
+2026-07-17 — DB-05 reviewed and merged (PR #15); DB-04 next on the database track; SHELL-01/07 PRs awaiting fixes (Claude, reviewer role)
