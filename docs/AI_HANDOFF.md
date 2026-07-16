@@ -38,6 +38,23 @@ Estimated Context Needed:
 
 ---
 
+## 2026-07-16 — Claude (Reviewer) — DB-01 review
+
+**Session Date:** 2026-07-16
+**Agent:** Claude (Claude Code), reviewer role
+**Objective:** Review the Codex DB-01 implementation (`ade209c`), including the ADR-10 spec changes it carries.
+**Files Modified:** `docs/03_ARCHITECTURE.md` (§8 environment table de-duplicated post-ADR-10), `docs/12_TASKS.md` (CI-04 reworded — old AC referenced the eliminated local stack), `agents/database.md` (success criteria likewise), `docs/PROJECT_STATE.md`, `.ai/TASK_QUEUE.md`, `docs/AI_HANDOFF.md`.
+**Files Added:** None.
+**Architecture Decisions:** None new. ADR-10 (recorded by the implementing session at the owner's direction) reviewed and upheld — it also resolves a pre-existing latent tension: 03 §12 excluded Docker while 03 §8 prescribed the local Supabase stack, which runs on Docker.
+**Verification performed:** Full commit diff read; spec edits (03 §8/§11 sources, 04 §11, 11 §5, 12_TASKS DB-01) internally consistent with ADR-10 ✓; secret scan of the diff clean ✓ (project ref `zkzyfwclvquiargnwgtw` is not a secret); `.gitignore` addition (`supabase/.temp/`) appropriate ✓. **Not verified:** actual Cloud project state (exists/clean baseline) — nothing in the repo can prove it; taken as implementer-attested.
+**Outstanding Work:** CI-04 mechanism must be decided before Sprint 2 claims it (options: Supabase preview branching — likely plan-gated; ephemeral Postgres in CI — no Supabase auth schema, so RLS tests would be partial; migration-history consistency check against the Cloud project — weakest but zero new infra). Recorded in PROJECT_STATE pending decisions.
+**Known Bugs:** None found.
+**Risks:** (1) Shared Cloud dev project is a single mutable environment for all development, previews, and integration tests — test-data isolation discipline (isolated users + cleanup, per 04 §11) is now load-bearing. (2) Process: implementation session edited four spec docs and recorded its own ADR — acceptable here because owner-directed, but the norm remains: spec edits and ADRs go through the architect role; flagged, not reverted.
+**Suggested Next Task:** DB-02 (database role) and CI-01..03 (backend role) in parallel; CI-04 mechanism decision before Sprint 2.
+**Estimated Context Needed:** `docs/04_DATABASE.md §§4.1, 7, 11` + `.ai/TASK_QUEUE.md` for DB-02.
+
+---
+
 ## 2026-07-16 — Codex (Database Engineer) — DB-01 completion
 
 **Session Date:** 2026-07-16

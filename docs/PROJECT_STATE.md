@@ -25,7 +25,7 @@ Next: **Sprint 1 — Repo & tooling foundation** (scope defined in [.ai/TASK_QUE
 - Two consistency audits: 84 stale cross-references repaired; 8 contradictions resolved (FTS scope, export FR-KO-6, embedding freshness budget, rename propagation, and others — see commit `c559cca`).
 - Governance layer: roadmap, milestones, state/handoff/decision/changelog files, `.ai/` context set, `.github/` templates, `agents/` role definitions.
 - SETUP-01..14: strict Next.js foundation, semantic Tailwind tokens, shadcn primitives, feature-first structure, typed shared modules, theme plumbing, and test tooling. **Reviewed and verified 2026-07-16** (typecheck/lint/format/tests/build green; lint rules probe-verified; ADR-8/9 conformance confirmed).
-- DB-01: provisioned the `second-brain` Supabase Cloud development project (`zkzyfwclvquiargnwgtw`), validated its clean baseline, and adopted the Cloud-only workflow in ADR-10.
+- DB-01: provisioned the `second-brain` Supabase Cloud development project (`zkzyfwclvquiargnwgtw`), validated its clean baseline, and adopted the Cloud-only workflow in ADR-10. **Reviewed 2026-07-16** (spec edits consistent, no secrets committed, three ADR-10 ripple gaps fixed in review; cloud-side state not independently verifiable from the repo).
 
 ## In Progress
 
@@ -53,6 +53,7 @@ Next: **Sprint 1 — Repo & tooling foundation** (scope defined in [.ai/TASK_QUE
 | Concrete embedding/chat model identifiers (tiers are decided; IDs are config) | [07_AI.md §2](07_AI.md#2-model-selection-strategy) | EMB-01 / AICH-04 implementation |
 | MCP protocol version pin | [06_MCP.md §3](06_MCP.md#3-transport--connection) | MCP-01 implementation |
 | "Vault" vs. "graph" user-facing terminology (see consistency report, [AI_HANDOFF.md](AI_HANDOFF.md) 2026-07-16 entry) | Proposed for [DECISIONS.md](DECISIONS.md) | Before M4 UI copy is written |
+| CI-04 migration-check mechanism under ADR-10 (no local stack): Supabase preview branching vs. ephemeral Postgres in CI vs. migration-history consistency check against the Cloud project | Flagged in DB-01 review; options in [AI_HANDOFF.md](AI_HANDOFF.md) | Before CI-04 is claimed (Sprint 2) |
 
 ## Current Branch
 
@@ -60,4 +61,4 @@ Next: **Sprint 1 — Repo & tooling foundation** (scope defined in [.ai/TASK_QUE
 
 ## Last Updated
 
-2026-07-16 — DB-01 completed; Supabase Cloud-only workflow adopted (Codex, Database Engineer)
+2026-07-16 — DB-01 review completed; ADR-10 ripple gaps fixed; CI-04 mechanism decision opened (Claude, reviewer role)

@@ -45,3 +45,4 @@ Remaining M0: DB-03..15 (schema + RLS + cross-user tests), AUTH-01..14, SHELL-01
 ## Completed
 
 - **SETUP-01..14** — implemented by Codex (`22c74bc`), reviewed and verified by Claude (reviewer role) on 2026-07-16: typecheck/lint/format/unit tests green, custom lint rules probe-verified, production build clean, token values match ADR-8, theme plumbing matches ADR-9. Playwright E2E not independently re-run by the reviewer.
+- **DB-01** — implemented by Codex (`ade209c`), reviewed by Claude (reviewer role) on 2026-07-16: ADR-10 spec edits internally consistent, no secrets committed, no migration files (infrastructure-only, as scoped). Three ripple gaps fixed in review (03 §8 env table, CI-04 wording, `agents/database.md`). Cloud-project state (`zkzyfwclvquiargnwgtw`) not independently verifiable from the repo; CI-04 mechanism decision opened in PROJECT_STATE.

@@ -28,4 +28,4 @@ DB-01..16, plus any later migration task (SRCH-05 trigram index, schema changes 
 
 ## Success criteria
 
-A table without correct RLS never reaches `main`; migrations apply cleanly to a fresh stack in CI; the schema on disk and `docs/04_DATABASE.md` never disagree.
+A table without correct RLS never reaches `main`; every migration is validated before it reaches the shared Cloud project (per the CI-04 mechanism, ADR-10); the schema on disk and `docs/04_DATABASE.md` never disagree.

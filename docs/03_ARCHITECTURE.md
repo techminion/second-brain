@@ -254,8 +254,8 @@ Markdown Note content is **not** stored as files in Storage. Treating Postgres a
 
 | Environment | Vercel | Supabase |
 |---|---|---|
-| Development and preview | `next dev` / Vercel preview | Shared Supabase Cloud development project |
-| Preview (per PR) | Vercel preview deployment | Shared dev/staging Supabase project |
+| Local development | `next dev` | Shared Supabase Cloud development project (ADR-10 — no local stack) |
+| Preview (per PR) | Vercel preview deployment | Same shared Supabase Cloud development project |
 | Production | Vercel production deployment | Production Supabase project |
 
 - **CI/CD:** Vercel's native Git integration builds and deploys on push; a required CI check (type-check, lint, tests) gates merges to `main` before a production deploy is triggered (mechanics owned by [11_CONTRIBUTING.md](11_CONTRIBUTING.md)).
