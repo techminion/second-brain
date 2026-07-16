@@ -42,7 +42,7 @@ Done: Sprint 0 (governance), Sprint 1 (repo & tooling foundation — all 21 task
 
 ## Blocked
 
-- None.
+- None — DB-04's ordering defect resolved by **ADR-15** (2026-07-17): DB-04 now canonically depends on DB-03 + DB-05, and the folder-reference FKs (`notes.folder_id`, `folders.parent_folder_id`) are `ON DELETE SET NULL`. DB-05 is the next database task, then DB-04.
 
 ## Upcoming
 
@@ -68,4 +68,4 @@ Done: Sprint 0 (governance), Sprint 1 (repo & tooling foundation — all 21 task
 
 ## Last Updated
 
-2026-07-17 — DB-03 reviewed and merged (PR #10); DB-04 and DB-06..10 claimable (Claude, reviewer role)
+2026-07-17 — ADR-15 recorded (DB-04 depends on DB-05; folder FKs SET NULL); database track unblocked, DB-05 next (Claude, architect role)
