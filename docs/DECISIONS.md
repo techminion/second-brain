@@ -134,6 +134,16 @@ Future Revisit:
 **Tradeoffs:** The service-role key now exists in test environments; contained by the dev-project-only constraint and SEC-04's audit (updated to include verifying harness code isn't importable from `src/`).
 **Future Revisit:** If Supabase ships scoped admin credentials (test-user management without full service role), adopt them and supersede this context.
 
+## ADR-13 — CI-04 migration check: ephemeral Postgres in CI, full-history replay
+
+**Decision:** CI-04 validates migrations by replaying the **entire migration history from scratch** against an ephemeral `supabase/postgres` service container in GitHub Actions, version-pinned to the Cloud project's Postgres version. A second step of the same job runs the migration-history consistency check (`supabase migration list` against the linked dev project) to detect repo↔Cloud drift; this step requires the access token and is **skipped on fork PRs** (GOV-7 — the container step runs credential-free everywhere). Scope clarification: ADR-10 banned a local Docker *development* stack for workflow-simplicity reasons; a CI-only service container does not contradict ADR-10's rationale and is explicitly permitted.
+**Status:** Accepted (2026-07-17) — user decision
+**Context:** Under ADR-10 there is no local stack, so nothing executed migration SQL before it reached the shared Cloud development project; a broken migration would land directly on the project every implementer shares. Flagged at DB-01 review; options held in PROJECT_STATE until decided.
+**Options Considered:** (a) Supabase preview branching — highest fidelity but paid (Pro + per-branch-hour), credential-bound, external availability risk; (b) ephemeral `supabase/postgres` container in CI — executes real SQL free and credential-free, ships `auth` schema/`auth.uid()`/pgvector/pg_cron so migrations run unmodified; (c) history consistency check only — trivial but never executes SQL, missing CI-04's core purpose.
+**Chosen Solution:** (b), with (c) folded in as a token-gated second step for drift detection.
+**Tradeoffs:** A pinned image can drift slightly from the managed platform (rare; mitigated by pinning and bumping alongside Cloud upgrades). Full-history replay time grows with migration count — trivial for years at this project's scale.
+**Future Revisit:** If per-PR isolated integration testing becomes valuable (e.g., DB-14 suite contention on the shared dev project), revisit option (a) preview branching as its own decision.
+
 ## GOV-7 — Repository is public
 
 **Decision:** `techminion/second-brain` is a public GitHub repository. Consequences are binding: no secret may ever appear in the repository or its history (already policy — now with public blast radius); GitHub Actions workflows must assume fork PRs run them without secrets and with a read-only token; any future CI job that needs credentials (e.g., Cloud integration tests) must be gated so it cannot be triggered by a fork PR.

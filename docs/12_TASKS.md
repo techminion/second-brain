@@ -110,7 +110,7 @@ Two areas span phases deliberately: OBS-01 (structured logging) lives in Phase 0
 | CI-01 | GitHub Actions: typecheck, lint, format, unit tests on every PR | M | SETUP-04, SETUP-09 |
 | CI-02 | Connect repo to Vercel: preview deploys per PR, production on `main` | S | SETUP-01 |
 | CI-03 | Required status checks + branch protection on `main` | S | CI-01 |
-| CI-04 | Supabase migration check in CI — validate every migration before it reaches the shared Cloud project (mechanism pending an ADR-10 follow-up decision; see [PROJECT_STATE](PROJECT_STATE.md)) | M | DB-01, CI-01 |
+| CI-04 | Supabase migration check in CI — full-history replay against an ephemeral version-pinned `supabase/postgres` container, plus a token-gated history consistency check skipped on fork PRs (ADR-13, [DECISIONS.md](DECISIONS.md)) | M | DB-01, CI-01 |
 | CI-05 | `npm audit` gate for high-severity findings ([11_CONTRIBUTING.md §6](11_CONTRIBUTING.md#6-commit--pr-conventions)) | S | CI-01 |
 | CI-06 | Playwright E2E job against preview deployments | M | SETUP-10, CI-02 |
 | CI-07 | Per-environment env var setup: preview vs. production Supabase/OpenAI secrets ([09_SECURITY.md §6](09_SECURITY.md#6-secrets-management)). Includes provisioning the production Supabase project ([03_ARCHITECTURE.md §8](03_ARCHITECTURE.md#8-deployment-architecture)) and applying the reviewed migration history to it — no earlier task creates it (DB-01 provisioned development only) | M | CI-02 |
