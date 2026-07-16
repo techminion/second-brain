@@ -21,6 +21,24 @@ Estimated Context Needed:
 
 ---
 
+## 2026-07-17 — Claude (Reviewer) — DB-05 merged; SHELL-01/07 changes requested
+
+**Session Date:** 2026-07-17
+**Agent:** Claude, reviewer role (TPM/governance)
+**Objective:** Review PR #15 (DB-05: `folders`) and PRs #13/#14 (SHELL-01/SHELL-07, Antigravity's first submissions).
+**Files Modified:** `.ai/TASK_QUEUE.md` (DB-05 → Done, Completed entry), `docs/PROJECT_STATE.md`, `docs/AI_HANDOFF.md` (this entry).
+**Files Added:** None.
+**Architecture Decisions:** None new. DB-05 is the first migration to exercise ADR-15 (`parent_folder_id ON DELETE SET NULL`).
+**Verification performed — DB-05 (merged `0b30c56`):** SQL line-checked against 04 §4.5 (all seven columns, ADR-14 cascade, ADR-15 SET NULL, composite index, uniform RLS); the DB-03 review lesson was pre-applied (legacy default privileges revoked in the same migration — no follow-up migration needed this time). **Cloud suite run live by the reviewer from an isolated worktree (never touching the shared checkout): green, 3 files / 5 tests,** including the ADR-15 behavior (physically deleted parent → child falls to root). Non-blocking note routed to DB-13's audit: FK constraints bypass RLS — composite same-owner FKs are a hardening option for reference columns.
+**Verification performed — SHELL-01/07 (changes requested on both, comments on the PRs):** substance approved on both (fonts wire correctly into the token vars; ThemeProvider uses the existing `/api/theme` route per ADR-9; TanStack defaults sane; dependency decisions honestly reported). Blocked because both branches are stale-based and DIRTY — GitHub cannot build the merge ref, so **the four required checks never ran**. Both must reconcile with `main`; #14 additionally waits on #13 (both edit `layout.tsx`). Both also invented an `## In Review` PROJECT_STATE section — flagged; status belongs in the queue.
+**Outstanding Work:** Antigravity: fix #13, then #14. Database: DB-04 is fully unblocked (critical path). Backend: AUTH-01, CI-04 remain unclaimed.
+**Known Bugs:** None.
+**Risks:** Sonner toaster doesn't follow `.dark` yet (non-blocking fix requested on #13).
+**Suggested Next Task:** Database: DB-04. Frontend: rework #13 per review comments.
+**Estimated Context Needed:** This entry, review comments on PRs #13/#14, DB-05 Completed entry.
+
+---
+
 ## 2026-07-17 — Codex (Database) — DB-05 implementation complete
 
 **Session Date:** 2026-07-17
