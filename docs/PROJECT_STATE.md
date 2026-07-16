@@ -17,7 +17,7 @@ Next: **Sprint 1 — Repo & tooling foundation** (scope defined in [.ai/TASK_QUE
 |---|---|
 | Engineering documentation (12 docs) | ✅ Complete, audited twice for consistency |
 | Governance layer (this file set) | ✅ Complete |
-| Implementation | 20 Done / 309 tasks ([12_TASKS.md](12_TASKS.md)) |
+| Implementation | 20 Done + 1 In Review / 309 tasks ([12_TASKS.md](12_TASKS.md)) |
 
 ## Completed
 
@@ -35,7 +35,7 @@ Next: **Sprint 1 — Repo & tooling foundation** (scope defined in [.ai/TASK_QUE
 
 ## In Progress
 
-- None.
+- OBS-01: dependency-free structured JSON logger with required request/user context and bounded content-free metadata; implementation and tests await review.
 
 ## Blocked
 
@@ -43,7 +43,7 @@ Next: **Sprint 1 — Repo & tooling foundation** (scope defined in [.ai/TASK_QUE
 
 ## Upcoming
 
-- Sprint 1: OBS-01 (P1, last Sprint 1 task). Then the architect promotes the Sprint 2 wave — blocked on the CI-04 mechanism decision below.
+- Sprint 1: OBS-01 is in review. The architect promotes the Sprint 2 wave after review; CI-04 remains blocked on the mechanism decision below.
 
 ## Known Technical Debt
 
@@ -62,8 +62,8 @@ Next: **Sprint 1 — Repo & tooling foundation** (scope defined in [.ai/TASK_QUE
 
 ## Current Branch
 
-`main`
+`agent/obs-01-structured-logging`
 
 ## Last Updated
 
-2026-07-17 — CI-03 reviewed and merged (PR #3); GOV-7 recorded; Sprint 1 P0s complete, OBS-01 remains (Claude, reviewer role)
+2026-07-17 — OBS-01 structured logging foundation implemented and validated; awaiting review (Codex, backend implementation role)

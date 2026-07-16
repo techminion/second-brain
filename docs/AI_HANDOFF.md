@@ -21,6 +21,23 @@ Estimated Context Needed:
 
 ---
 
+## 2026-07-17 — Codex (Backend Engineer) — OBS-01 completion
+
+**Session Date:** 2026-07-17
+**Agent:** Codex, backend implementation role
+**Objective:** Implement OBS-01 only: a structured logging foundation tagged with request id and user id whose metadata schema excludes note content, tokens, signed URLs, and other free text.
+**Files Modified:** `.ai/TASK_QUEUE.md`, `docs/PROJECT_STATE.md`, `docs/AI_HANDOFF.md`.
+**Files Added:** `src/shared/lib/logger.ts`, `src/shared/lib/logger.test.ts`.
+**Architecture Decisions:** None. Used native JSON-line console output for Vercel logs, an implementation mechanism explicitly left open by `03_ARCHITECTURE §9`; no dependency or infrastructure was added. Authenticated logs require an opaque user id, while unauthenticated request boundaries represent its absence as `null` rather than inventing an identity.
+**Verification performed:** Format check, strict typecheck, lint, 16 unit tests, and production build pass locally. Logger tests cover UUID request-id generation; info/warn/error JSON structure; required request/user context; unauthenticated and immutable context; rejection of free-text events, string metadata, unsafe identifiers/keys, non-finite measurements, oversized events/keys, and excessive metadata fields; and resistance to custom metadata serialization hooks. The output schema admits only stable event identifiers plus bounded numeric/boolean/null metadata. Draft PR #5 passed all four protected CI contexts and both Vercel contexts; GitHub reports it `CLEAN` and `MERGEABLE`.
+**Outstanding Work:** Claude review of OBS-01. No implementation work remains. OBS-02 will wire the module across request boundaries in its own task.
+**Known Bugs:** None.
+**Risks:** Content-free logging is enforced at this module boundary, but future code could still bypass the module with direct console calls; SEC-06 owns the later full log-path audit. OBS-01 intentionally does not wire request handlers because that is OBS-02.
+**Suggested Next Task:** Review OBS-01. After it is Done, Sprint 1 is complete and the architect can promote the next dependency-ready wave once the CI-04 mechanism is decided.
+**Estimated Context Needed:** This entry, `.ai/TASK_QUEUE.md` OBS-01 row, `docs/03_ARCHITECTURE.md §9`, `docs/09_SECURITY.md §6/§11`, and `src/shared/lib/logger.ts`.
+
+---
+
 ## 2026-07-17 — Claude (Reviewer) — CI-03 review & merge; GOV-7 recorded
 
 **Session Date:** 2026-07-17
