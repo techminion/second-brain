@@ -21,6 +21,22 @@ Estimated Context Needed:
 
 ---
 
+## 2026-07-17 — Claude (TPM) — ADR-13: CI-04 mechanism decided, task unblocked
+
+**Session Date:** 2026-07-17
+**Agent:** Claude, TPM/governance role
+**Objective:** Record the user's decision on the CI-04 migration-check mechanism (open since the DB-01 review) and unblock the task.
+**Files Modified:** `docs/DECISIONS.md` (ADR-13), `docs/12_TASKS.md` (CI-04 row references ADR-13), `.ai/TASK_QUEUE.md` (CI-04 Blocked → Queued with mechanism-specific AC), `docs/PROJECT_STATE.md` (pending-decision row removed; Blocked cleared), `docs/AI_HANDOFF.md` (this entry).
+**Files Added:** None.
+**Architecture Decisions:** **ADR-13** — CI-04 replays the full migration history against an ephemeral version-pinned `supabase/postgres` service container in GitHub Actions (credential-free; runs on fork PRs), plus a token-gated `supabase migration list` drift check skipped on fork PRs (GOV-7). Includes the ADR-10 scope clarification: a CI-only container does not contradict the local-stack ban. Options A (preview branching — paid, credential-bound) and C (history check only — never executes SQL) declined; A flagged for revisit if per-PR isolated integration testing becomes valuable.
+**Outstanding Work:** None from this session. Every Sprint 2 task is now claimable.
+**Known Bugs:** None.
+**Risks:** Pinned-image drift from the managed platform (rare; bump the pin alongside Cloud Postgres upgrades — the CI-04 implementer should record the pinned version where the bump will be found).
+**Suggested Next Task:** Unchanged: DB-03 (database), AUTH-01 (backend), SHELL-01 (frontend); CI-04 itself is now claimable (backend).
+**Estimated Context Needed:** ADR-13 in DECISIONS.md, the CI-04 queue row, `.github/workflows/ci.yml`.
+
+---
+
 ## 2026-07-17 — Claude (TPM) — CI-07 scope gap closed: production Supabase provisioning
 
 **Session Date:** 2026-07-17

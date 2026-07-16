@@ -41,7 +41,7 @@ Done: Sprint 0 (governance), Sprint 1 (repo & tooling foundation — all 21 task
 
 ## Blocked
 
-- CI-04 (Supabase migration check in CI) — blocked on the mechanism decision below; everything else in Sprint 2 is claimable.
+- None — CI-04 unblocked by ADR-13 (2026-07-17); every Sprint 2 task is claimable.
 
 ## Upcoming
 
@@ -60,7 +60,6 @@ Done: Sprint 0 (governance), Sprint 1 (repo & tooling foundation — all 21 task
 | Concrete embedding/chat model identifiers (tiers are decided; IDs are config) | [07_AI.md §2](07_AI.md#2-model-selection-strategy) | EMB-01 / AICH-04 implementation |
 | MCP protocol version pin | [06_MCP.md §3](06_MCP.md#3-transport--connection) | MCP-01 implementation |
 | "Vault" vs. "graph" user-facing terminology (see consistency report, [AI_HANDOFF.md](AI_HANDOFF.md) 2026-07-16 entry) | Proposed for [DECISIONS.md](DECISIONS.md) | Before M4 UI copy is written |
-| CI-04 migration-check mechanism under ADR-10 (no local stack): Supabase preview branching vs. ephemeral Postgres in CI vs. migration-history consistency check against the Cloud project | Flagged in DB-01 review; options in [AI_HANDOFF.md](AI_HANDOFF.md) | Before CI-04 is claimed (Sprint 2) |
 
 ## Current Branch
 
@@ -68,4 +67,4 @@ Done: Sprint 0 (governance), Sprint 1 (repo & tooling foundation — all 21 task
 
 ## Last Updated
 
-2026-07-17 — OBS-01 reviewed and merged (PR #5); Sprint 1 complete; Sprint 2 promoted with CI-04 blocked on the mechanism decision (Claude, reviewer + architect roles)
+2026-07-17 — ADR-13 recorded (CI-04 mechanism: ephemeral Postgres replay + drift check); CI-04 unblocked, all Sprint 2 tasks claimable (Claude, TPM role)
