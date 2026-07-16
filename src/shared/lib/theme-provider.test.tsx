@@ -1,13 +1,13 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 
-import { ThemeProvider,useTheme } from "./theme-provider";
+import { ThemeProvider, useTheme } from "./theme-provider";
 
 // Mock fetch for the API theme persistence call
 global.fetch = vi.fn().mockImplementation(() =>
   Promise.resolve({
     ok: true,
-  } as Response)
+  } as Response),
 );
 
 // Mock window.matchMedia
@@ -40,7 +40,7 @@ describe("ThemeProvider", () => {
     render(
       <ThemeProvider initialTheme="light">
         <TestComponent />
-      </ThemeProvider>
+      </ThemeProvider>,
     );
 
     expect(screen.getByTestId("theme-val")).toHaveTextContent("light");
@@ -50,7 +50,7 @@ describe("ThemeProvider", () => {
     render(
       <ThemeProvider initialTheme="light">
         <TestComponent />
-      </ThemeProvider>
+      </ThemeProvider>,
     );
 
     const button = screen.getByRole("button", { name: "Set Dark" });
@@ -63,7 +63,7 @@ describe("ThemeProvider", () => {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ preference: "dark" }),
-      })
+      }),
     );
   });
 });
