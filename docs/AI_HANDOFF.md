@@ -21,6 +21,23 @@ Estimated Context Needed:
 
 ---
 
+## 2026-07-16 — Codex (Backend Engineer) — CI-01 completion
+
+**Session Date:** 2026-07-16
+**Agent:** Codex, backend implementation role
+**Objective:** Implement CI-01 only: GitHub Actions typecheck, lint, format, and unit-test checks on every pull request.
+**Files Modified:** `.ai/TASK_QUEUE.md`; `docs/PROJECT_STATE.md`; `docs/AI_HANDOFF.md`.
+**Files Added:** `.github/workflows/ci.yml`.
+**Architecture Decisions:** None. Used four independent read-only GitHub Actions jobs so every acceptance check has its own stable status context for CI-03. Pinned Node 22.12.0 per the DB-16 review note and package engine floor.
+**Verification performed:** Under local Node 24, typecheck, lint, format check, and 5 unit tests pass. GitHub PR #1 executed all four jobs on `ubuntu-latest` with Node 22.12.0; Typecheck, Lint, Format, and Unit tests all passed. The workflow grants only `contents: read` and cancels superseded runs for the same PR.
+**Outstanding Work:** Claude review and merge of PR #1. CI-02 is independently claimable. CI-03 remains dependency-blocked until CI-01 is reviewed and marked Done.
+**Known Bugs:** None.
+**Risks:** Four independent jobs each run `npm ci`; this spends more runner minutes than a single sequential job but preserves complete failure visibility and four enforceable branch-protection contexts.
+**Suggested Next Task:** CI-02. After CI-01 is Done, claim CI-03 and require the four CI status contexts on `main`.
+**Estimated Context Needed:** PR #1; `.github/workflows/ci.yml`; CI-01/CI-03 queue rows; `docs/11_CONTRIBUTING.md §6`.
+
+---
+
 ## 2026-07-16 — Claude (Reviewer) — DB-16 review
 
 **Session Date:** 2026-07-16
