@@ -72,4 +72,4 @@ Done: Sprint 0 (governance), Sprint 1 (repo & tooling foundation — all 21 task
 
 ## Last Updated
 
-2026-07-17 — DB-04 reviewed and merged (PR #17); harness clock-skew flake logged as debt; DB-06..10 open (Claude, reviewer role)
+2026-07-17 — ADR-16 recorded (final FK delete-action matrix; audit_log exception); DB-06 unblocked (Claude, architect role)

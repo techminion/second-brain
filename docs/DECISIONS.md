@@ -164,6 +164,16 @@ Future Revisit:
 **Tradeoffs:** A note restored from trash after its folder was purged appears at root rather than erroring — the least-surprise outcome. Nullability was already specified for both columns.
 **Future Revisit:** None anticipated; new folder-referencing columns must state their delete action at spec time.
 
+## ADR-16 — Remaining FK delete actions: tag/conversation children cascade; audit_log is the exception
+
+**Decision:** The delete-action matrix is now complete for all 13 tables. (1) `knowledge_object_tags.tag_id → tags.id` is `ON DELETE CASCADE` — join rows are meaningless without the tag (and `SET NULL` is impossible: the column is part of the composite PK). (2) `chat_messages.conversation_id → chat_conversations.id` is `ON DELETE CASCADE`. (3) `audit_log.knowledge_object_id → knowledge_objects.id` is `ON DELETE SET NULL` — an **explicit exception to ADR-14's blanket cascade**: cascading would erase an object's audit history at purge time, defeating the append-only audit intent ([04_DATABASE.md §8](04_DATABASE.md#8-audit-strategy), OWASP A09 posture in [09_SECURITY.md §10](09_SECURITY.md#10-owasp-top-10-mapping)); the column is already nullable. Everything else is covered by ADR-14 (owner/envelope cascades) and ADR-15 (folder references SET NULL).
+**Status:** Accepted (2026-07-17)
+**Context:** DB-06 blocked on the unspecified `tag_id` action (Codex escalation — correct call, recommendation accepted). Rather than ruling one column, the architect swept every remaining FK in §4.6–4.13 so no further delete-action escalations are possible; the sweep surfaced the audit_log case where mechanically applying ADR-14 would have been wrong.
+**Options Considered:** For tag/conversation children: cascade vs. restrict-with-service-cleanup (more moving parts, blocks deletes on any missed row — the recurring ADR-14 failure shape). For audit_log: cascade (loses history), `SET NULL` (keeps history, loses the object pointer — owner + action + timestamp remain), restrict (blocks the purge job entirely).
+**Chosen Solution:** Cascade for true children; `SET NULL` for the audit record.
+**Tradeoffs:** Purged objects' audit rows lose their object reference — acceptable: the row's `owner_id`, action, and timestamp still tell the story, and a purged object's id is meaningless anyway. Account deletion still erases the user's whole audit trail via `owner_id` cascade (ADR-14) — correct under FR-AUTH-6's erasure posture.
+**Future Revisit:** None; new FK columns must state their delete action at spec time (standing rule from ADR-15).
+
 ## GOV-7 — Repository is public
 
 **Decision:** `techminion/second-brain` is a public GitHub repository. Consequences are binding: no secret may ever appear in the repository or its history (already policy — now with public blast radius); GitHub Actions workflows must assume fork PRs run them without secrets and with a read-only token; any future CI job that needs credentials (e.g., Cloud integration tests) must be gated so it cannot be triggered by a fork PR.

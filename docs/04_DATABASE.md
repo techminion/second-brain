@@ -154,7 +154,7 @@ Join table for the many-to-many between Knowledge Objects and tags (FR-TAG-1).
 | Column | Type | Nullable | Notes |
 |---|---|---|---|
 | `knowledge_object_id` | `uuid` | No | FK → `knowledge_objects.id`; part of composite PK |
-| `tag_id` | `uuid` | No | FK → `tags.id`; part of composite PK |
+| `tag_id` | `uuid` | No | FK → `tags.id` `ON DELETE CASCADE` (ADR-16) — join rows die with the tag; part of composite PK |
 | `owner_id` | `uuid` | No | Denormalized |
 | `created_at` | `timestamptz` | No | |
 
@@ -214,7 +214,7 @@ Chunked vector representations of Knowledge Object content, for semantic search 
 | Column | Type | Nullable | Notes |
 |---|---|---|---|
 | `id` | `uuid` | No | PK |
-| `conversation_id` | `uuid` | No | FK → `chat_conversations.id` |
+| `conversation_id` | `uuid` | No | FK → `chat_conversations.id` `ON DELETE CASCADE` (ADR-16) — messages die with the conversation |
 | `owner_id` | `uuid` | No | Denormalized |
 | `role` | `text` | No | `CHECK (role IN ('user', 'assistant'))` |
 | `content` | `text` | No | |
@@ -247,7 +247,7 @@ Minimal, append-only record of mutating actions — see §8.
 | `owner_id` | `uuid` | No | FK → `profiles.id` |
 | `actor` | `text` | No | `CHECK (actor IN ('user', 'ai', 'system'))` |
 | `action` | `text` | No | e.g. `create`, `update`, `delete`, `ai_suggestion_applied` |
-| `knowledge_object_id` | `uuid` | Yes | FK → `knowledge_objects.id`; null for account-level actions |
+| `knowledge_object_id` | `uuid` | Yes | FK → `knowledge_objects.id` `ON DELETE SET NULL` (ADR-16 — **explicit exception to ADR-14's cascade rule**: audit history survives object purge); null for account-level actions |
 | `metadata` | `jsonb` | Yes | Small, structured detail (e.g. which fields changed) — never a full content snapshot; see §8 |
 | `created_at` | `timestamptz` | No | |
 
