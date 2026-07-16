@@ -17,7 +17,7 @@ Next: **Sprint 1 — Repo & tooling foundation** (scope defined in [.ai/TASK_QUE
 |---|---|
 | Engineering documentation (12 docs) | ✅ Complete, audited twice for consistency |
 | Governance layer (this file set) | ✅ Complete |
-| Implementation | 16 Done + 1 In Review / 309 tasks ([12_TASKS.md](12_TASKS.md)) |
+| Implementation | 17 Done + 1 In Review / 309 tasks ([12_TASKS.md](12_TASKS.md)) |
 
 ## Completed
 
@@ -31,7 +31,7 @@ Next: **Sprint 1 — Repo & tooling foundation** (scope defined in [.ai/TASK_QUE
 
 ## In Progress
 
-- None.
+- CI-01 is in review on GitHub PR #1. Its four independent pull-request checks—Typecheck, Lint, Format, and Unit tests—passed on GitHub-hosted runners under Node 22.12.0.
 
 ## Blocked
 
@@ -39,7 +39,7 @@ Next: **Sprint 1 — Repo & tooling foundation** (scope defined in [.ai/TASK_QUE
 
 ## Upcoming
 
-- Sprint 1: CI-01..03 and OBS-01 (see [.ai/TASK_QUEUE.md](../.ai/TASK_QUEUE.md)).
+- Sprint 1: CI-02, CI-03, and OBS-01 (see [.ai/TASK_QUEUE.md](../.ai/TASK_QUEUE.md)).
 
 ## Known Technical Debt
 
@@ -58,8 +58,8 @@ Next: **Sprint 1 — Repo & tooling foundation** (scope defined in [.ai/TASK_QUE
 
 ## Current Branch
 
-`main` (no feature branches yet)
+`chore/ci-01-github-actions`
 
 ## Last Updated
 
-2026-07-16 — DB-16 review completed and approved; Sprint 1 remaining: CI-01..03, OBS-01 (Claude, reviewer role)
+2026-07-16 — CI-01 implemented and live-validated on GitHub PR #1; moved to In Review (Codex, backend implementation role)
