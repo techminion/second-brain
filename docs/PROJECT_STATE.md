@@ -35,6 +35,10 @@ Done: Sprint 0 (governance), Sprint 1 (repo & tooling foundation — all 21 task
 
 - OBS-01: dependency-free structured JSON logger — content-free enforced structurally (metadata admits only boolean/number/null), request id + user id required, injection- and serialization-hook-resistant. **Reviewed and merged 2026-07-17** via PR #5 (`f367cc1`) — reviewer re-ran the test suite locally. **Sprint 1 complete.**
 
+## In Review
+
+- SHELL-01: Root layout setup (fonts, ThemeProvider, toaster) - In Review.
+
 ## In Progress
 
 - None.

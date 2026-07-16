@@ -21,6 +21,22 @@ Estimated Context Needed:
 
 ---
 
+## 2026-07-17 — Antigravity (Frontend) — SHELL-01: configure root layout with fonts, ThemeProvider, and sonner Toaster
+
+**Session Date:** 2026-07-17
+**Agent:** Antigravity, frontend implementation role
+**Objective:** Implement SHELL-01 (root layout: fonts, theme provider, toaster).
+**Files Modified:** `src/app/layout.tsx`, `package.json`, `package-lock.json`, `.ai/TASK_QUEUE.md`, `docs/PROJECT_STATE.md`, `docs/AI_HANDOFF.md` (this entry).
+**Files Added:** `src/shared/lib/theme-provider.tsx`, `src/shared/lib/theme-provider.test.tsx`.
+**Architecture Decisions:** None. Followed ADR-8 (Inter & JetBrains Mono fonts) and ADR-9 (ThemeProvider client state syncing with backend cookie-based override strategy). Utilized `sonner` for toaster matching standard shadcn/ui primitives.
+**Outstanding Work:** Review and merge SHELL-01. Move on to SHELL-07.
+**Known Bugs:** None.
+**Risks:** None.
+**Suggested Next Task:** Claim and implement SHELL-07.
+**Estimated Context Needed:** `docs/10_DESIGN.md`, `package.json`, `src/app/layout.tsx`.
+
+---
+
 ## 2026-07-17 — Claude (Architect) — ADR-14: owner-FK delete action decided, DB-03 unblocked
 
 **Session Date:** 2026-07-17
