@@ -1,8 +1,9 @@
 "use client";
 
-import { createContext, type ReactNode,useContext, useEffect, useState } from "react";
+import { createContext, type ReactNode, useContext, useEffect, useState } from "react";
+import { Toaster } from "sonner";
 
-import type { ThemePreference } from "./theme";
+import { resolveTheme, type ThemePreference } from "./theme";
 
 interface ThemeContextType {
   theme: ThemePreference;
@@ -25,10 +26,7 @@ export function ThemeProvider({ children, initialTheme }: ThemeProviderProps) {
 
   const setTheme = (newTheme: ThemePreference) => {
     setThemeState(newTheme);
-
-    const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-    const isDark = newTheme === "dark" || (newTheme === "system" && prefersDark);
-    document.documentElement.classList.toggle("dark", isDark);
+    document.documentElement.classList.toggle("dark", resolveTheme(newTheme));
 
     // Call route handler to store the preference in a HttpOnly cookie (ADR-9)
     fetch("/api/theme", {
@@ -44,8 +42,8 @@ export function ThemeProvider({ children, initialTheme }: ThemeProviderProps) {
     if (theme !== "system") return;
 
     const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
-    const handleSystemThemeChange = (e: MediaQueryListEvent) => {
-      document.documentElement.classList.toggle("dark", e.matches);
+    const handleSystemThemeChange = () => {
+      document.documentElement.classList.toggle("dark", resolveTheme("system"));
     };
 
     mediaQuery.addEventListener("change", handleSystemThemeChange);
@@ -55,6 +53,7 @@ export function ThemeProvider({ children, initialTheme }: ThemeProviderProps) {
   return (
     <ThemeContext.Provider value={{ theme, setTheme }}>
       {children}
+      <Toaster theme={theme} closeButton position="bottom-right" />
     </ThemeContext.Provider>
   );
 }

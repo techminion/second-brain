@@ -4,7 +4,6 @@ import type { Metadata } from "next";
 import { Inter, JetBrains_Mono } from "next/font/google";
 import { cookies } from "next/headers";
 import type { ReactNode } from "react";
-import { Toaster } from "sonner";
 
 import {
   getThemeScript,
@@ -51,10 +50,7 @@ export default async function RootLayout({ children }: Readonly<RootLayoutProps>
         <script dangerouslySetInnerHTML={{ __html: getThemeScript(themePreference) }} />
       </head>
       <body>
-        <ThemeProvider initialTheme={themePreference}>
-          {children}
-          <Toaster closeButton position="bottom-right" />
-        </ThemeProvider>
+        <ThemeProvider initialTheme={themePreference}>{children}</ThemeProvider>
       </body>
     </html>
   );
