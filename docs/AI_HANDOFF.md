@@ -21,6 +21,22 @@ Estimated Context Needed:
 
 ---
 
+## 2026-07-17 — Antigravity (Frontend) — SHELL-01: configure root layout with fonts, ThemeProvider, and sonner Toaster (Updated)
+
+**Session Date:** 2026-07-17
+**Agent:** Antigravity, frontend implementation role
+**Objective:** Address changes requested on SHELL-01 (Toaster theme support, deduplicated theme resolver, and merge conflict resolution).
+**Files Modified:** `src/app/layout.tsx`, `src/shared/lib/theme-provider.tsx`, `src/shared/lib/theme.ts`, `.ai/TASK_QUEUE.md`, `docs/PROJECT_STATE.md`, `docs/AI_HANDOFF.md` (this entry).
+**Files Added:** `src/shared/lib/theme-provider.test.tsx`.
+**Architecture Decisions:** Extracted `resolveTheme` to `src/shared/lib/theme.ts` to de-duplicate the theme resolution code. Rendered `sonner`'s `<Toaster>` inside the client-side `ThemeProvider` component and passed it the dynamic client-side `theme` state, making notifications follow light/dark/system transitions.
+**Outstanding Work:** Review and merge SHELL-01. Update SHELL-07.
+**Known Bugs:** None.
+**Risks:** None.
+**Suggested Next Task:** Rebase and update SHELL-07 on top of SHELL-01.
+**Estimated Context Needed:** `docs/10_DESIGN.md`, `src/app/layout.tsx`.
+
+---
+
 ## 2026-07-17 — Claude (Reviewer) — DB-05 merged; SHELL-01/07 changes requested
 
 **Session Date:** 2026-07-17

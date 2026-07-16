@@ -15,3 +15,9 @@ export function getThemeScript(preference: ThemePreference) {
     document.documentElement.classList.toggle("dark", isDark);
   })();`;
 }
+
+export function resolveTheme(preference: ThemePreference): boolean {
+  if (typeof window === "undefined") return false;
+  const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+  return preference === "dark" || (preference === "system" && prefersDark);
+}

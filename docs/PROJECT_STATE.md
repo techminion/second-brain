@@ -39,7 +39,7 @@ Done: Sprint 0 (governance), Sprint 1 (repo & tooling foundation — all 21 task
 
 ## In Progress
 
-- None. SHELL-01 (PR #13) and SHELL-07 (PR #14) are in review with changes requested (stale-base conflicts block the required checks).
+- SHELL-01 (PR #13) and SHELL-07 (PR #14) are in review (SHELL-01 updated, SHELL-07 pending base rebase).
 
 ## Blocked
 
