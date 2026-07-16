@@ -21,6 +21,23 @@ Estimated Context Needed:
 
 ---
 
+## 2026-07-16 — Claude (Reviewer) — DB-16 review
+
+**Session Date:** 2026-07-16
+**Agent:** Claude (Claude Code), reviewer role
+**Objective:** Review the Codex DB-16 implementation (`f4be50b`) against the expanded acceptance criteria (factories, env-inlining fix, ADR-12 harness, DB-02's owed test).
+**Files Modified:** `.ai/TASK_QUEUE.md` (DB-16 → Done; CI-01 Node-pin note; DB-02 condition cleared), `docs/PROJECT_STATE.md`, `docs/AI_HANDOFF.md`.
+**Files Added:** None.
+**Architecture Decisions:** None new. Two implementation decisions shipped without DECISIONS entries and are accepted post-hoc: (1) `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` naming (Supabase's current key system, ripple to 09 §6 and `.env.example` verified complete); (2) Node engines floor `>=22.12.0` (supabase-js needs native WebSocket). Both sound; both should have been flagged as decisions — third instance of the reporting gap.
+**Verification performed (all independent):** typecheck/lint/format/unit tests (5)/production build green. **Cloud integration test executed live by the reviewer under Node 23 and passed** — two isolated users created, cross-user SELECT/UPDATE correctly denied (empty result sets, the right RLS semantics), self-access preserved, users deleted. Harness verified: dev-project hostname pin, fail-closed without credentials, correct empty-vs-error assertions. `src/` → `tests/` imports: zero (ADR-12 importability constraint holds). Env-inlining bug fixed via static references. Reproduced the Node 20 failure mode (confusing WebSocket error) — hence the CI-01 pin note.
+**Outstanding Work:** Sprint 1 remainder: CI-01..03, OBS-01. CI-04 mechanism decision still open. DB-02's review condition is cleared.
+**Known Bugs:** None found.
+**Risks:** Contributor machines defaulting to Node < 22.12 hit a cryptic failure on integration tests; `engines` declares the floor but npm doesn't enforce it without `engine-strict` — CI pin (CI-01 note) is the mitigation of record.
+**Suggested Next Task:** CI-01..03 (backend role) — the last P0s of Sprint 1 and the fix for the recurring direct-to-main process gap.
+**Estimated Context Needed:** CI queue rows + `docs/11_CONTRIBUTING.md §6` + `.github/` templates.
+
+---
+
 ## 2026-07-16 — Codex (Database Engineer) — DB-16 completion
 
 **Session Date:** 2026-07-16
