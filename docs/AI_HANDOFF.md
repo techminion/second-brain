@@ -21,6 +21,23 @@ Estimated Context Needed:
 
 ---
 
+## 2026-07-16 — Claude (Reviewer) — SETUP-01..14 review
+
+**Session Date:** 2026-07-16
+**Agent:** Claude (Claude Code), reviewer role
+**Objective:** Review the Codex SETUP-01..14 implementation (`22c74bc`) against each task's acceptance criteria and the architecture rules.
+**Files Modified:** `AGENTS.md` (rewritten — see decisions), `.ai/TASK_QUEUE.md` (Completed section recorded; DB-16 known-issue note), `docs/PROJECT_STATE.md` (review status; three tech-debt entries), `docs/AI_HANDOFF.md`.
+**Files Added:** None.
+**Architecture Decisions:** None new. `AGENTS.md` (left untracked by the implementation session) was a near-copy of `.claude/CLAUDE.md` that misassigned the Architect/Reviewer/Planner role to Codex, contradicting GOV-5 — replaced with a thin pointer file so it cannot drift or misstate roles again.
+**Verification performed:** typecheck ✓, lint ✓, format:check ✓, unit tests ✓ (including the ADR-8 contrast test), all four custom ESLint rules probe-verified to actually fire ✓, production build ✓. Token values byte-match ADR-8; error taxonomy matches 05_API §3 including HTTP mappings; theme is cookie-based with SSR-injected head script (no first-paint flash; correctly handles `system` via `matchMedia`) per ADR-9. **Not verified:** Playwright E2E (implementer-claimed only).
+**Outstanding Work:** Three tech-debt follow-ups recorded in PROJECT_STATE (env inlining — blocking-relevant for DB-16; lint boundary rule relative-path gap; tsconfig scope).
+**Known Bugs:** Latent: `getPublicEnvironment()` will throw in client bundles (dynamic env access defeats Next.js inlining). No current caller is client-side; must be fixed in DB-16.
+**Risks:** Process: work was committed directly to `main` as one commit for 14 tasks — branch-per-task + review-before-merge was not possible pre-CI. This post-merge review covers the review stage; once CI-01..03 land, branch protection makes the prescribed flow enforceable and direct-to-main stops.
+**Suggested Next Task:** DB-01 (database role) — unblocks DB-02/DB-16; CI-01..03 (backend role) in parallel to close the process gap.
+**Estimated Context Needed:** `docs/04_DATABASE.md` + `.ai/TASK_QUEUE.md` for DB work; `.github/` + `docs/11_CONTRIBUTING.md §6` for CI work.
+
+---
+
 ## 2026-07-16 — Codex (Lead Software Engineer) — SETUP completion
 
 **Session Date:** 2026-07-16

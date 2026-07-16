@@ -24,7 +24,7 @@ Next: **Sprint 1 — Repo & tooling foundation** (scope defined in [.ai/TASK_QUE
 - 12-document engineering spec (`docs/01`–`docs/12` + `DOCUMENT_INDEX.md`), committed through `c559cca`.
 - Two consistency audits: 84 stale cross-references repaired; 8 contradictions resolved (FTS scope, export FR-KO-6, embedding freshness budget, rename propagation, and others — see commit `c559cca`).
 - Governance layer: roadmap, milestones, state/handoff/decision/changelog files, `.ai/` context set, `.github/` templates, `agents/` role definitions.
-- SETUP-01..14: strict Next.js foundation, semantic Tailwind tokens, shadcn primitives, feature-first structure, typed shared modules, theme plumbing, and test tooling.
+- SETUP-01..14: strict Next.js foundation, semantic Tailwind tokens, shadcn primitives, feature-first structure, typed shared modules, theme plumbing, and test tooling. **Reviewed and verified 2026-07-16** (typecheck/lint/format/tests/build green; lint rules probe-verified; ADR-8/9 conformance confirmed).
 
 ## In Progress
 
@@ -40,7 +40,10 @@ Next: **Sprint 1 — Repo & tooling foundation** (scope defined in [.ai/TASK_QUE
 
 ## Known Technical Debt
 
-- None (no code exists yet). An interim pointer-README is in place; OBS-10 replaces it with the full public README at launch.
+- `env.ts` dynamic `process.env[name]` access breaks Next.js client-bundle inlining of `NEXT_PUBLIC_*` vars — must be fixed when DB-16 adds the browser Supabase factory (noted on the DB-16 queue row).
+- The `feature-boundaries` lint rule only catches `@/features/...` alias imports; relative-path imports bypass it. Follow-up hardening candidate.
+- `tsconfig.json` typechecks `src/**` only — `e2e/`, `tools/`, and config files are not typechecked.
+- Interim pointer-README in place; OBS-10 replaces it with the full public README at launch.
 
 ## Architecture Decisions Pending
 
@@ -56,4 +59,4 @@ Next: **Sprint 1 — Repo & tooling foundation** (scope defined in [.ai/TASK_QUE
 
 ## Last Updated
 
-2026-07-16 — SETUP-01..14 completed (Codex, Lead Software Engineer)
+2026-07-16 — SETUP-01..14 review completed and approved with follow-ups (Claude, reviewer role)
