@@ -27,7 +27,7 @@ Estimated Context Needed:
 **Agent:** Antigravity, frontend implementation role
 **Objective:** Address changes requested on SHELL-01 (Toaster theme support, deduplicated theme resolver, and merge conflict resolution).
 **Files Modified:** `src/app/layout.tsx`, `src/shared/lib/theme-provider.tsx`, `src/shared/lib/theme.ts`, `.ai/TASK_QUEUE.md`, `docs/PROJECT_STATE.md`, `docs/AI_HANDOFF.md` (this entry).
-**Files Added:** `src/shared/lib/theme-provider.test.tsx`, `src/shared/ui/toast.tsx`, `src/shared/ui/toast.test.tsx` (toast primitives).
+**Files Added:** `src/shared/lib/theme-provider.test.tsx`.
 **Architecture Decisions:** Extracted `resolveTheme` to `src/shared/lib/theme.ts` to de-duplicate the theme resolution code. Rendered `sonner`'s `<Toaster>` inside the client-side `ThemeProvider` component and passed it the dynamic client-side `theme` state, making notifications follow light/dark/system transitions.
 **Outstanding Work:** Review and merge SHELL-01. Update SHELL-07.
 **Known Bugs:** None.
@@ -106,7 +106,6 @@ Estimated Context Needed:
 **Risks:** Applying DB-04 as currently ordered would fail at `references public.folders (id)` or silently weaken the schema if the FK were omitted.
 **Suggested Next Task:** Architect updates `docs/12_TASKS.md` and the queue so DB-04 depends on DB-03 + DB-05; database role then implements DB-05.
 **Estimated Context Needed:** `docs/12_TASKS.md` DB-04/05 rows, `docs/04_DATABASE.md §4.3/4.5`, this handoff entry.
->>>>>>> origin/main
 
 ---
 
@@ -145,7 +144,6 @@ Estimated Context Needed:
 **Risks:** The default shell still resolves Node 20; Cloud tests were intentionally run with installed Node 23.6.0 to satisfy the repository's Node ≥22.12 requirement. One initial full-suite run hit a transient Cloud `JWT issued at future` response in the pre-existing profiles test; an immediate complete rerun passed.
 **Suggested Next Task:** Review DB-03. After merge, DB-04 becomes claimable; DB-05 is already dependency-ready but should not be claimed concurrently with this database review.
 **Estimated Context Needed:** DB-03 diff; `docs/04_DATABASE.md §4 intro, §4.2, §7, §11`; ADR-14; GOV-6.
->>>>>>> main
 
 ---
 
