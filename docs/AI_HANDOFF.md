@@ -21,6 +21,24 @@ Estimated Context Needed:
 
 ---
 
+## 2026-07-17 — Claude (Reviewer) — DB-04 review & merge
+
+**Session Date:** 2026-07-17
+**Agent:** Claude, reviewer role (TPM/governance)
+**Objective:** Review PR #17 (DB-04: `notes` subtype), merge if sound. Entire review conducted remotely + in disposable worktrees — the shared checkout's branch state was never touched (standing rule after two agent collisions).
+**Files Modified:** `.ai/TASK_QUEUE.md` (DB-04 → Done, Completed entry), `docs/PROJECT_STATE.md` (incl. new Known Technical Debt item), `docs/AI_HANDOFF.md` (this entry).
+**Files Added:** None.
+**Architecture Decisions:** None. Confirmed the unweighted `to_tsvector('english', title || ' ' || body)` generated column is exactly what [08_SEARCH §2](08_SEARCH.md#2-full-text-search) specifies — weighting deliberately absent; `ts_rank_cd` ranks at query time.
+**Verification performed:** SQL line-checked against 04 §4.3: subtype PK FK cascade (ADR-14), `owner_id` cascade, `folder_id ON DELETE SET NULL` (ADR-15), `body` default `''`, generated stored tsvector + GIN, partial unique `(owner_id, daily_note_date)` index, uniform RLS, least-privilege grants in the same migration. Tests reviewed: cross-user denial, FTS match through the generated vector, daily-note duplicate → `23505`, folder-purge → `folder_id` null (ADR-15 live). **Cloud suite run live by the reviewer from an isolated worktree: 8/8 green on rerun.** Squash-merged as `c3594bf`.
+**Process notes:** One first-run test failure was the known Cloud `JWT issued at future` clock-skew flake — **second occurrence** (first disclosed in DB-03's session). Promoted from "watch" to action: logged in Known Technical Debt — the harness should gain a small issued-at tolerance or a single retry (database role, small PR, can ride along with any DB-06..10 task).
+**Outstanding Work:** Schema chain remaining: DB-06..10 (claimable now), then DB-11/12 → DB-13 audit. SHELL-07 (PR #14) awaits rebase. AUTH-01, CI-04 unclaimed.
+**Known Bugs:** None in merged code; harness flake tracked as debt.
+**Risks:** None new.
+**Suggested Next Task:** Codex: DB-06 or DB-07 (+ the harness retry ride-along). Antigravity: rebase PR #14, then SHELL-02 (L — split at claim).
+**Estimated Context Needed:** This entry, DB-04 Completed entry, [04_DATABASE §4.6–4.8](04_DATABASE.md#46-tags) for the next migrations.
+
+---
+
 ## 2026-07-17 — Codex (Database) — DB-04 implementation complete
 
 **Session Date:** 2026-07-17

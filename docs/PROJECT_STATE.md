@@ -37,10 +37,10 @@ Done: Sprint 0 (governance), Sprint 1 (repo & tooling foundation — all 21 task
 - DB-03: `knowledge_objects` envelope table live on the shared Cloud project — uniform RLS, ADR-14 cascade FK, least-privilege grants, cross-user denial test (GOV-6). **Reviewed and merged 2026-07-17** via PR #10 (`318f958`) — reviewer ran the Cloud integration suite live (green). First Sprint 2 task done; DB-04 and DB-06..10 unblocked.
 - DB-05: `folders` table live — ADR-14 cascade + first ADR-15 `SET NULL` FK, uniform RLS, GOV-6 test incl. live parent-purge behavior. **Reviewed and merged 2026-07-17** via PR #15 (`0b30c56`) — reviewer ran the Cloud suite live from an isolated worktree (5 tests green). DB-04 fully unblocked.
 - SHELL-01: root layout — Inter/JetBrains Mono wired to token vars, cookie-coordinated ThemeProvider (ADR-9), theme-bound sonner Toaster. **Reviewed and merged 2026-07-17** via PR #13 (`f016273`) — first Antigravity task through the pipeline; reviewer fixup for stray conflict markers. SHELL-02 claimable.
+- DB-04: `notes` subtype live — generated FTS vector per 08_SEARCH §2, daily-note partial unique index, ADR-14/15 FKs, uniform RLS. **Reviewed and merged 2026-07-17** via PR #17 (`c3594bf`) — reviewer ran the Cloud suite live from a worktree (8/8 on rerun). DB-06..10 remain for the schema chain.
 
 ## In Progress
 
-- DB-04 is implemented on `feature/db-04-notes` and awaiting independent review. The `notes` migration is live on the shared development project; its focused Cloud tests and the full integration suite are green.
 - SHELL-07 (PR #14) — awaiting rebase onto main now that SHELL-01 is merged; substance already approved.
 
 ## Blocked
@@ -53,6 +53,7 @@ Done: Sprint 0 (governance), Sprint 1 (repo & tooling foundation — all 21 task
 
 ## Known Technical Debt
 
+- Cloud integration harness: transient `JWT issued at future` clock-skew flake now seen twice (DB-03, DB-04 reviews) — add a small issued-at tolerance or one retry to the harness (database role, small PR).
 - The `feature-boundaries` lint rule only catches `@/features/...` alias imports; relative-path imports bypass it. Follow-up hardening candidate.
 - `tsconfig.json` typechecks `src/**` only — `e2e/`, `tools/`, and config files are not typechecked.
 - Interim pointer-README in place; OBS-10 replaces it with the full public README at launch.
@@ -71,4 +72,4 @@ Done: Sprint 0 (governance), Sprint 1 (repo & tooling foundation — all 21 task
 
 ## Last Updated
 
-2026-07-17 — DB-04 implemented and Cloud-validated; awaiting independent review (Codex, database implementation role)
+2026-07-17 — DB-04 reviewed and merged (PR #17); harness clock-skew flake logged as debt; DB-06..10 open (Claude, reviewer role)
