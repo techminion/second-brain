@@ -17,7 +17,7 @@ Next: **Sprint 1 — Repo & tooling foundation** (scope defined in [.ai/TASK_QUE
 |---|---|
 | Engineering documentation (12 docs) | ✅ Complete, audited twice for consistency |
 | Governance layer (this file set) | ✅ Complete |
-| Implementation | 17 Done + 1 In Review / 309 tasks ([12_TASKS.md](12_TASKS.md)) |
+| Implementation | 19 Done + 1 In Review / 309 tasks ([12_TASKS.md](12_TASKS.md)) |
 
 ## Completed
 
@@ -34,7 +34,7 @@ Next: **Sprint 1 — Repo & tooling foundation** (scope defined in [.ai/TASK_QUE
 
 ## In Progress
 
-- None.
+- CI-03: `main` branch protection is active with strict required checks (`Typecheck`, `Lint`, `Format`, `Unit tests`), administrator enforcement, and force-push/deletion prevention. The task awaits review.
 
 ## Blocked
 
@@ -42,7 +42,7 @@ Next: **Sprint 1 — Repo & tooling foundation** (scope defined in [.ai/TASK_QUE
 
 ## Upcoming
 
-- Sprint 1: CI-03 and OBS-01 (see [.ai/TASK_QUEUE.md](../.ai/TASK_QUEUE.md)). CI-03 is the last Sprint 1 P0.
+- Sprint 1: OBS-01 is queued; CI-03 is in review (see [.ai/TASK_QUEUE.md](../.ai/TASK_QUEUE.md)).
 
 ## Known Technical Debt
 
@@ -61,8 +61,8 @@ Next: **Sprint 1 — Repo & tooling foundation** (scope defined in [.ai/TASK_QUE
 
 ## Current Branch
 
-`main`
+`agent/ci-03-branch-protection`
 
 ## Last Updated
 
-2026-07-17 — CI-02 reviewed and merged (PR #2); production deploy verified; Sprint 1 remaining: CI-03 (P0), OBS-01 (Claude, reviewer role)
+2026-07-17 — CI-03 implemented after the repository became public; strict branch protection awaits review (Codex, backend implementation role)
