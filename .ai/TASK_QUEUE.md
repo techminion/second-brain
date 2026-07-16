@@ -41,7 +41,7 @@ Promoted 2026-07-17 by the architect role after Sprint 1 closed. Within each are
 | AUTH-08 | Logout (server-side refresh-token revocation) | P1 | S | AUTH-04 | backend | Queued | M0 | Per [09_SECURITY §3](../docs/09_SECURITY.md#3-authentication) |
 | AUTH-09 | `UserService.getProfile` / `updateProfile` | P1 | S | DB-02, SETUP-11 | backend | Queued | M0 | Per [05_API §11](../docs/05_API.md#11-userservice) |
 | AUTH-14 | Auth error states | P2 | S | AUTH-03, AUTH-06 | frontend | Queued | M0 | Wrong password, existing email, expired reset link |
-| SHELL-01 | Root layout: fonts, theme provider, toaster | P0 | S | SETUP-02, SETUP-13 | frontend | Queued | M0 | Inter + JetBrains Mono |
+| SHELL-01 | Root layout: fonts, theme provider, toaster | P0 | S | SETUP-02, SETUP-13 | frontend | Claimed (Antigravity) | M0 | Inter + JetBrains Mono |
 | SHELL-02 | Three-zone app shell | P0 | L | SHELL-01 | frontend | Queued | M0 | Per [10_DESIGN §3.2](../docs/10_DESIGN.md#32-spacing--layout); **L — split into sub-units at claim time** |
 | SHELL-03 | Sidebar navigation frame | P1 | M | SHELL-02 | frontend | Queued | M0 | Sections for folders/tags/daily note (populated by later phases) |
 | SHELL-07 | TanStack Query provider + defaults | P1 | S | SETUP-01 | frontend | Queued | M0 | Retries + staleness defaults |
