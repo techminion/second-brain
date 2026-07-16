@@ -134,6 +134,16 @@ Future Revisit:
 **Tradeoffs:** The service-role key now exists in test environments; contained by the dev-project-only constraint and SEC-04's audit (updated to include verifying harness code isn't importable from `src/`).
 **Future Revisit:** If Supabase ships scoped admin credentials (test-user management without full service role), adopt them and supersede this context.
 
+## GOV-7 — Repository is public
+
+**Decision:** `techminion/second-brain` is a public GitHub repository. Consequences are binding: no secret may ever appear in the repository or its history (already policy — now with public blast radius); GitHub Actions workflows must assume fork PRs run them without secrets and with a read-only token; any future CI job that needs credentials (e.g., Cloud integration tests) must be gated so it cannot be triggered by a fork PR.
+**Status:** Accepted (2026-07-17) — user decision, recorded by the reviewer
+**Context:** CI-03 requires branch protection with required status checks and admin enforcement, which GitHub does not offer on private repositories under the free plan. The user made the repository public to enable it.
+**Options Considered:** (a) public repo + full branch protection; (b) private repo, protection deferred until a paid plan; (c) private repo with rulesets-lite and no admin enforcement.
+**Chosen Solution:** (a). Enforced process now outweighs privacy of a codebase whose spec contains no proprietary secrets. Reviewer ran a full-history secret scan at flip time: clean.
+**Tradeoffs:** Code, docs, and the shared dev Supabase project ref are publicly visible (the ref is not a credential; data is protected by RLS and key secrecy). Fork-PR hardening becomes a standing CI constraint.
+**Future Revisit:** If the project must go private later, branch protection must be re-verified on the new plan before the visibility change.
+
 ## GOV-5 — Agent ownership follows task-area prefixes
 
 **Decision:** Each [agents/](../agents/) role owns the task areas listed in its file (e.g., `mcp` owns MCP-*); the reviewer role owns no implementation area and reviews everything.

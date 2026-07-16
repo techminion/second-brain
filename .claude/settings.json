@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(gh api *)",
+      "Bash(echo \"scan-exit:$?\")",
+      "Bash(git commit -m 'Record CI-03 review outcome and GOV-7 \\(public repository\\) *)",
+      "Bash(echo \"push-exit:$?\")"
+    ]
+  }
+}
