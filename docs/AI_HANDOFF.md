@@ -21,6 +21,22 @@ Estimated Context Needed:
 
 ---
 
+## 2026-07-17 — Claude (TPM) — CI-07 scope gap closed: production Supabase provisioning
+
+**Session Date:** 2026-07-17
+**Agent:** Claude, TPM/governance role
+**Objective:** Record a user-approved backlog fix: no task provisioned the production Supabase project (DB-01 created development only; CI-07 assumed prod secrets exist without a task creating the project).
+**Files Modified:** `docs/12_TASKS.md` (CI-07 scope now includes provisioning the production project + applying the reviewed migration history; complexity S → M), `.ai/TASK_QUEUE.md` (row mirrored), `docs/AI_HANDOFF.md` (this entry).
+**Files Added:** None.
+**Architecture Decisions:** None — the two-project topology was already fixed in [03_ARCHITECTURE.md §8](03_ARCHITECTURE.md#8-deployment-architecture); this only assigns the provisioning work a home. Deliberate timing choice (user-confirmed): the production project is *not* created now — CI-07 is the first task that cannot complete without it.
+**Outstanding Work:** Unchanged — Sprint 2 open, CI-04 mechanism decision pending.
+**Known Bugs:** None.
+**Risks:** None new. ADR-12's constraint (prod service-role key never in test environments) is restated on the queue row so CI-07's implementer sees it.
+**Suggested Next Task:** Unchanged (DB-03 / AUTH-01 / SHELL-01).
+**Estimated Context Needed:** CI-07 rows in 12_TASKS and the queue.
+
+---
+
 ## 2026-07-17 — Claude (Reviewer + Architect) — OBS-01 review & merge; Sprint 1 closed; Sprint 2 promoted
 
 **Session Date:** 2026-07-17
