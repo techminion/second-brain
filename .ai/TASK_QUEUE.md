@@ -34,7 +34,7 @@ Goal: a scaffolded, linted, tested, CI-gated repo with a provisioned Supabase pr
 | DB-02 | `profiles` migration + signup trigger | P1 | S | DB-01 | database | Done | M0 | Per [04_DATABASE §4.1, §7](../docs/04_DATABASE.md#41-profiles) (ADR-11, GOV-6). **Review note:** the cross-user denial check was performed manually against Cloud, not committed as a repeatable test — the automated test is owed by DB-16's harness (see that row) |
 | DB-16 | Typed Supabase client factories | P1 | M | DB-01, SETUP-06 | database | Done | M0 | Delivered in full incl. env-inlining fix, ADR-12 harness, and the DB-02-owed profiles test — reviewer-verified live against Cloud (see Completed) |
 | OBS-01 | Structured logging module | P1 | M | SETUP-06 | backend | Queued | M0 | Request id + user id, content-free |
-| CI-01 | CI: typecheck/lint/format/tests on PR | P0 | M | SETUP-04, SETUP-09 | backend | Queued | M0 | All four checks gate PRs. **Note:** CI must pin Node ≥ 22.12 (package `engines` floor set in DB-16 — supabase-js needs native WebSocket; Node 20 fails with a confusing error) |
+| CI-01 | CI: typecheck/lint/format/tests on PR | P0 | M | SETUP-04, SETUP-09 | backend | Claimed (Codex) | M0 | All four checks gate PRs. **Note:** CI must pin Node ≥ 22.12 (package `engines` floor set in DB-16 — supabase-js needs native WebSocket; Node 20 fails with a confusing error) |
 | CI-02 | Vercel: preview per PR, prod on main | P0 | S | SETUP-01 | backend | Queued | M0 | Preview URL on a test PR |
 | CI-03 | Branch protection + required checks | P0 | S | CI-01 | backend | Queued | M0 | Direct pushes to main blocked |
 
