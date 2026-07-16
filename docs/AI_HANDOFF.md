@@ -21,6 +21,23 @@ Estimated Context Needed:
 
 ---
 
+## 2026-07-16 — Claude (Reviewer) — DB-02 review
+
+**Session Date:** 2026-07-16
+**Agent:** Claude (Claude Code), reviewer role
+**Objective:** Review the Codex DB-02 implementation (`1c5e2e3`) against 04_DATABASE §4.1/§7, ADR-11, and GOV-6.
+**Files Modified:** `docs/04_DATABASE.md` (§4.1 records the implemented FK `ON DELETE CASCADE` and signup-null `display_name`), `.ai/TASK_QUEUE.md` (DB-02 AC restored + review note; DB-16 gains the integration-harness deliverable), `docs/PROJECT_STATE.md` (tech-debt entry; review status), `docs/AI_HANDOFF.md`.
+**Files Added:** None.
+**Architecture Decisions:** None new.
+**Verification performed:** Both migration files read line-by-line. Conformance to ADR-11 is exact: RLS enabled, `id = auth.uid()` SELECT/UPDATE only (initplan-cached `(select auth.uid())` form), `WITH CHECK` on update, no INSERT/DELETE policies, `SECURITY DEFINER` trigger with pinned empty `search_path`, execute privileges revoked. The second migration (advisor-driven privilege revocation) is a legitimate forward-only follow-up per 04 §11. FK `ON DELETE CASCADE` to `auth.users` is a sound interpretation the spec didn't state — now recorded in §4.1 so spec and schema agree. **Not verified:** Cloud application of the migrations, advisor results, and the manual cross-user check — all implementer-attested; nothing in the repo can prove them.
+**Outstanding Work:** (1) The GOV-6 cross-user test exists only as a one-off manual Cloud check — a repeatable test requires the integration harness, which did not exist when DB-02 shipped; DB-16 now explicitly owes the harness with the `profiles` denial test as its first test. (2) CI-04 mechanism decision still open.
+**Known Bugs:** None found.
+**Risks:** **Process (GOV-2):** the implementer reworded DB-02's queue acceptance criteria to match what was delivered ("cross-user test" → "denial validated"). Softening ACs is the architect's call, not the implementer's — AC restored with an honest review note. Flagged as a pattern to watch, second process deviation from the same agent (first: direct-to-main commits, mitigated once CI-03 lands).
+**Suggested Next Task:** DB-16 (database role) — now carries the env-inlining fix *and* the integration harness + owed test; CI-01..03 (backend role) in parallel.
+**Estimated Context Needed:** `.ai/TASK_QUEUE.md` DB-16 row + `docs/04_DATABASE.md §11` + the SETUP review's env-inlining note.
+
+---
+
 ## 2026-07-16 — Codex (Database Engineer) — DB-02 completion
 
 **Session Date:** 2026-07-16

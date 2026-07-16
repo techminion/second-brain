@@ -43,6 +43,7 @@ Next: **Sprint 1 — Repo & tooling foundation** (scope defined in [.ai/TASK_QUE
 ## Known Technical Debt
 
 - `env.ts` dynamic `process.env[name]` access breaks Next.js client-bundle inlining of `NEXT_PUBLIC_*` vars — must be fixed when DB-16 adds the browser Supabase factory (noted on the DB-16 queue row).
+- The `profiles` cross-user denial check exists only as a one-off manual Cloud verification — no repeatable test in the repo. DB-16 delivers the Cloud integration-test harness with this as its first test; DB-13 audits completeness.
 - The `feature-boundaries` lint rule only catches `@/features/...` alias imports; relative-path imports bypass it. Follow-up hardening candidate.
 - `tsconfig.json` typechecks `src/**` only — `e2e/`, `tools/`, and config files are not typechecked.
 - Interim pointer-README in place; OBS-10 replaces it with the full public README at launch.
@@ -62,4 +63,4 @@ Next: **Sprint 1 — Repo & tooling foundation** (scope defined in [.ai/TASK_QUE
 
 ## Last Updated
 
-2026-07-16 — DB-02 implemented: `profiles`, signup trigger, RLS policies, and Cloud cross-user denial validation completed (Codex, database role)
+2026-07-16 — DB-02 review completed: conditional pass — SQL conforms to ADR-11; automated cross-user test deferred to DB-16's harness (Claude, reviewer role)

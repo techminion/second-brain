@@ -61,8 +61,8 @@ Application-specific user data, 1:1 with Supabase's `auth.users`.
 
 | Column | Type | Nullable | Notes |
 |---|---|---|---|
-| `id` | `uuid` | No | PK; equal to `auth.users.id` |
-| `display_name` | `text` | Yes | |
+| `id` | `uuid` | No | PK; FK → `auth.users.id` `ON DELETE CASCADE` — deleting the auth user removes the profile |
+| `display_name` | `text` | Yes | Null at signup; set via `UserService.updateProfile` ([05_API.md §11](05_API.md#11-userservice)) |
 | `created_at` | `timestamptz` | No | |
 
 **Row creation:** a trigger on `auth.users` insert creates the matching `profiles` row (`SECURITY DEFINER` — the signup context is not a user session). **RLS:** `id = auth.uid()` for `SELECT`/`UPDATE`; no user-facing `INSERT` or `DELETE` — the one documented exception to the uniform `owner_id` policy shape (§7, ADR-11).
