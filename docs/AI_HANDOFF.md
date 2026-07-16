@@ -21,6 +21,24 @@ Estimated Context Needed:
 
 ---
 
+## 2026-07-17 — Claude (Reviewer + Architect) — OBS-01 review & merge; Sprint 1 closed; Sprint 2 promoted
+
+**Session Date:** 2026-07-17
+**Agent:** Claude, reviewer role (review) + architect role (sprint promotion, per the queue's promotion rule)
+**Objective:** Review PR #5 (OBS-01: structured logger), merge if sound, close Sprint 1, promote the Sprint 2 wave.
+**Files Modified:** `.ai/TASK_QUEUE.md` (OBS-01 → Done; Sprint 1 table retired; **Sprint 2 promoted** — 30 tasks with priorities/owners, CI-04 `Blocked`), `docs/PROJECT_STATE.md` (milestone header unfrozen: M0 in progress, Sprint 2 current), `docs/AI_HANDOFF.md` (this entry).
+**Files Added:** None.
+**Architecture Decisions:** None new. OBS-01's console-JSON mechanism is within 03 §9's explicitly open implementation choice; correctly reported by the implementer.
+**Verification performed:** Full diff review of `logger.ts`/`logger.test.ts`. Design verified: content-free is *structural* — `LogMetadata` admits only `boolean | number | null` so strings are unrepresentable at type and runtime level; events validated against a stable-identifier pattern; request/user ids validated against injection (newline forgery rejected); `toJSON` smuggling defeated by plain-copy serialization; context snapshotted against caller mutation; unauthenticated = `userId: null`, no invented identity. Reviewer re-ran the suite locally (11 tests green) in addition to the four green required CI contexts. Zero dependencies added.
+**Sprint 2 promotion rationale:** critical path is the DB-03..13 schema chain (P0, database) since every M1 feature needs tables; AUTH-01..05 and SHELL-01..02 are P0 parallel tracks; AUTH-06..09, SHELL-03/07, CI-05/07, OBS-02, DB-14/15 are P1; tasks whose dependencies aren't Done (AUTH-10..13, SHELL-04..06/08..09, CI-06/08) stay deferred. CI-04 enters the sprint as `Blocked` pending the mechanism decision.
+**Outstanding Work:** CI-04 mechanism decision (user/architect). Sprint 2 implementation may begin immediately on any `Queued` task whose dependencies are Done.
+**Known Bugs:** None.
+**Risks:** Logger enforcement is module-boundary only — direct `console` calls bypass it (SEC-06 audits later; OBS-02 wires boundaries). SHELL-02/04 are `L` tasks: split required at claim time.
+**Suggested Next Task:** Database agent: DB-03 (envelope table — unblocks six other migrations). Backend: AUTH-01. Frontend: SHELL-01.
+**Estimated Context Needed:** This entry, the Sprint 2 table in `.ai/TASK_QUEUE.md`, [04_DATABASE §4](04_DATABASE.md#4-table-definitions), GOV-6/GOV-7 in DECISIONS.md.
+
+---
+
 ## 2026-07-17 — Codex (Backend Engineer) — OBS-01 completion
 
 **Session Date:** 2026-07-17

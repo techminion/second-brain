@@ -4,12 +4,12 @@
 
 ## Current Milestone
 
-**M0 — Foundations** (not started — pre-implementation)
+**M0 — Foundations** (in progress — Sprint 1 of ~3 complete)
 
 ## Current Sprint
 
-**Sprint 0 — Governance setup** (this sprint: documentation + project-management layer; no code)
-Next: **Sprint 1 — Repo & tooling foundation** (scope defined in [.ai/TASK_QUEUE.md](../.ai/TASK_QUEUE.md))
+**Sprint 2 — Schema, Auth Core & App Shell** (scope and priorities in [.ai/TASK_QUEUE.md](../.ai/TASK_QUEUE.md); promoted 2026-07-17)
+Done: Sprint 0 (governance), Sprint 1 (repo & tooling foundation — all 21 tasks reviewed and merged)
 
 ## Overall Progress
 
@@ -17,7 +17,7 @@ Next: **Sprint 1 — Repo & tooling foundation** (scope defined in [.ai/TASK_QUE
 |---|---|
 | Engineering documentation (12 docs) | ✅ Complete, audited twice for consistency |
 | Governance layer (this file set) | ✅ Complete |
-| Implementation | 20 Done + 1 In Review / 309 tasks ([12_TASKS.md](12_TASKS.md)) |
+| Implementation | 21 Done / 309 tasks ([12_TASKS.md](12_TASKS.md)) |
 
 ## Completed
 
@@ -33,17 +33,19 @@ Next: **Sprint 1 — Repo & tooling foundation** (scope defined in [.ai/TASK_QUE
 - CI-02: Vercel Git integration — preview deployment per PR, production deployment from `main`; `vercel.json` pins the Next.js framework. **Reviewed and merged 2026-07-17** via PR #2 (`2a634a0`) — reviewer probed the preview URL live (HTTP 200) and confirmed the first production deployment succeeded on the merge commit. Env vars deferred to CI-07.
 - CI-03: `main` branch protection — strict up-to-date requirement, the four CI-01 contexts required, admin enforcement, force-push/deletion disabled. **Reviewed and merged 2026-07-17** via PR #3 (`64e0c2c`) — protection read back live from the GitHub API and the direct-push block proven empirically. Repo made public to enable protection (user decision, GOV-7; full-history secret scan clean). **All Sprint 1 P0s are Done — the pipeline is now enforced, not voluntary.**
 
+- OBS-01: dependency-free structured JSON logger — content-free enforced structurally (metadata admits only boolean/number/null), request id + user id required, injection- and serialization-hook-resistant. **Reviewed and merged 2026-07-17** via PR #5 (`f367cc1`) — reviewer re-ran the test suite locally. **Sprint 1 complete.**
+
 ## In Progress
 
-- OBS-01: dependency-free structured JSON logger with required request/user context and bounded content-free metadata; implementation and tests await review.
+- None — Sprint 2 queue is open for claims ([.ai/TASK_QUEUE.md](../.ai/TASK_QUEUE.md)).
 
 ## Blocked
 
-- None.
+- CI-04 (Supabase migration check in CI) — blocked on the mechanism decision below; everything else in Sprint 2 is claimable.
 
 ## Upcoming
 
-- Sprint 1: OBS-01 is in review. The architect promotes the Sprint 2 wave after review; CI-04 remains blocked on the mechanism decision below.
+- Sprint 2 critical path: the DB-03..13 schema chain (database), AUTH-01..05 (backend/frontend), SHELL-01..02 (frontend). Sprint 3 candidates listed in the queue's deferred note.
 
 ## Known Technical Debt
 
@@ -62,8 +64,8 @@ Next: **Sprint 1 — Repo & tooling foundation** (scope defined in [.ai/TASK_QUE
 
 ## Current Branch
 
-`agent/obs-01-structured-logging`
+`main`
 
 ## Last Updated
 
-2026-07-17 — OBS-01 structured logging foundation implemented and validated; awaiting review (Codex, backend implementation role)
+2026-07-17 — OBS-01 reviewed and merged (PR #5); Sprint 1 complete; Sprint 2 promoted with CI-04 blocked on the mechanism decision (Claude, reviewer + architect roles)
