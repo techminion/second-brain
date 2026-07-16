@@ -29,9 +29,11 @@ Next: **Sprint 1 — Repo & tooling foundation** (scope defined in [.ai/TASK_QUE
 - DB-02: applied the `profiles` table and Auth signup trigger to the shared Cloud project, with `id = auth.uid()` SELECT/UPDATE RLS policies. The cross-user denial check passed against Cloud; security and performance advisors are clean. **Review condition cleared 2026-07-16** — the owed repeatable test was delivered by DB-16.
 - DB-16: Supabase browser/server-session/service-role client factories, static public-env access (publishable key), and the ADR-12 Cloud integration harness with the `profiles` cross-user RLS test. **Reviewed and verified 2026-07-16** — reviewer ran the Cloud integration test live (green, cleanup confirmed), verified the dev-project hostname pin, fail-closed behavior, and that `src/` cannot import test code.
 
+- CI-01: GitHub Actions PR gate — four independent checks (Typecheck, Lint, Format, Unit tests) on Node 22.12. **Reviewed and merged 2026-07-17** via PR #1 (`38c1282`) — the first task through the full branch → PR → review → merge pipeline.
+
 ## In Progress
 
-- CI-01 is in review on GitHub PR #1. Its four independent pull-request checks—Typecheck, Lint, Format, and Unit tests—passed on GitHub-hosted runners under Node 22.12.0.
+- None.
 
 ## Blocked
 
@@ -58,8 +60,8 @@ Next: **Sprint 1 — Repo & tooling foundation** (scope defined in [.ai/TASK_QUE
 
 ## Current Branch
 
-`chore/ci-01-github-actions`
+`main`
 
 ## Last Updated
 
-2026-07-16 — CI-01 implemented and live-validated on GitHub PR #1; moved to In Review (Codex, backend implementation role)
+2026-07-17 — CI-01 reviewed and merged (PR #1); Sprint 1 remaining: CI-02, CI-03, OBS-01 (Claude, reviewer role)
