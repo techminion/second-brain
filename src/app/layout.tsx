@@ -1,6 +1,7 @@
 import "./globals.css";
 
 import type { Metadata } from "next";
+import { Inter, JetBrains_Mono } from "next/font/google";
 import { cookies } from "next/headers";
 import type { ReactNode } from "react";
 
@@ -10,6 +11,19 @@ import {
   themeCookieName,
   type ThemePreference,
 } from "@/shared/lib/theme";
+import { ThemeProvider } from "@/shared/lib/theme-provider";
+
+const inter = Inter({
+  subsets: ["latin"],
+  variable: "--font-inter",
+  display: "swap",
+});
+
+const jetbrainsMono = JetBrains_Mono({
+  subsets: ["latin"],
+  variable: "--font-jetbrains-mono",
+  display: "swap",
+});
 
 export const metadata: Metadata = {
   title: "Second Brain",
@@ -27,11 +41,17 @@ export default async function RootLayout({ children }: Readonly<RootLayoutProps>
     : "system";
 
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html
+      lang="en"
+      suppressHydrationWarning
+      className={`${inter.variable} ${jetbrainsMono.variable}`}
+    >
       <head>
         <script dangerouslySetInnerHTML={{ __html: getThemeScript(themePreference) }} />
       </head>
-      <body>{children}</body>
+      <body>
+        <ThemeProvider initialTheme={themePreference}>{children}</ThemeProvider>
+      </body>
     </html>
   );
 }

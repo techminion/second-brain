@@ -41,6 +41,40 @@ Estimated Context Needed:
 
 ---
 
+## 2026-07-17 — Claude (Reviewer) — SHELL-01 review & merge (reviewer fixup applied)
+
+**Session Date:** 2026-07-17
+**Agent:** Claude, reviewer role (TPM/governance)
+**Objective:** Re-review PR #13 after Antigravity addressed the first-round findings; merge if sound.
+**Files Modified:** `.ai/TASK_QUEUE.md` (SHELL-01 → Done, Completed entry), `docs/PROJECT_STATE.md`, `docs/AI_HANDOFF.md` (this entry). On the PR branch before merge: reviewer fixup `39639a0` to `docs/AI_HANDOFF.md`.
+**Files Added:** None.
+**Architecture Decisions:** None new. Toaster-inside-provider with `theme={theme}` accepted as the cleaner resolution of the first-round theming note.
+**Verification performed:** Delta re-reviewed in full: both merges with `main` reconciled without dropping other agents' governance entries; all four required checks green (an interim Format failure was self-caught and fixed); `resolveTheme` extracted to `theme.ts` and used in both client paths; fonts land on exactly the `--font-inter`/`--font-jetbrains-mono` variables the token scaffold consumes. **Reviewer fixup before merge (from an isolated worktree):** removed two orphaned `>>>>>>>` conflict markers from AI_HANDOFF.md and corrected the entry's Files-Added line, which referenced `src/shared/ui/toast.tsx` files not present in the PR. Squash-merged as `f016273`.
+**Process notes:** First Antigravity task through the full pipeline. Review feedback was absorbed well (both non-blocking items fixed properly). Two hygiene gaps for its next PRs: verify conflict-marker-free files after manual resolutions, and keep handoff file lists factual. **CI blind spot noted:** prettier's Format check does not flag conflict markers in markdown — a cheap standalone guard is worth adding to a future CI task.
+**Outstanding Work:** PR #14 (SHELL-07) — substance already approved; needs rebase onto main now that #13 landed, plus the same PROJECT_STATE section fix. Database: DB-04 open. Backend: AUTH-01, CI-04 unclaimed.
+**Known Bugs:** None.
+**Risks:** None new.
+**Suggested Next Task:** Antigravity: rebase PR #14. Codex: DB-04.
+**Estimated Context Needed:** This entry, PR #14 review comments, SHELL-01 Completed entry.
+
+---
+
+## 2026-07-17 — Antigravity (Frontend) — SHELL-01: configure root layout with fonts, ThemeProvider, and sonner Toaster (Updated)
+
+**Session Date:** 2026-07-17
+**Agent:** Antigravity, frontend implementation role
+**Objective:** Address changes requested on SHELL-01 (Toaster theme support, deduplicated theme resolver, and merge conflict resolution).
+**Files Modified:** `src/app/layout.tsx`, `src/shared/lib/theme-provider.tsx`, `src/shared/lib/theme.ts`, `.ai/TASK_QUEUE.md`, `docs/PROJECT_STATE.md`, `docs/AI_HANDOFF.md` (this entry).
+**Files Added:** `src/shared/lib/theme-provider.test.tsx`.
+**Architecture Decisions:** Extracted `resolveTheme` to `src/shared/lib/theme.ts` to de-duplicate the theme resolution code. Rendered `sonner`'s `<Toaster>` inside the client-side `ThemeProvider` component and passed it the dynamic client-side `theme` state, making notifications follow light/dark/system transitions.
+**Outstanding Work:** Review and merge SHELL-01. Update SHELL-07.
+**Known Bugs:** None.
+**Risks:** None.
+**Suggested Next Task:** Rebase and update SHELL-07 on top of SHELL-01.
+**Estimated Context Needed:** `docs/10_DESIGN.md`, `src/app/layout.tsx`.
+
+---
+
 ## 2026-07-17 — Claude (Reviewer) — DB-05 merged; SHELL-01/07 changes requested
 
 **Session Date:** 2026-07-17
