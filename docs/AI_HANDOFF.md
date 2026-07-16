@@ -21,6 +21,24 @@ Estimated Context Needed:
 
 ---
 
+## 2026-07-17 — Claude (Reviewer) — DB-03 review & merge
+
+**Session Date:** 2026-07-17
+**Agent:** Claude, reviewer role (TPM/governance)
+**Objective:** Review PR #10 (DB-03: `knowledge_objects` envelope), merge if sound.
+**Files Modified:** `.ai/TASK_QUEUE.md` (DB-03 → Done, Completed entry), `docs/PROJECT_STATE.md`, `docs/AI_HANDOFF.md` (this entry).
+**Files Added:** None.
+**Architecture Decisions:** None. The second forward-only migration (revoke-all + re-grant CRUD, stripping legacy `REFERENCES`/`TRIGGER`/`TRUNCATE` default privileges) is a least-privilege correction within spec, correctly reported.
+**Verification performed:** (1) Migration SQL reviewed line-by-line against 04 §4.2: seven columns with documented defaults, `note|attachment` CHECK, `owner_id → profiles.id ON DELETE CASCADE` (ADR-14 — first table to exercise it), both composite indexes, RLS in the uniform §7 shape with initplan-cached `(select auth.uid())`, policies scoped `to authenticated`. (2) Second migration fetched in full to confirm the re-grant line accompanies the `revoke all`. (3) **Reviewer ran the Cloud integration suite live on the PR branch: green (2 files, 3 tests)** — cross-user read/update/delete denial via empty-result semantics, cross-owner insert `42501`, CHECK rejection `23514`, owner self-access; also reconfirmed the harness fails closed when env is absent. (4) All four required CI contexts green. Squash-merged as `318f958`.
+**Process notes:** Exemplary session — rolled-back-transaction dry run before applying, live catalog inspection after, advisors checked, the transient Cloud `JWT issued at future` flake disclosed rather than hidden, and no follow-on DB task started while awaiting review. Repo↔Cloud migration-history match remains implementer-attested until CI-04 lands.
+**Outstanding Work:** DB-04 and DB-06..10 are now dependency-ready (database role, serialized per GOV-5). DB-05/11/12 were already ready.
+**Known Bugs:** None.
+**Risks:** Watch for recurrence of the Cloud JWT clock-skew flake in integration runs; if it repeats, the harness may need a small issued-at tolerance or retry.
+**Suggested Next Task:** Database: DB-04 (`notes` subtype — critical path). Frontend (Antigravity): SHELL-01/07 remain open. Backend: AUTH-01, CI-04.
+**Estimated Context Needed:** This entry, the DB-03 Completed entry in the queue, [04_DATABASE §4.3](04_DATABASE.md#43-notes) for DB-04.
+
+---
+
 ## 2026-07-17 — Codex (Database) — DB-03 implementation complete
 
 **Session Date:** 2026-07-17
