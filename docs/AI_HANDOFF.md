@@ -21,6 +21,23 @@ Estimated Context Needed:
 
 ---
 
+## 2026-07-17 — Claude (Reviewer) — CI-03 review & merge; GOV-7 recorded
+
+**Session Date:** 2026-07-17
+**Agent:** Claude, reviewer role (TPM/governance)
+**Objective:** Review PR #3 (CI-03: `main` branch protection), merge if sound, record the repository-visibility decision.
+**Files Modified:** `.ai/TASK_QUEUE.md` (CI-03 → Done, Completed entry), `docs/PROJECT_STATE.md`, `docs/DECISIONS.md` (GOV-7 added), `docs/AI_HANDOFF.md` (this entry).
+**Files Added:** None.
+**Architecture Decisions:** **GOV-7 — repository is public.** The implementer reported "None" and attributed the visibility flip to explicit user choice, which is accurate — but a visibility change with standing security consequences belongs in the registry regardless of who made it. Recorded with the fork-PR constraint: any future credentialed CI job (e.g., Cloud integration tests in CI) must not be triggerable from fork PRs.
+**Verification performed:** (1) Live protection read back from the GitHub API — `strict: true`, exactly `Typecheck`/`Lint`/`Format`/`Unit tests` pinned to the GitHub Actions app, `enforce_admins: true`, force pushes and deletions disabled — matching the AC including the up-to-date-branches requirement from the CI-01 review. (2) Repo visibility confirmed public via API. (3) **Full-history secret scan run at flip time: clean** (no service-role keys, JWT prefixes, or API-key patterns in any commit). (4) PR #3 diff reviewed — governance-only, honest reporting. (5) Squash-merged as `64e0c2c`; the direct-push block then proven empirically — this review record's own push to `main` was rejected and had to merge through the gated PR path.
+**Outstanding Work:** OBS-01 (P1) closes Sprint 1. CI-04 mechanism decision required before the Sprint 2 wave is promoted.
+**Known Bugs:** None.
+**Risks:** Public repo consequences per GOV-7 (managed). SEC-07 hardening (SHA-pinned actions) gains weight now that workflows are public. Governance commits now also require PRs — slight overhead, correct tradeoff.
+**Suggested Next Task:** OBS-01 (backend). In parallel: user/architect decision on the CI-04 mechanism.
+**Estimated Context Needed:** This entry, GOV-7 in DECISIONS.md, `.ai/TASK_QUEUE.md` Sprint 1 table.
+
+---
+
 ## 2026-07-17 — Codex (Backend Engineer) — CI-03 completion
 
 **Session Date:** 2026-07-17

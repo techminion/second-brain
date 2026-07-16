@@ -17,7 +17,7 @@ Next: **Sprint 1 — Repo & tooling foundation** (scope defined in [.ai/TASK_QUE
 |---|---|
 | Engineering documentation (12 docs) | ✅ Complete, audited twice for consistency |
 | Governance layer (this file set) | ✅ Complete |
-| Implementation | 19 Done + 1 In Review / 309 tasks ([12_TASKS.md](12_TASKS.md)) |
+| Implementation | 20 Done / 309 tasks ([12_TASKS.md](12_TASKS.md)) |
 
 ## Completed
 
@@ -31,10 +31,11 @@ Next: **Sprint 1 — Repo & tooling foundation** (scope defined in [.ai/TASK_QUE
 
 - CI-01: GitHub Actions PR gate — four independent checks (Typecheck, Lint, Format, Unit tests) on Node 22.12. **Reviewed and merged 2026-07-17** via PR #1 (`38c1282`) — the first task through the full branch → PR → review → merge pipeline.
 - CI-02: Vercel Git integration — preview deployment per PR, production deployment from `main`; `vercel.json` pins the Next.js framework. **Reviewed and merged 2026-07-17** via PR #2 (`2a634a0`) — reviewer probed the preview URL live (HTTP 200) and confirmed the first production deployment succeeded on the merge commit. Env vars deferred to CI-07.
+- CI-03: `main` branch protection — strict up-to-date requirement, the four CI-01 contexts required, admin enforcement, force-push/deletion disabled. **Reviewed and merged 2026-07-17** via PR #3 (`64e0c2c`) — protection read back live from the GitHub API and the direct-push block proven empirically. Repo made public to enable protection (user decision, GOV-7; full-history secret scan clean). **All Sprint 1 P0s are Done — the pipeline is now enforced, not voluntary.**
 
 ## In Progress
 
-- CI-03: `main` branch protection is active with strict required checks (`Typecheck`, `Lint`, `Format`, `Unit tests`), administrator enforcement, and force-push/deletion prevention. The task awaits review.
+- None.
 
 ## Blocked
 
@@ -42,7 +43,7 @@ Next: **Sprint 1 — Repo & tooling foundation** (scope defined in [.ai/TASK_QUE
 
 ## Upcoming
 
-- Sprint 1: OBS-01 is queued; CI-03 is in review (see [.ai/TASK_QUEUE.md](../.ai/TASK_QUEUE.md)).
+- Sprint 1: OBS-01 (P1, last Sprint 1 task). Then the architect promotes the Sprint 2 wave — blocked on the CI-04 mechanism decision below.
 
 ## Known Technical Debt
 
@@ -61,8 +62,8 @@ Next: **Sprint 1 — Repo & tooling foundation** (scope defined in [.ai/TASK_QUE
 
 ## Current Branch
 
-`agent/ci-03-branch-protection`
+`main`
 
 ## Last Updated
 
-2026-07-17 — CI-03 implemented after the repository became public; strict branch protection awaits review (Codex, backend implementation role)
+2026-07-17 — CI-03 reviewed and merged (PR #3); GOV-7 recorded; Sprint 1 P0s complete, OBS-01 remains (Claude, reviewer role)
