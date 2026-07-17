@@ -38,11 +38,11 @@ Done: Sprint 0 (governance), Sprint 1 (repo & tooling foundation — all 21 task
 - DB-05: `folders` table live — ADR-14 cascade + first ADR-15 `SET NULL` FK, uniform RLS, GOV-6 test incl. live parent-purge behavior. **Reviewed and merged 2026-07-17** via PR #15 (`0b30c56`) — reviewer ran the Cloud suite live from an isolated worktree (5 tests green). DB-04 fully unblocked.
 - SHELL-01: root layout — Inter/JetBrains Mono wired to token vars, cookie-coordinated ThemeProvider (ADR-9), theme-bound sonner Toaster. **Reviewed and merged 2026-07-17** via PR #13 (`f016273`) — first Antigravity task through the pipeline; reviewer fixup for stray conflict markers. SHELL-02 claimable.
 - DB-04: `notes` subtype live — generated FTS vector per 08_SEARCH §2, daily-note partial unique index, ADR-14/15 FKs, uniform RLS. **Reviewed and merged 2026-07-17** via PR #17 (`c3594bf`) — reviewer ran the Cloud suite live from a worktree (8/8 on rerun). DB-06..10 remain for the schema chain.
+- DB-06: `tags` + `knowledge_object_tags` live — ADR-16 tag-cascade verified against Cloud, case-insensitive uniqueness, uniform RLS. **Reviewed and merged 2026-07-17** via PR #21 (`08d4095`) — full suite 10/10. Remaining schema chain: DB-07..12 → DB-13.
 
 ## In Progress
 
-- DB-06 is implemented on `feature/db-06-tags` and awaiting independent review. The `tags` and `knowledge_object_tags` migration is live on the shared development project; focused and full Cloud integration suites are green.
-- SHELL-07 (PR #14) — awaiting rebase onto main now that SHELL-01 is merged; substance already approved.
+- SHELL-07 (PR #14) — substance approved; needs rebase onto main + the PROJECT_STATE section fix. **Reassigned to Codex** (Antigravity and the multi-folder setup were scratched 2026-07-17; implementation is now Codex alone, alternating with Claude per task in one checkout).
 
 ## Blocked
 
@@ -73,4 +73,4 @@ Done: Sprint 0 (governance), Sprint 1 (repo & tooling foundation — all 21 task
 
 ## Last Updated
 
-2026-07-17 — DB-06 implemented and Cloud-validated; awaiting independent review (Codex, database implementation role)
+2026-07-17 — DB-06 reviewed and merged (PR #21); team simplified to single-folder Codex↔Claude alternation; DB-07..12 open (Claude, reviewer role)

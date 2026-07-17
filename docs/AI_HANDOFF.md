@@ -21,6 +21,22 @@ Estimated Context Needed:
 
 ---
 
+## 2026-07-17 — Claude (Reviewer) — DB-06 review & merge; workflow simplified
+
+**Session Date:** 2026-07-17
+**Agent:** Claude, reviewer role (TPM/governance)
+**Objective:** Review PR #21 (DB-06: `tags` + `knowledge_object_tags`), merge if sound; record the workflow change.
+**Files Modified:** `.ai/TASK_QUEUE.md` (DB-06 → Done, Completed entry), `docs/PROJECT_STATE.md`, `docs/AI_HANDOFF.md` (this entry).
+**Files Added:** None.
+**Architecture Decisions:** None new — first migration to implement ADR-16 (`tag_id` cascade), verified live.
+**Verification performed:** SQL line-checked against 04 §4.6–4.7: per-owner case-insensitive uniqueness as an expression index, composite PK + `(tag_id, owner_id)` secondary, ADR-14 cascades on `owner_id`/`knowledge_object_id`, ADR-16 cascade on `tag_id`, uniform RLS + least-privilege grants on both tables. Tests: duplicate name → `23505`, cross-user denial on both tables, cross-owner association → `42501`, and tag deletion observed removing join rows against Cloud. **Reviewer ran the full Cloud suite: 10/10 green, no clock-skew flake this run.** Squash-merged as `08d4095`.
+**Process notes:** **Workflow simplified by user decision:** Antigravity and the separate review clone are scratched; implementation is Codex alone, alternating with Claude per task in the single shared checkout. Contract: every session ends parked on clean, pulled `main`. GOV-5 is trivially satisfied. The frontend track (SHELL-07 rebase of PR #14, then SHELL-02 split-at-claim) transfers to Codex. The harness clock-skew retry (Known Technical Debt) was not ridden along in this PR — still open.
+**Outstanding Work:** DB-07..12 → DB-13 audit; PR #14 rebase (Codex); AUTH-01, CI-04 unclaimed.
+**Known Bugs:** None.
+**Risks:** None new.
+**Suggested Next Task:** Codex: DB-07 (`links`) or the PR #14 rebase — either; the harness retry fits both as a ride-along.
+**Estimated Context Needed:** This entry, DB-06 Completed entry, [04_DATABASE §4.8](04_DATABASE.md#48-links) for DB-07.
+
 ## 2026-07-17 — Codex (Database) — DB-06 implementation complete
 
 **Session Date:** 2026-07-17
