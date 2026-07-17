@@ -5,6 +5,7 @@ import { Inter, JetBrains_Mono } from "next/font/google";
 import { cookies } from "next/headers";
 import type { ReactNode } from "react";
 
+import { QueryProvider } from "@/shared/lib/query-provider";
 import {
   getThemeScript,
   isThemePreference,
@@ -50,7 +51,9 @@ export default async function RootLayout({ children }: Readonly<RootLayoutProps>
         <script dangerouslySetInnerHTML={{ __html: getThemeScript(themePreference) }} />
       </head>
       <body>
-        <ThemeProvider initialTheme={themePreference}>{children}</ThemeProvider>
+        <ThemeProvider initialTheme={themePreference}>
+          <QueryProvider>{children}</QueryProvider>
+        </ThemeProvider>
       </body>
     </html>
   );
