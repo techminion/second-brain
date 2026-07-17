@@ -66,7 +66,7 @@ Two areas span phases deliberately: OBS-01 (structured logging) lives in Phase 0
 | DB-12 | Migration: `audit_log`, append-only policy shape ([04_DATABASE.md §4.13](04_DATABASE.md#413-audit_log)) | S | DB-02 |
 | DB-13 | RLS audit: verify every table above has its policy, in the correct shape ([04_DATABASE.md §7](04_DATABASE.md#7-row-level-security-rls-policies)); policies themselves ship inside each table's own migration (GOV-6 — DB-02..DB-12 each include RLS + its cross-user test) | M | DB-02..DB-12 |
 | DB-14 | Cross-user RLS integration test suite — one denial test per table ([09_SECURITY.md §9](09_SECURITY.md#9-threat-model), T1) | M | DB-13 |
-| DB-15 | Migration: `pg_cron` retention purge job for 30-day soft-delete window ([04_DATABASE.md §6](04_DATABASE.md#6-soft-deletes)) | M | DB-13 |
+| DB-15 | Retention purge: `pg_cron` schedule + service-role purge worker endpoint, Storage-API-first, incl. folders (ADR-18; [04_DATABASE.md §6](04_DATABASE.md#6-soft-deletes)) | M | DB-13 |
 | DB-16 | Typed Supabase client factories (browser anon, server session-scoped, service-role) in `shared/lib` | M | DB-01, SETUP-06 |
 
 ### Authentication (AUTH)
