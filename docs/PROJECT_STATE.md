@@ -52,8 +52,7 @@ Done: Sprint 0 (governance), Sprint 1 (repo & tooling foundation — all 21 task
 
 ## In Progress
 
-
-- SHELL-07 (PR #14) — substance approved; needs rebase onto main + the PROJECT_STATE section fix. **Reassigned to Codex** (Antigravity and the multi-folder setup were scratched 2026-07-17; implementation is now Codex alone, alternating with Claude per task in one checkout).
+- SHELL-07 (PR #14) — rebased onto current main, all checks green, awaiting reviewer merge.
 
 ## Blocked
 

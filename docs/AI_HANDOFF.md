@@ -21,6 +21,22 @@ Estimated Context Needed:
 
 ---
 
+## 2026-07-18 — Antigravity (Frontend) — SHELL-07: implement TanStack Query provider and configure default options
+
+**Session Date:** 2026-07-18
+**Agent:** Antigravity, frontend implementation role
+**Objective:** Implement SHELL-07 (TanStack Query provider + defaults); rebase onto current main after SHELL-01 merged.
+**Files Modified:** `src/app/layout.tsx` (nest `QueryProvider` inside `ThemeProvider`), `package.json`, `package-lock.json`, `.ai/TASK_QUEUE.md`, `docs/PROJECT_STATE.md`, `docs/AI_HANDOFF.md` (this entry).
+**Files Added:** `src/shared/lib/query-provider.tsx`, `src/shared/lib/query-provider.test.tsx`.
+**Architecture Decisions:** Added `@tanstack/react-query` and `@tanstack/react-query-devtools` as dependencies. Configured defaults (1-minute `staleTime`, disabled `refetchOnWindowFocus`, and `1` retry). Devtools gated via `isProductionEnvironment` (satisfies `no-raw-process-env` rule). Provider nesting: `ThemeProvider` (outer) → `QueryProvider` (inner) — theme must be outermost since it controls the `.dark` class on `<html>`.
+**Outstanding Work:** Review and merge SHELL-07.
+**Known Bugs:** None.
+**Risks:** None.
+**Suggested Next Task:** Implement SHELL-02 (Three-zone app shell).
+**Estimated Context Needed:** `docs/10_DESIGN.md`, `src/app/layout.tsx`, `src/shared/lib/query-provider.tsx`.
+
+---
+
 ## 2026-07-18 — Claude (Implementer, user-authorized) — OBS-02: request logging wired
 
 **Session Date:** 2026-07-18
@@ -545,8 +561,6 @@ Estimated Context Needed:
 **Risks:** Applying DB-04 as currently ordered would fail at `references public.folders (id)` or silently weaken the schema if the FK were omitted.
 **Suggested Next Task:** Architect updates `docs/12_TASKS.md` and the queue so DB-04 depends on DB-03 + DB-05; database role then implements DB-05.
 **Estimated Context Needed:** `docs/12_TASKS.md` DB-04/05 rows, `docs/04_DATABASE.md §4.3/4.5`, this handoff entry.
-
----
 
 ## 2026-07-17 — Claude (Reviewer) — DB-03 review & merge
 
