@@ -10,3 +10,7 @@ coverage/
 playwright-report/
 test-results/
 package-lock.json
+
+# Vendored third-party agent skills (hash-locked upstream content)
+.agents/
+.claude/skills/
