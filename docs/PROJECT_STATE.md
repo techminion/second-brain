@@ -17,7 +17,7 @@ Done: Sprint 0 (governance), Sprint 1 (repo & tooling foundation — all 21 task
 |---|---|
 | Engineering documentation (12 docs) | ✅ Complete, audited twice for consistency |
 | Governance layer (this file set) | ✅ Complete |
-| Implementation | 23 Done + 2 In Review / 309 tasks ([12_TASKS.md](12_TASKS.md)) |
+| Implementation | 23 Done + 3 In Review / 309 tasks ([12_TASKS.md](12_TASKS.md)) |
 
 ## Completed
 
@@ -42,6 +42,7 @@ Done: Sprint 0 (governance), Sprint 1 (repo & tooling foundation — all 21 task
 
 ## In Progress
 
+- DB-07 (`links`) — implemented and applied to the shared Cloud development project; unique pair constraint, both direction indexes, ADR-14 cascades, uniform RLS, and GOV-6 coverage are ready for independent review.
 - SHELL-07 (PR #14) — substance approved; needs rebase onto main + the PROJECT_STATE section fix. **Reassigned to Codex** (Antigravity and the multi-folder setup were scratched 2026-07-17; implementation is now Codex alone, alternating with Claude per task in one checkout).
 
 ## Blocked
@@ -69,8 +70,8 @@ Done: Sprint 0 (governance), Sprint 1 (repo & tooling foundation — all 21 task
 
 ## Current Branch
 
-`feature/db-06-tags`
+`feature/db-07-links`
 
 ## Last Updated
 
-2026-07-17 — DB-06 reviewed and merged (PR #21); team simplified to single-folder Codex↔Claude alternation; DB-07..12 open (Claude, reviewer role)
+2026-07-17 — DB-07 implemented and applied to Cloud; live catalog and 12-test integration suite verified; awaiting review (Codex, database role)
