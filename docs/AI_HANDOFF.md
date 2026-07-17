@@ -21,6 +21,22 @@ Estimated Context Needed:
 
 ---
 
+## 2026-07-17 — Claude (Reviewer) — DB-07 review & merge; harness rate-limit failure mode identified
+
+**Session Date:** 2026-07-17
+**Agent:** Claude, reviewer role (TPM/governance)
+**Objective:** Review PR #23 (DB-07: `links`), merge if sound.
+**Files Modified:** `.ai/TASK_QUEUE.md` (DB-07 → Done, Completed entry), `docs/PROJECT_STATE.md` (Known Technical Debt expanded), `docs/AI_HANDOFF.md` (this entry).
+**Files Added:** None.
+**Architecture Decisions:** None. Straightforward §4.8 implementation.
+**Verification performed:** SQL line-checked: unique `(source, target)` pair, both direction indexes (target = backlinks path, FR-LINK-5/6), ADR-14 cascades on all three FKs, uniform RLS, least-privilege grants. Tests verify duplicate-edge rejection, cross-user denial, and live endpoint-deletion cascade. **Three consecutive 12/12 full Cloud-suite passes** on the merged HEAD. Squash-merged as `341eeb8`.
+**Process notes — new failure mode found during review:** running the suite 7× in ~25 minutes tripped **Supabase Auth's rate limiter** — `createAuthenticatedUser` fails (`Unable to authenticate an isolated Cloud integration-test user`), suites fail closed, tests report as skipped, with progressive degradation (12 pass → 5 skip → all skip). Environmental, not a schema defect — but it will bite CI/local runs as the suite grows (2 users × 6 files/run today, 13 files eventually). Known Technical Debt updated: harness needs backoff/retry AND user-reuse across files (one shared pair via global setup), folding in the earlier clock-skew item. This is now a **priority ride-along** for the next DB PR.
+**Outstanding Work:** DB-08..12 → DB-13. PR #14 rebase (Codex). AUTH-01, CI-04 unclaimed.
+**Known Bugs:** None in merged code.
+**Risks:** Until the harness hardening lands, avoid >2–3 full suite runs per hour against the shared dev project; the limiter recovers on its own.
+**Suggested Next Task:** Codex: DB-08 (pgvector + embeddings) **with the harness hardening ride-along**.
+**Estimated Context Needed:** This entry, DB-07 Completed entry, [04_DATABASE §4.9](04_DATABASE.md#49-embeddings) + [08_SEARCH §3](08_SEARCH.md#3-semantic-search-pgvector) for DB-08.
+
 ## 2026-07-17 — Codex (Database) — DB-07 implementation complete
 
 **Session Date:** 2026-07-17

@@ -39,6 +39,7 @@ Done: Sprint 0 (governance), Sprint 1 (repo & tooling foundation — all 21 task
 - SHELL-01: root layout — Inter/JetBrains Mono wired to token vars, cookie-coordinated ThemeProvider (ADR-9), theme-bound sonner Toaster. **Reviewed and merged 2026-07-17** via PR #13 (`f016273`) — first Antigravity task through the pipeline; reviewer fixup for stray conflict markers. SHELL-02 claimable.
 - DB-04: `notes` subtype live — generated FTS vector per 08_SEARCH §2, daily-note partial unique index, ADR-14/15 FKs, uniform RLS. **Reviewed and merged 2026-07-17** via PR #17 (`c3594bf`) — reviewer ran the Cloud suite live from a worktree (8/8 on rerun). DB-06..10 remain for the schema chain.
 - DB-06: `tags` + `knowledge_object_tags` live — ADR-16 tag-cascade verified against Cloud, case-insensitive uniqueness, uniform RLS. **Reviewed and merged 2026-07-17** via PR #21 (`08d4095`) — full suite 10/10. Remaining schema chain: DB-07..12 → DB-13.
+- DB-07: `links` live — unique pair edges, backlinks-critical target index, ADR-14 cascades. **Reviewed and merged 2026-07-17** via PR #23 (`341eeb8`) — 3× 12/12 Cloud-suite passes. Schema chain: 7/13 tables; DB-08..12 remain.
 
 ## In Progress
 
@@ -55,7 +56,7 @@ Done: Sprint 0 (governance), Sprint 1 (repo & tooling foundation — all 21 task
 
 ## Known Technical Debt
 
-- Cloud integration harness: transient `JWT issued at future` clock-skew flake now seen twice (DB-03, DB-04 reviews) — add a small issued-at tolerance or one retry to the harness (database role, small PR).
+- Cloud integration harness hardening (database role, small PR, priority rising): (1) transient `JWT issued at future` clock-skew flake (seen DB-03, DB-04 reviews) — add issued-at tolerance or one retry; (2) **Supabase Auth rate limiting** — repeated suite runs trip the signup/signin limiter (`Unable to authenticate an isolated Cloud integration-test user`, suites fail closed → skip; observed DB-07 review). Each full run creates 2 users × 6 files and growing toward 13 — add backoff/retry and consider reusing one user pair across files via a shared setup.
 - The `feature-boundaries` lint rule only catches `@/features/...` alias imports; relative-path imports bypass it. Follow-up hardening candidate.
 - `tsconfig.json` typechecks `src/**` only — `e2e/`, `tools/`, and config files are not typechecked.
 - Interim pointer-README in place; OBS-10 replaces it with the full public README at launch.
