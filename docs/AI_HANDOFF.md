@@ -21,6 +21,26 @@ Estimated Context Needed:
 
 ---
 
+## 2026-07-17 — Codex (Database) — DB-06 implementation complete
+
+**Session Date:** 2026-07-17
+**Agent:** Codex, database implementation role
+**Objective:** Implement DB-06 (`tags` + `knowledge_object_tags`) after ADR-16 resolved the final FK delete-action ambiguity.
+**Files Modified:** `.ai/TASK_QUEUE.md` (DB-06 → In Review), `docs/PROJECT_STATE.md` (implementation state), `docs/AI_HANDOFF.md` (this entry).
+**Files Added:** `supabase/migrations/20260716215254_create_tags.sql`, `tests/integration/tags-rls.integration.test.ts`.
+**Architecture Decisions:** None. Implemented `docs/04_DATABASE.md §4.6–4.7`, ADR-14, ADR-16, and GOV-6 exactly.
+**Migration applied:** `20260716215254_create_tags`; repository filename exactly matches Cloud migration history.
+**Policies created:** `tags_select_own`, `tags_insert_own`, `tags_update_own`, `tags_delete_own`; `knowledge_object_tags_select_own`, `knowledge_object_tags_insert_own`, `knowledge_object_tags_update_own`, `knowledge_object_tags_delete_own`. All target `authenticated`; updates have both `USING` and `WITH CHECK`; every predicate compares initplan-cached `(select auth.uid())` with `owner_id`.
+**Indexes created:** `tags_pkey`; unique expression index `tags_owner_id_lower_name_idx`; composite `knowledge_object_tags_pkey`; `knowledge_object_tags_tag_id_owner_id_idx`.
+**Verification performed:** Migration SQL first executed inside a rolled-back Cloud transaction. After applying, live catalog inspection confirmed both documented four-column tables and defaults, case-insensitive per-owner tag uniqueness, the composite association PK, `owner_id → profiles.id ON DELETE CASCADE`, `knowledge_object_id → knowledge_objects.id ON DELETE CASCADE`, `tag_id → tags.id ON DELETE CASCADE` (ADR-16), RLS enabled on both tables, eight policies, the documented index set, and CRUD-only grants for `authenticated`/`service_role` with no `anon` grants. Focused DB-06 Cloud tests passed (2 tests); the full integration suite passed (5 files, 10 tests). Local format, typecheck, and lint passed before Cloud application; final build/static checks run before commit. Security advisors returned no findings.
+**Outstanding Work:** Independent reviewer must verify the PR and Cloud-attested state before merge. DB-06 remains In Review; no subsequent DB task was started.
+**Known Bugs:** None.
+**Risks:** Performance advisor reports an INFO-only unindexed-FK notice for `knowledge_object_tags.owner_id`, because the exact documented secondary index is `(tag_id, owner_id)` rather than owner-leading. No undocumented index was invented; DB-13 owns the cross-table audit. The previously recorded INFO findings remain unrelated. As with earlier denormalized join/reference tables, DB-13 should assess same-owner composite-FK hardening; DB-06 implements the uniform documented RLS shape without expanding scope.
+**Suggested Next Task:** Review DB-06. After merge, the database role may claim the next dependency-ready DB task.
+**Estimated Context Needed:** DB-06 diff; `docs/04_DATABASE.md §4.6–4.7, §7, §11`; ADR-14; ADR-16; GOV-6.
+
+---
+
 ## 2026-07-17 — Claude (Architect) — ADR-16: final FK delete-action matrix; DB-06 unblocked
 
 **Session Date:** 2026-07-17

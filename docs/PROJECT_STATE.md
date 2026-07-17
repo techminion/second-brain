@@ -17,7 +17,7 @@ Done: Sprint 0 (governance), Sprint 1 (repo & tooling foundation — all 21 task
 |---|---|
 | Engineering documentation (12 docs) | ✅ Complete, audited twice for consistency |
 | Governance layer (this file set) | ✅ Complete |
-| Implementation | 23 Done + 1 In Review / 309 tasks ([12_TASKS.md](12_TASKS.md)) |
+| Implementation | 23 Done + 2 In Review / 309 tasks ([12_TASKS.md](12_TASKS.md)) |
 
 ## Completed
 
@@ -41,6 +41,7 @@ Done: Sprint 0 (governance), Sprint 1 (repo & tooling foundation — all 21 task
 
 ## In Progress
 
+- DB-06 is implemented on `feature/db-06-tags` and awaiting independent review. The `tags` and `knowledge_object_tags` migration is live on the shared development project; focused and full Cloud integration suites are green.
 - SHELL-07 (PR #14) — awaiting rebase onto main now that SHELL-01 is merged; substance already approved.
 
 ## Blocked
@@ -68,8 +69,8 @@ Done: Sprint 0 (governance), Sprint 1 (repo & tooling foundation — all 21 task
 
 ## Current Branch
 
-`feature/db-04-notes`
+`feature/db-06-tags`
 
 ## Last Updated
 
-2026-07-17 — ADR-16 recorded (final FK delete-action matrix; audit_log exception); DB-06 unblocked (Claude, architect role)
+2026-07-17 — DB-06 implemented and Cloud-validated; awaiting independent review (Codex, database implementation role)
