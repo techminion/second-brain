@@ -21,6 +21,21 @@ Estimated Context Needed:
 
 ---
 
+## 2026-07-17 — Claude (Reviewer) — DB-11 review & merge
+
+**Session Date:** 2026-07-17
+**Agent:** Claude, reviewer role (TPM/governance)
+**Objective:** Review PR #31 (DB-11: `mcp_credentials`), merge if sound.
+**Files Modified:** `.ai/TASK_QUEUE.md` (DB-11 → Done, Completed entry), `docs/PROJECT_STATE.md`, `docs/AI_HANDOFF.md` (this entry).
+**Files Added:** None.
+**Architecture Decisions:** None. Hash-only storage per §4.12/09_SECURITY; no undocumented lookup index (CRED tasks own that call).
+**Verification performed:** SQL line-checked against §4.12 — exact. **Full Cloud suite run live: 10 files, 22/22 green.** Squash-merged as `d4c8d1b`.
+**Outstanding Work:** DB-12 (`audit_log` — ADR-16 SET NULL exception on its queue row), then DB-13 (three accumulated audit notes). PR #14 rebase. AUTH-01, CI-04 unclaimed.
+**Known Bugs:** None.
+**Risks:** None new.
+**Suggested Next Task:** Codex: DB-12 — read the ADR-16 exception before writing SQL.
+**Estimated Context Needed:** This entry, [04_DATABASE §4.13](04_DATABASE.md#413-audit_log), ADR-16 in DECISIONS.md.
+
 ## 2026-07-17 — Codex (Database) — DB-11 implementation complete
 
 **Session Date:** 2026-07-17

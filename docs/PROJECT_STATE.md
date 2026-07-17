@@ -43,6 +43,7 @@ Done: Sprint 0 (governance), Sprint 1 (repo & tooling foundation — all 21 task
 - DB-08: pgvector + `embeddings` live — 1536-dim cosine HNSW per spec; harness hardening shipped alongside (shared user pair + bounded retry; both debt items closed). **Reviewed and merged 2026-07-17** via PR #25 (`1257a09`) — 4× consecutive 14/14 suite passes. Schema chain: 8/13; DB-09..12 remain.
 - DB-09: `attachments` + private storage live — signed-URL-only reads DB-enforced via operation-scoped policies; owner-path defense-in-depth. **Reviewed and merged 2026-07-17** via PR #27 (`6182d17`) — suite 17/17 live. Schema chain: 9/13; DB-10..12 remain.
 - DB-10: chat tables live — scope/role CHECKs, both cascade chains verified live. **Reviewed and merged 2026-07-17** via PR #29 (`bbb5042`) — suite 20/20. Schema chain: 10/13; DB-11/12 then the DB-13 audit.
+- DB-11: `mcp_credentials` live — hash-only credential storage, uniform RLS. **Reviewed and merged 2026-07-17** via PR #31 (`d4c8d1b`) — suite 22/22. Schema chain: 11/13; DB-12 then DB-13.
 
 ## In Progress
 
@@ -73,8 +74,8 @@ Done: Sprint 0 (governance), Sprint 1 (repo & tooling foundation — all 21 task
 
 ## Current Branch
 
-`feature/db-11-mcp-credentials`
+`main`
 
 ## Last Updated
 
-2026-07-17 — DB-11 implemented and awaiting independent review; DB-12 not started (Codex, database implementation role)
+2026-07-17 — DB-11 reviewed and merged (PR #31); DB-12 next, then DB-13 (Claude, reviewer role)
