@@ -176,6 +176,18 @@ export function createCloudIntegrationTestProvisioner() {
   return { createUser, deleteUsers };
 }
 
+/**
+ * Service-role client for test setup/verification only (ADR-12): reuses the
+ * dev-project hostname pin and fail-closed credential checks above.
+ */
+export function createServiceRoleTestClient(): SupabaseClient {
+  const { supabaseServiceRoleKey, supabaseUrl } = getIntegrationEnvironment();
+
+  return createClient(supabaseUrl, supabaseServiceRoleKey, {
+    auth: { autoRefreshToken: false, persistSession: false },
+  });
+}
+
 export function createCloudIntegrationTestHarness(): {
   userA: AuthenticatedTestUser;
   userB: AuthenticatedTestUser;
