@@ -21,6 +21,21 @@ Estimated Context Needed:
 
 ---
 
+## 2026-07-17 — Claude (Reviewer) — DB-10 review & merge
+
+**Session Date:** 2026-07-17
+**Agent:** Claude, reviewer role (TPM/governance)
+**Objective:** Review PR #29 (DB-10: chat tables), merge if sound.
+**Files Modified:** `.ai/TASK_QUEUE.md` (DB-10 → Done, Completed entry), `docs/PROJECT_STATE.md`, `docs/AI_HANDOFF.md` (this entry).
+**Files Added:** None.
+**Architecture Decisions:** None. Scope↔note_id consistency stays service-layer per §4.10 — correctly not turned into a DB CHECK.
+**Verification performed:** SQL line-checked against §4.10–4.11: scope/role CHECKs, nullable `note_id` with ADR-14 cascade, ADR-16 `conversation_id` cascade, `citations` jsonb, `(conversation_id, created_at)` index, uniform RLS + least-privilege on both tables. Tests: `23514` CHECK rejections, cross-user denial on both tables, and both cascade chains verified live — including the two-level note-object → conversation → messages chain. **Reviewer ran the full Cloud suite: 9 files, 20/20 green.** Squash-merged as `bbb5042`.
+**Outstanding Work:** DB-11 (`mcp_credentials`) and DB-12 (`audit_log` — **remember the ADR-16 SET NULL exception**), then DB-13 with its three accumulated audit notes. PR #14 rebase. AUTH-01, CI-04 unclaimed.
+**Known Bugs:** None.
+**Risks:** None new.
+**Suggested Next Task:** Codex: DB-11 or DB-12 (both dependency-ready; DB-12 carries the do-not-cascade warning on its queue row).
+**Estimated Context Needed:** This entry, DB-10 Completed entry, [04_DATABASE §4.12–4.13](04_DATABASE.md#412-mcp_credentials), ADR-16.
+
 ## 2026-07-17 — Codex (Database) — DB-10 implementation complete
 
 **Session Date:** 2026-07-17
