@@ -21,6 +21,21 @@ Estimated Context Needed:
 
 ---
 
+## 2026-07-18 — Claude (Reviewer) — DB-14 review & merge
+
+**Session Date:** 2026-07-18
+**Agent:** Claude, reviewer role (TPM/governance)
+**Objective:** Review PR #37 (DB-14: cross-user coverage verification), merge if sound.
+**Files Modified:** `.ai/TASK_QUEUE.md` (DB-14 → Done, Completed entry), `docs/PROJECT_STATE.md`, `docs/AI_HANDOFF.md` (this entry).
+**Files Added:** None.
+**Architecture Decisions:** None. DB-14-as-coverage-audit accepted: GOV-6 made per-table denial tests ship with each migration, so the batch-suite task reduces to verification — the same logic GOV-6 itself applied to DB-13.
+**Verification performed:** Independently re-mapped all 13 public tables to denial assertions across the 11 suite files — mapping confirmed (read + write denial per each table's privilege contract, including profiles' Auth-lifecycle-only writes and audit_log's append-only shape). Zero executable files changed in the PR; suite state identical to the 26/26 DB-13-review run, so no redundant Cloud run was performed (rate-limit prudence). Squash-merged as `2b88641`.
+**Outstanding Work:** DB-15 (pg_cron purge job) closes the database phase. PR #14 rebase. AUTH-01, CI-04 unclaimed.
+**Known Bugs:** None.
+**Risks:** None new.
+**Suggested Next Task:** Codex: DB-15 — note §6's cascade expectations are already proven live by the per-table tests; the new surface is the pg_cron schedule itself and the storage-object cleanup for purged attachments.
+**Estimated Context Needed:** This entry, [04_DATABASE §6](04_DATABASE.md#6-soft-deletes), DB-15 queue row.
+
 ## 2026-07-18 — Codex (Database) — DB-14 cross-user suite verified
 
 **Session Date:** 2026-07-18
