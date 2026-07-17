@@ -21,6 +21,22 @@ Estimated Context Needed:
 
 ---
 
+## 2026-07-17 — Claude (Reviewer) — DB-09 review & merge
+
+**Session Date:** 2026-07-17
+**Agent:** Claude, reviewer role (TPM/governance)
+**Objective:** Review PR #27 (DB-09: `attachments` + private storage), merge if sound.
+**Files Modified:** `.ai/TASK_QUEUE.md` (DB-09 → Done, Completed entry; CI-04 row gains a storage-helpers image note), `docs/PROJECT_STATE.md`, `docs/AI_HANDOFF.md` (this entry).
+**Files Added:** None.
+**Architecture Decisions:** None new. Operation-scoping the storage SELECT policy to sign/delete-lookup is accepted as *implementation* of 09_SECURITY §4's "access granted exclusively through signed URLs" — the spec sentence, enforced at the DB rather than by service-layer convention. Correctly scoped: no undocumented MIME allowlist, size limit, or update capability was invented (size stays service-layer per §4.4).
+**Verification performed:** All three migrations read in full. Table exact to §4.4; bucket private; storage policies require owner-first path segment AND operation membership (sign/delete/delete_many) for reads. Test coverage includes the decisive assertion — **owner direct-download denial** — plus real upload → signed URL → download round-trip, cross-user denial on download/sign/upload/delete, own-session-foreign-path upload denial, and post-delete physical removal. **Reviewer ran the full Cloud suite live: 8 files, 17/17 green.** Squash-merged as `6182d17`.
+**Process notes:** The three-migration sequence is disclosure done right: the sign-only middle state broke delete lookups and left two orphaned Storage objects; the implementer's own cleanup audit caught it, removed them via the Storage API, added the corrective migration and a regression assertion. Forward-only discipline held throughout (ADR-10).
+**Outstanding Work:** DB-10..12, then DB-13 (audit notes accumulated: composite same-owner FKs, owner-leading indexes). CI-04 image must include operation-scoped storage helpers (noted on its row). PR #14 rebase. AUTH-01 unclaimed.
+**Known Bugs:** None.
+**Risks:** None new.
+**Suggested Next Task:** Codex: DB-10 (chat tables — conversation_id cascade per ADR-16) or DB-11/12 (both DB-02-dependent only).
+**Estimated Context Needed:** This entry, DB-09 Completed entry, [04_DATABASE §4.10–4.13](04_DATABASE.md#410-chat_conversations) + ADR-16 for the remaining tables.
+
 ## 2026-07-17 — Codex (Database) — DB-09 implementation complete
 
 **Session Date:** 2026-07-17
