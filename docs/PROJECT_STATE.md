@@ -17,7 +17,7 @@ Done: Sprint 0 (governance), Sprint 1 (repo & tooling foundation — all 21 task
 |---|---|
 | Engineering documentation (12 docs) | ✅ Complete, audited twice for consistency |
 | Governance layer (this file set) | ✅ Complete |
-| Implementation | 26 Done + 5 In Review / 309 tasks ([12_TASKS.md](12_TASKS.md)) |
+| Implementation | 27 Done + 5 In Review / 309 tasks ([12_TASKS.md](12_TASKS.md)) |
 
 ## Completed
 
@@ -49,6 +49,7 @@ Done: Sprint 0 (governance), Sprint 1 (repo & tooling foundation — all 21 task
 
 ## In Progress
 
+- DB-14: cross-user RLS integration coverage audit complete. **In Review** — all 13 public tables have explicit user-B read/write denial assertions across the existing GOV-6 Cloud suite; no duplicate tests were added. Full suite 26/26; cleanup confirmed zero integration users and application rows.
 - SHELL-07 (PR #14) — substance approved; needs rebase onto main + the PROJECT_STATE section fix. **Reassigned to Codex** (Antigravity and the multi-folder setup were scratched 2026-07-17; implementation is now Codex alone, alternating with Claude per task in one checkout).
 
 ## Blocked
@@ -76,8 +77,8 @@ Done: Sprint 0 (governance), Sprint 1 (repo & tooling foundation — all 21 task
 
 ## Current Branch
 
-`main`
+`chore/db-14-cross-user-rls-suite`
 
 ## Last Updated
 
-2026-07-18 — DB-13 reviewed and merged (PR #35); ADR-17 recorded; DB-14/15 remain in the database phase (Claude, reviewer role)
+2026-07-18 — DB-14 coverage audit complete and awaiting review; Cloud suite 26/26 (Codex, database role)
