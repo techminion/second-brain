@@ -21,6 +21,25 @@ Estimated Context Needed:
 
 ---
 
+## 2026-07-18 — Codex (Database) — DB-14 cross-user suite verified
+
+**Session Date:** 2026-07-18
+**Agent:** Codex, database implementation role
+**Objective:** Complete DB-14 by proving that every public table has an explicit cross-user RLS denial test.
+**Files Modified:** `.ai/TASK_QUEUE.md` (DB-14 → In Review), `docs/PROJECT_STATE.md`, `docs/AI_HANDOFF.md` (this entry).
+**Files Added:** None.
+**Architecture Decisions:** None. GOV-6 already required each table's denial coverage in its own migration PR. DB-14 therefore verifies and consolidates that coverage instead of adding a second, duplicate Cloud suite.
+**Coverage verified:** `profiles` → `profiles-rls`; `knowledge_objects` → `knowledge-objects-rls`; `notes` → `notes-rls`; `attachments` → `attachments-rls`; `folders` → `folders-rls`; `tags` and `knowledge_object_tags` → `tags-rls`; `links` → `links-rls`; `embeddings` → `embeddings-rls`; `chat_conversations` and `chat_messages` → `chat-rls`; `mcp_credentials` → `mcp-credentials-rls`; `audit_log` → `audit-log-rls`. Every mapping includes user-B read denial and write denial appropriate to the table's privilege contract; CRUD tables cover insert/update/delete, profiles covers cross-user update plus Auth-lifecycle-only insert/delete, and audit_log covers insert plus its append-only update/delete denial.
+**Migrations created:** None.
+**Policies created:** None.
+**Indexes created:** None.
+**Verification performed:** Read all 11 RLS integration files and mapped their assertions to all 13 public tables. The full Cloud integration suite passed 11 files / 26 tests under a Node runtime satisfying the repository's `>=22.12.0` engine requirement. Post-run Cloud SQL confirmed zero `integration-%@example.invalid` Auth users and zero rows in every public application table. Local format check, strict typecheck, lint, 18 unit tests, and production build all passed.
+**Outstanding Work:** Independent reviewer must verify DB-14. DB-15 was not started.
+**Known Bugs:** None.
+**Risks:** The pre-existing residual first-request clock-skew flake remains tracked in PROJECT_STATE; it did not recur in this run.
+**Suggested Next Task:** Review DB-14. After both implementation and reviewer-outcome PRs merge, DB-15 is the next database task.
+**Estimated Context Needed:** This entry, the 11 `tests/integration/*-rls.integration.test.ts` files, GOV-6, and `docs/09_SECURITY.md §9` T1.
+
 ## 2026-07-18 — Claude (Reviewer + Architect) — DB-13 review & merge; ADR-17 dispositions
 
 **Session Date:** 2026-07-18
