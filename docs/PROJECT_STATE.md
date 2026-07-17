@@ -17,7 +17,7 @@ Done: Sprint 0 (governance), Sprint 1 (repo & tooling foundation — all 21 task
 |---|---|
 | Engineering documentation (12 docs) | ✅ Complete, audited twice for consistency |
 | Governance layer (this file set) | ✅ Complete |
-| Implementation | 24 Done + 4 In Review / 309 tasks ([12_TASKS.md](12_TASKS.md)) |
+| Implementation | 24 Done + 5 In Review / 309 tasks ([12_TASKS.md](12_TASKS.md)) |
 
 ## Completed
 
@@ -46,6 +46,7 @@ Done: Sprint 0 (governance), Sprint 1 (repo & tooling foundation — all 21 task
 
 ## In Progress
 
+- DB-11: `mcp_credentials` is live on the shared Cloud project with hash-only storage, ADR-14 owner cascade, uniform owner RLS, and a GOV-6 denial test. **In Review** — focused tests 2/2 and full Cloud suite 22/22 green; DB-12 was not started.
 - SHELL-07 (PR #14) — substance approved; needs rebase onto main + the PROJECT_STATE section fix. **Reassigned to Codex** (Antigravity and the multi-folder setup were scratched 2026-07-17; implementation is now Codex alone, alternating with Claude per task in one checkout).
 
 ## Blocked
@@ -72,8 +73,8 @@ Done: Sprint 0 (governance), Sprint 1 (repo & tooling foundation — all 21 task
 
 ## Current Branch
 
-`main`
+`feature/db-11-mcp-credentials`
 
 ## Last Updated
 
-2026-07-17 — DB-10 reviewed and merged (PR #29); DB-11/12 open, then DB-13 (Claude, reviewer role)
+2026-07-17 — DB-11 implemented and awaiting independent review; DB-12 not started (Codex, database implementation role)

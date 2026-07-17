@@ -21,6 +21,24 @@ Estimated Context Needed:
 
 ---
 
+## 2026-07-17 — Codex (Database) — DB-11 implementation complete
+
+**Session Date:** 2026-07-17
+**Agent:** Codex, database implementation role
+**Objective:** Implement DB-11 only: the `mcp_credentials` table.
+**Files Modified:** `.ai/TASK_QUEUE.md` (DB-11 → In Review), `docs/PROJECT_STATE.md` (implementation state), `docs/AI_HANDOFF.md` (this entry).
+**Files Added:** `supabase/migrations/20260717164814_create_mcp_credentials.sql`, `tests/integration/mcp-credentials-rls.integration.test.ts`.
+**Architecture Decisions:** None. Implemented `docs/04_DATABASE.md §4.12`, ADR-14, and GOV-6 exactly. No raw credential is stored; `token_hash` is the only credential material in the schema. No undocumented token-hash uniqueness constraint or secondary index was invented.
+**Migration applied:** `20260717164814_create_mcp_credentials`; the repository filename exactly matches Cloud migration history.
+**Policies created:** `mcp_credentials_select_own`, `mcp_credentials_insert_own`, `mcp_credentials_update_own`, and `mcp_credentials_delete_own`. All target `authenticated`; update has both `USING` and `WITH CHECK`; every predicate compares initplan-cached `(select auth.uid())` with `owner_id`.
+**Indexes created:** `mcp_credentials_pkey` only, backing the documented primary key. §4.12 specifies no secondary index.
+**Verification performed:** The exact migration first passed inside a rollback-only Cloud transaction with assertions for the seven documented columns, RLS, four policies, and the ADR-14 owner cascade. Live catalog inspection confirmed exact types/nullability/defaults, the cascading profile FK, RLS, policy shapes, primary-key index, CRUD-only grants for `authenticated`/`service_role`, and no `anon` grants. Focused Cloud tests passed 2/2: owner creation, hash/metadata round-trip, `last_used_at` and immediate-revocation state updates, plus cross-user read/update/delete/insert denial. The full Cloud suite passed 10 files / 22 tests. Cleanup SQL confirmed zero ephemeral Auth users, profiles, credentials, or orphaned credential rows. Security advisors returned no findings. Local format check, strict typecheck, lint, 18 unit tests, and production build all passed.
+**Outstanding Work:** Independent reviewer must verify DB-11 before merge. DB-12 was not started.
+**Known Bugs:** None.
+**Risks:** The performance advisor reports the expected INFO-only unindexed `mcp_credentials.owner_id` FK, alongside the existing cross-table owner-FK pattern. The documented §4.12 index set is empty; DB-13 owns the uniform owner-leading/FK-index review, so no undocumented index was added here. The absence of a documented `token_hash` lookup index should also be assessed consistently at DB-13 before MCP-02 depends on it.
+**Suggested Next Task:** Review DB-11. After merge, the database role may claim DB-12, preserving its ADR-16 `audit_log.knowledge_object_id ON DELETE SET NULL` exception.
+**Estimated Context Needed:** DB-11 diff; `docs/04_DATABASE.md §4.12, §7, §11`; `docs/06_MCP.md §4`; `docs/09_SECURITY.md §3–5`; ADR-14; GOV-6.
+
 ## 2026-07-17 — Claude (Reviewer) — DB-10 review & merge
 
 **Session Date:** 2026-07-17
