@@ -17,7 +17,7 @@ Done: Sprint 0 (governance), Sprint 1 (repo & tooling foundation — all 21 task
 |---|---|
 | Engineering documentation (12 docs) | ✅ Complete, audited twice for consistency |
 | Governance layer (this file set) | ✅ Complete |
-| Implementation | 23 Done + 3 In Review / 309 tasks ([12_TASKS.md](12_TASKS.md)) |
+| Implementation | 24 Done + 3 In Review / 309 tasks ([12_TASKS.md](12_TASKS.md)) |
 
 ## Completed
 
@@ -43,7 +43,7 @@ Done: Sprint 0 (governance), Sprint 1 (repo & tooling foundation — all 21 task
 
 ## In Progress
 
-- DB-07 (`links`) — implemented and applied to the shared Cloud development project; unique pair constraint, both direction indexes, ADR-14 cascades, uniform RLS, and GOV-6 coverage are ready for independent review.
+- DB-08 (`embeddings`) — pgvector 0.8.2 and the documented 1536-dimension cosine-HNSW table are live on the shared Cloud development project; uniform RLS, GOV-6 coverage, and the shared-user/retry harness hardening are ready for independent review.
 - SHELL-07 (PR #14) — substance approved; needs rebase onto main + the PROJECT_STATE section fix. **Reassigned to Codex** (Antigravity and the multi-folder setup were scratched 2026-07-17; implementation is now Codex alone, alternating with Claude per task in one checkout).
 
 ## Blocked
@@ -56,7 +56,6 @@ Done: Sprint 0 (governance), Sprint 1 (repo & tooling foundation — all 21 task
 
 ## Known Technical Debt
 
-- Cloud integration harness hardening (database role, small PR, priority rising): (1) transient `JWT issued at future` clock-skew flake (seen DB-03, DB-04 reviews) — add issued-at tolerance or one retry; (2) **Supabase Auth rate limiting** — repeated suite runs trip the signup/signin limiter (`Unable to authenticate an isolated Cloud integration-test user`, suites fail closed → skip; observed DB-07 review). Each full run creates 2 users × 6 files and growing toward 13 — add backoff/retry and consider reusing one user pair across files via a shared setup.
 - The `feature-boundaries` lint rule only catches `@/features/...` alias imports; relative-path imports bypass it. Follow-up hardening candidate.
 - `tsconfig.json` typechecks `src/**` only — `e2e/`, `tools/`, and config files are not typechecked.
 - Interim pointer-README in place; OBS-10 replaces it with the full public README at launch.
@@ -71,8 +70,8 @@ Done: Sprint 0 (governance), Sprint 1 (repo & tooling foundation — all 21 task
 
 ## Current Branch
 
-`feature/db-07-links`
+`feature/db-08-embeddings`
 
 ## Last Updated
 
-2026-07-17 — DB-07 implemented and applied to Cloud; live catalog and 12-test integration suite verified; awaiting review (Codex, database role)
+2026-07-17 — DB-08 implemented and applied to Cloud; shared-user harness hardening validated with a clean 14-test suite and teardown; awaiting review (Codex, database role)

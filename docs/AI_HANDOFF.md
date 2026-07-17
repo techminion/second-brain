@@ -21,6 +21,25 @@ Estimated Context Needed:
 
 ---
 
+## 2026-07-17 — Codex (Database) — DB-08 implementation complete
+
+**Session Date:** 2026-07-17
+**Agent:** Codex, database implementation role
+**Objective:** Implement DB-08 (pgvector + `embeddings`) and the DB-07 review's priority harness-hardening ride-along.
+**Files Modified:** `.ai/TASK_QUEUE.md` (DB-08 → In Review), `docs/PROJECT_STATE.md` (implementation state; resolved harness debt removed), `docs/AI_HANDOFF.md` (this entry), `vitest.integration.config.ts`, `tests/integration/supabase-test-harness.ts`, and the six existing RLS integration files (consume the shared user pair).
+**Files Added:** `supabase/migrations/20260717061719_create_embeddings.sql`, `tests/integration/embeddings-rls.integration.test.ts`, `tests/integration/supabase-test-global-setup.ts`.
+**Architecture Decisions:** None. Implemented `docs/04_DATABASE.md §4.9`, `docs/08_SEARCH.md §3`, ADR-14, and GOV-6 exactly. Harness provisioning remains within ADR-12's test-only, dev-project-only service-role context.
+**Migration applied:** `20260717061719_create_embeddings`; repository filename exactly matches Cloud migration history. It enables pgvector in `extensions` and creates the table in one forward-only migration.
+**Policies created:** `embeddings_select_own`, `embeddings_insert_own`, `embeddings_update_own`, `embeddings_delete_own`. All target `authenticated`; update has both `USING` and `WITH CHECK`; every predicate compares initplan-cached `(select auth.uid())` with `owner_id`.
+**Indexes created:** `embeddings_pkey`; unique constraint index `embeddings_knowledge_object_id_chunk_index_key`; `embeddings_embedding_hnsw_idx` using the `extensions.vector_cosine_ops` operator class.
+**Harness hardening:** Vitest global setup now provisions one isolated user pair for the entire run, passes only their ephemeral access tokens/ids to workers, and deletes both users after all files finish. Auth creation/sign-in retries only rate-limit (`429`/message) and `JWT issued at future` failures with bounded 1s/2s/4s backoff; other failures remain fail-closed. This reduces Auth sign-ins from 12 per full run today (26 at 13 table files) to exactly 2.
+**Verification performed:** The exact migration first succeeded inside a rolled-back Cloud transaction. After applying, live catalog inspection confirmed pgvector 0.8.2 in `extensions`; all seven documented columns including `vector(1536)`; both ADR-14 cascades; unique object/chunk pairs; HNSW access method with cosine operator class; RLS enabled; four policies; and CRUD-only grants for `authenticated`/`service_role` with no `anon` grants. Focused DB-08 Cloud tests passed (2 tests): 1536-value vector insertion, duplicate rejection, owner access, cross-user read/update/delete/insert denial, and live object-delete cascade. The full suite passed (7 files, 14 tests) using one shared pair. Post-run SQL confirmed zero ephemeral Auth users, profiles, or embeddings remained. Security advisors returned no findings. Local format, strict typecheck, and lint passed before final validation.
+**Outstanding Work:** Independent reviewer must verify the PR and Cloud-attested state before merge. DB-08 remains In Review; no subsequent task was started.
+**Known Bugs:** None.
+**Risks:** Performance advisors report INFO-only notices for the new unused HNSW index (expected before SEM-02 issues search queries) and unindexed `embeddings.owner_id` FK (the documented index set does not include an owner-leading index). DB-13 should assess owner-leading indexes consistently across all tables; no undocumented index was invented here.
+**Suggested Next Task:** Review DB-08. After merge, the database role may claim DB-09.
+**Estimated Context Needed:** DB-08 diff; `docs/04_DATABASE.md §4.9, §7, §11`; `docs/08_SEARCH.md §3`; ADR-12; ADR-14; GOV-6.
+
 ## 2026-07-17 — Claude (Reviewer) — DB-07 review & merge; harness rate-limit failure mode identified
 
 **Session Date:** 2026-07-17

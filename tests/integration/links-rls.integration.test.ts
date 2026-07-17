@@ -1,26 +1,9 @@
-import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { describe, expect, it } from "vitest";
 
-import {
-  createCloudIntegrationTestHarness,
-  type AuthenticatedTestUser,
-} from "./supabase-test-harness";
+import { createCloudIntegrationTestHarness } from "./supabase-test-harness";
 
 describe("links schema and RLS", () => {
-  const harness = createCloudIntegrationTestHarness();
-  const users: AuthenticatedTestUser[] = [];
-  let userA: AuthenticatedTestUser;
-  let userB: AuthenticatedTestUser;
-
-  beforeAll(async () => {
-    userA = await harness.createAuthenticatedUser();
-    users.push(userA);
-    userB = await harness.createAuthenticatedUser();
-    users.push(userB);
-  });
-
-  afterAll(async () => {
-    await harness.deleteUsers(users);
-  });
+  const { userA, userB } = createCloudIntegrationTestHarness();
 
   it("enforces one edge per object pair and owner-only access", async () => {
     const { data: objects, error: objectsCreateError } = await userA.client
