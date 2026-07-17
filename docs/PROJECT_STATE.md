@@ -49,10 +49,10 @@ Done: Sprint 0 (governance), Sprint 1 (repo & tooling foundation — all 21 task
 - DB-14: cross-user denial coverage verified complete — 13 tables mapped to GOV-6 tests, independently re-checked in review. **Reviewed and merged 2026-07-18** via PR #37 (`2b88641`). Only DB-15 remains in the database phase.
 - DB-15: retention purge live — ADR-18 worker + pg_cron schedule, migration applied to Cloud via Supabase MCP (history 17/17, advisors clean, no-op path verified). **Database phase complete: DB-01..16.** Merged via PRs #40/#43.
 - OBS-02: request logging wired — `withRequestLogging` wrapper on all existing route boundaries, AUTH-04-ready user resolver slot. **Merged 2026-07-18** via PR #44 (self-implemented, user-authorized; 31 unit tests green).
+- SHELL-07: TanStack Query provider live — sane defaults, dev-gated devtools, ThemeProvider→QueryProvider nesting. **Reviewed and merged 2026-07-18** via PR #14 (`13b3ff6`) after rebase; the Antigravity-era backlog is fully cleared. SHELL-02/03/10 remain on the shell track.
 
 ## In Progress
 
-- SHELL-07 (PR #14) — rebased onto current main, all checks green, awaiting reviewer merge.
 
 ## Blocked
 
@@ -83,4 +83,4 @@ Done: Sprint 0 (governance), Sprint 1 (repo & tooling foundation — all 21 task
 
 ## Last Updated
 
-2026-07-18 — OBS-02 merged (PR #44); Sprint 2 remainder: AUTH track, SHELL track + PR #14, CI-04/05/07 (Claude)
+2026-07-18 — SHELL-07 reviewed and merged (PR #14); Sprint 2 remainder: AUTH track, SHELL-02/03/10, CI-04/05/07 (Claude, reviewer role)
