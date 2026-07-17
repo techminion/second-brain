@@ -272,7 +272,7 @@ Minimal, append-only record of mutating actions — see §8.
 |---|---|
 | Default query scope | Every repository read filters `deleted_at IS NULL` unless explicitly querying trash. |
 | Retention window | 30 days from `deleted_at`. |
-| Hard delete | A scheduled job (Supabase `pg_cron`) purges `knowledge_objects` rows (and cascades: `notes`/`attachments`, `embeddings`, `links` referencing them, storage objects for attachments) where `deleted_at < now() - interval '30 days'`. |
+| Hard delete | A `pg_cron`-scheduled, shared-secret-authenticated call to a service-role purge worker (ADR-18, [DECISIONS.md](DECISIONS.md)) purges expired `knowledge_objects` **and expired `folders`** (`deleted_at < now() - interval '30 days'`). Order is binding: attachment Storage binaries are deleted via the **Storage API first**, envelope rows only after (FK cascades then remove `notes`/`attachments`, `embeddings`, `links`, join rows per ADR-14/16); folder purge relies on ADR-15's `SET NULL` for survivors. The worker is idempotent and safely re-runnable after partial failure. |
 | Restore | Setting `deleted_at = NULL` within the window fully restores the object — no separate "trash" table to reconcile. |
 
 Full revision history (undo beyond a single restore) is explicitly not this mechanism — see [01_PRODUCT §11](01_PRODUCT.md#11-non-goals-mvp) and §10 below.

@@ -45,7 +45,7 @@ The Supabase service-role key bypasses RLS entirely, so its use is enumerated ex
 | Permitted use | Why RLS-scoped access is impossible there |
 |---|---|
 | Embedding pipeline endpoint ([03_ARCHITECTURE.md §6.4](03_ARCHITECTURE.md#64-embedding-pipeline)) | Triggered by a database webhook, not a user request — there is no user JWT to run under. The endpoint derives `owner_id` from the note row itself and writes only `embeddings` rows for that object. |
-| Scheduled retention purge ([04_DATABASE.md §6](04_DATABASE.md#6-soft-deletes)) | A `pg_cron` job with no user in the loop, deleting rows already 30 days past soft-deletion across all users. |
+| Scheduled retention purge ([04_DATABASE.md §6](04_DATABASE.md#6-soft-deletes), ADR-18) | A `pg_cron`-triggered worker endpoint with no user in the loop, deleting Storage binaries and rows already 30 days past soft-deletion across all users. Authenticated by shared-secret header like the embedding webhook. |
 | Cloud integration-test harness (ADR-12, [DECISIONS.md](DECISIONS.md)) | Creating and deleting isolated test users requires the GoTrue admin API, which is service-role-only; the harness also cleans up test data across those users. Constraints: lives in test code only, never importable from `src/` application code; targets only the shared Cloud *development* project — the production project's key is never configured in any test environment. |
 
 The MCP server is explicitly **not** on this list ([06_MCP.md §9](06_MCP.md#9-security-considerations)) — it resolves a user and runs RLS-scoped, always.

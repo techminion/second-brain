@@ -81,4 +81,4 @@ Done: Sprint 0 (governance), Sprint 1 (repo & tooling foundation — all 21 task
 
 ## Last Updated
 
-2026-07-18 — DB-14 reviewed and merged (PR #37); DB-15 is the last database task (Claude, reviewer role)
+2026-07-18 — ADR-18 recorded (purge worker: Storage-API-first, folders included); DB-15 unblocked (Claude, architect role)

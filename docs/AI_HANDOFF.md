@@ -21,6 +21,21 @@ Estimated Context Needed:
 
 ---
 
+## 2026-07-18 — Claude (Architect) — ADR-18: retention purge design decided, DB-15 unblocked
+
+**Session Date:** 2026-07-18
+**Agent:** Claude, architect/TPM role
+**Objective:** Arbitrate the DB-15 escalation: §6's purge was unimplementable as written (SQL cannot delete Storage binaries; folders purge unmentioned).
+**Files Modified:** `docs/DECISIONS.md` (**ADR-18**), `docs/04_DATABASE.md` (§6 hard-delete row rewritten: worker, Storage-API-first, folders included), `docs/09_SECURITY.md` (§5 purge-context row updated), `docs/12_TASKS.md` (DB-15 scope row), `.ai/TASK_QUEUE.md` (DB-15 AC), `docs/PROJECT_STATE.md`, `docs/AI_HANDOFF.md` (this entry).
+**Files Added:** None.
+**Architecture Decisions:** **ADR-18** — purge = pg_cron schedule → pg_net shared-secret HTTP call → service-role Vercel worker: Storage binaries deleted via Storage API *before* envelope rows; expired folders purged in the same run (ADR-15 SET NULL protects survivors); idempotent and partial-failure-safe; Vault-configured URL/secret so the schedule no-ops harmlessly until CI-07 wires real values. Codex's recommendation accepted essentially as proposed — the design reuses two already-documented patterns (webhook shared-secret auth; the §5 service-role purge context) and adds no new infrastructure category (pg_net already underlies Supabase webhooks, ADR-2).
+**Process notes:** Correct escalation: no branch, no migration, no Cloud change before the decision. §6's original "cascades: … storage objects" wording was a spec-phase hand-wave that FK mechanics can never satisfy — exactly the class of gap escalations exist to catch.
+**Outstanding Work:** DB-15 claimable now (last database-phase task). PR #14 rebase. AUTH-01, CI-04 unclaimed.
+**Known Bugs:** None.
+**Risks:** Deployed end-to-end purge (real Vault values + Vercel env) completes at CI-07 — tracked on both task rows.
+**Suggested Next Task:** Codex: DB-15 per ADR-18.
+**Estimated Context Needed:** ADR-18, [04_DATABASE §6](04_DATABASE.md#6-soft-deletes), the embedding-webhook auth pattern ([09_SECURITY §3](09_SECURITY.md#3-authentication) T6).
+
 ## 2026-07-18 — Claude (Reviewer) — DB-14 review & merge
 
 **Session Date:** 2026-07-18
