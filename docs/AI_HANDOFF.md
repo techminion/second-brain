@@ -21,6 +21,24 @@ Estimated Context Needed:
 
 ---
 
+## 2026-07-18 — Codex (Database) — DB-12 implementation complete
+
+**Session Date:** 2026-07-18
+**Agent:** Codex, database implementation role
+**Objective:** Implement DB-12 only: the append-only `audit_log` table.
+**Files Modified:** `.ai/TASK_QUEUE.md` (DB-12 → In Review), `docs/PROJECT_STATE.md` (implementation state and stale DB-11 In Progress entry removed), `docs/AI_HANDOFF.md` (this entry).
+**Files Added:** `supabase/migrations/20260717195523_create_audit_log.sql`, `tests/integration/audit-log-rls.integration.test.ts`.
+**Architecture Decisions:** None. Implemented `docs/04_DATABASE.md §4.13, §7–8`, ADR-14, ADR-16, and GOV-6 exactly. The table is append-only through both privileges and RLS: authenticated and service-role callers receive only `SELECT`/`INSERT`; no `UPDATE`/`DELETE` policy exists. The owner FK cascades for account erasure, while `knowledge_object_id` uses ADR-16 `ON DELETE SET NULL` so object purge preserves history.
+**Migration applied:** `20260717195523_create_audit_log`; the repository filename exactly matches Cloud migration history.
+**Policies created:** `audit_log_select_own` and `audit_log_insert_own`. Both target `authenticated` and use initplan-cached `(select auth.uid()) = owner_id`; there are deliberately no update or delete policies.
+**Indexes created:** `audit_log_pkey` and the documented `audit_log_owner_id_created_at_idx` on `(owner_id, created_at)`.
+**Verification performed:** The exact migration first passed inside a rollback-only Cloud transaction with assertions for all seven columns, RLS, exactly two policies, absence of update/delete policies, both FK delete actions, and the documented retrieval index. Live catalog inspection confirmed exact types/nullability/defaults, the actor CHECK, ADR-14 owner cascade, ADR-16 object `SET NULL`, both indexes, SELECT/INSERT-only grants for `authenticated`/`service_role`, no `anon` grants, and the two intended policies. Focused Cloud tests passed 3/3: valid metadata round-trip, invalid actor rejection (`23514`), owner append-only enforcement, cross-user read/insert/update/delete denial, and live object-purge history retention. The full Cloud suite passed 11 files / 25 tests. Cleanup SQL confirmed zero ephemeral Auth users, profiles, audit rows, or orphaned audit rows. Security advisors returned no findings. Local format check, strict typecheck, lint, 18 unit tests, and production build all passed.
+**Outstanding Work:** Independent reviewer must verify DB-12 before merge. DB-13 was not started.
+**Known Bugs:** None.
+**Risks:** Performance advisors report INFO-only notices for the new, unused documented retrieval index and the unindexed `knowledge_object_id` FK. DB-13 owns the accumulated cross-table FK/index audit, so no undocumented index was added here.
+**Suggested Next Task:** Review DB-12. After merge, DB-13 becomes dependency-ready for the full RLS/index audit.
+**Estimated Context Needed:** DB-12 diff; `docs/04_DATABASE.md §4.13, §7–8, §11`; ADR-14; ADR-16; GOV-6.
+
 ## 2026-07-17 — Claude (Reviewer) — DB-11 review & merge
 
 **Session Date:** 2026-07-17
