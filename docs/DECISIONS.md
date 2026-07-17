@@ -174,6 +174,16 @@ Future Revisit:
 **Tradeoffs:** Purged objects' audit rows lose their object reference — acceptable: the row's `owner_id`, action, and timestamp still tell the story, and a purged object's id is meaningless anyway. Account deletion still erases the user's whole audit trail via `owner_id` cascade (ADR-14) — correct under FR-AUTH-6's erasure posture.
 **Future Revisit:** None; new FK columns must state their delete action at spec time (standing rule from ADR-15).
 
+## ADR-17 — DB-13 hardening dispositions: composite same-owner FKs and blanket owner/FK indexes both declined for MVP
+
+**Decision:** The two hardening candidates escalated by the DB-13 audit are **deliberately not adopted**. (1) Composite same-owner FKs (`FOREIGN KEY (ref_id, owner_id) REFERENCES t(id, owner_id)`) are declined: they would require `UNIQUE(id, owner_id)` on every referenced table and a rewrite of ~10 FKs to close a threat that requires knowing another user's unguessable UUIDv4 and, even then, yields only a dangling invisible reference — no data disclosure (RLS remains the enforcement floor; the service layer validates references under RLS). (2) Blanket owner-leading/FK indexes are declined: every index the documented query patterns need already exists ([04_DATABASE §4](04_DATABASE.md#4-table-definitions)); advisor notices are INFO-only; indexes are added when a measured query needs them ([01_PRODUCT §6.1](01_PRODUCT.md#6-guiding-principles)), not preemptively.
+**Status:** Accepted (2026-07-18)
+**Context:** Flagged during DB-05 review (FK-vs-RLS bypass observation) and DB-08 review (advisor unindexed-FK notice); the DB-13 audit correctly surfaced both for architect disposition instead of changing schema unilaterally.
+**Options Considered:** Adopt now; adopt selectively; decline with recorded revisit triggers.
+**Chosen Solution:** Decline both, with triggers below — recorded so the questions cannot resurface as per-table escalations.
+**Tradeoffs:** A cross-owner reference planted via a known UUID remains representable at FK level (invisible and harmless under RLS). Some FK columns lack dedicated indexes, making certain cascade deletes marginally slower at scale — irrelevant at MVP volumes.
+**Future Revisit:** Composite FKs: if sharing/collaboration features (post-MVP) make other users' object IDs legitimately knowable. Indexes: if a measured slow query or advisor WARN (not INFO) implicates an unindexed FK.
+
 ## GOV-7 — Repository is public
 
 **Decision:** `techminion/second-brain` is a public GitHub repository. Consequences are binding: no secret may ever appear in the repository or its history (already policy — now with public blast radius); GitHub Actions workflows must assume fork PRs run them without secrets and with a read-only token; any future CI job that needs credentials (e.g., Cloud integration tests) must be gated so it cannot be triggered by a fork PR.

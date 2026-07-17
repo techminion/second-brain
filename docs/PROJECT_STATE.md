@@ -45,10 +45,10 @@ Done: Sprint 0 (governance), Sprint 1 (repo & tooling foundation — all 21 task
 - DB-10: chat tables live — scope/role CHECKs, both cascade chains verified live. **Reviewed and merged 2026-07-17** via PR #29 (`bbb5042`) — suite 20/20. Schema chain: 10/13; DB-11/12 then the DB-13 audit.
 - DB-11: `mcp_credentials` live — hash-only credential storage, uniform RLS. **Reviewed and merged 2026-07-17** via PR #31 (`d4c8d1b`) — suite 22/22. Schema chain: 11/13; DB-12 then DB-13.
 - DB-12: `audit_log` live — append-only at grant level, ADR-16 SET NULL exception proven live. **Reviewed and merged 2026-07-18** via PR #33 (`5d02462`) — suite 25/25. **All 13 schema tables live; DB-02..12 complete.** DB-13 audit claimable.
+- DB-13: RLS audit complete — 48 policies verified, legacy profiles grants corrected (the audit's one real finding), ADR-17 dispositions recorded. **Reviewed and merged 2026-07-18** via PR #35 (`70e894a`) — suite 26/26. DB-14/15 close the database phase.
 
 ## In Progress
 
-- DB-13: full 13-table RLS/policy/grant audit complete. **In Review** — corrected legacy `profiles` privileges to the documented SELECT/UPDATE-only contract; focused tests 2/2 and full Cloud suite 26/26 green; security advisors clean. All documented indexes exist. Undocumented same-owner composite FKs and blanket owner/FK indexing were not added and remain reviewer/architect hardening decisions.
 - SHELL-07 (PR #14) — substance approved; needs rebase onto main + the PROJECT_STATE section fix. **Reassigned to Codex** (Antigravity and the multi-folder setup were scratched 2026-07-17; implementation is now Codex alone, alternating with Claude per task in one checkout).
 
 ## Blocked
@@ -61,6 +61,7 @@ Done: Sprint 0 (governance), Sprint 1 (repo & tooling foundation — all 21 task
 
 ## Known Technical Debt
 
+- Harness residual flake: the DB-08 retry covers Auth user creation/sign-in, but the *first data request* after sign-in can still hit Cloud clock skew (1 failure seen in DB-13 review, rerun green). If it recurs, extend the retry/tolerance to first use of a fresh session.
 - The `feature-boundaries` lint rule only catches `@/features/...` alias imports; relative-path imports bypass it. Follow-up hardening candidate.
 - `tsconfig.json` typechecks `src/**` only — `e2e/`, `tools/`, and config files are not typechecked.
 - Interim pointer-README in place; OBS-10 replaces it with the full public README at launch.
@@ -75,8 +76,8 @@ Done: Sprint 0 (governance), Sprint 1 (repo & tooling foundation — all 21 task
 
 ## Current Branch
 
-`chore/db-13-rls-audit`
+`main`
 
 ## Last Updated
 
-2026-07-18 — DB-13 audit complete and awaiting review; profile privileges corrected; Cloud suite 26/26 (Codex, database role)
+2026-07-18 — DB-13 reviewed and merged (PR #35); ADR-17 recorded; DB-14/15 remain in the database phase (Claude, reviewer role)
