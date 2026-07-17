@@ -21,6 +21,24 @@ Estimated Context Needed:
 
 ---
 
+## 2026-07-17 — Codex (Database) — DB-10 implementation complete
+
+**Session Date:** 2026-07-17
+**Agent:** Codex, database implementation role
+**Objective:** Implement DB-10 only: the `chat_conversations` and `chat_messages` tables.
+**Files Modified:** `.ai/TASK_QUEUE.md` (DB-10 → In Review), `docs/PROJECT_STATE.md` (implementation state and stale DB-09 In Progress entry removed), `docs/AI_HANDOFF.md` (this entry).
+**Files Added:** `supabase/migrations/20260717160750_create_chat_tables.sql`, `tests/integration/chat-rls.integration.test.ts`.
+**Architecture Decisions:** None. Implemented `docs/04_DATABASE.md §4.10–4.11`, ADR-14, ADR-16, and GOV-6 exactly. The note/vault `note_id` shape remains service-layer-enforced as specified; SQL adds only the documented `scope` and `role` checks.
+**Migration applied:** `20260717160750_create_chat_tables`; the repository filename exactly matches Cloud migration history.
+**Policies created:** `chat_conversations_select_own`, `chat_conversations_insert_own`, `chat_conversations_update_own`, `chat_conversations_delete_own`, `chat_messages_select_own`, `chat_messages_insert_own`, `chat_messages_update_own`, `chat_messages_delete_own`. All target `authenticated`; updates have both `USING` and `WITH CHECK`; predicates use initplan-cached `(select auth.uid()) = owner_id`.
+**Indexes created:** `chat_conversations_pkey`, `chat_messages_pkey`, and documented ordered-retrieval index `chat_messages_conversation_id_created_at_idx` on `(conversation_id, created_at)`.
+**Verification performed:** The exact migration first passed inside a rollback-only Cloud transaction with table, policy, and index assertions. Live catalog inspection then confirmed all 13 documented columns across both tables, `scope` and `role` checks, ADR-14 cascades for both owner FKs and `note_id`, ADR-16 cascade for `conversation_id`, RLS enabled, eight policies, the retrieval index, and CRUD-only grants for `authenticated`/`service_role` with none for `anon`. Focused Cloud tests passed 3/3: constraint rejection, citation JSON round-trip, cross-user read/update/delete/insert denial on both tables, conversation-delete cascade, and note-object-delete cascade through conversation to messages. The full Cloud suite passed 9 files / 20 tests; cleanup SQL confirmed zero ephemeral Auth users, conversations, or messages. Security advisors returned no findings. Local format, strict typecheck, lint, 18 unit tests, and production build all passed.
+**Outstanding Work:** Independent reviewer must verify the PR and Cloud-attested state before merge. DB-10 remains In Review; DB-11 was not started.
+**Known Bugs:** None.
+**Risks:** Performance advisors report INFO-only notices for the new, unused ordered-message index and unindexed `chat_conversations.note_id`, `chat_conversations.owner_id`, and `chat_messages.owner_id` FKs. The documented index set includes only `(conversation_id, created_at)`; DB-13 owns the uniform owner-leading/FK-index review and same-owner composite-FK hardening, so no undocumented index or constraint was invented here.
+**Suggested Next Task:** Review DB-10. After merge, the database role may claim DB-11.
+**Estimated Context Needed:** DB-10 diff; `docs/04_DATABASE.md §4.10–4.11, §7, §11`; ADR-14; ADR-16; GOV-6.
+
 ## 2026-07-17 — Claude (Reviewer) — DB-09 review & merge
 
 **Session Date:** 2026-07-17

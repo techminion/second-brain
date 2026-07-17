@@ -45,7 +45,7 @@ Done: Sprint 0 (governance), Sprint 1 (repo & tooling foundation — all 21 task
 
 ## In Progress
 
-- DB-09 — `attachments` subtype and private Cloud Storage bucket implemented on `main`; owner-first-path policies permit only authenticated upload, signed-URL creation, and delete, with direct authenticated downloads denied. Full Cloud suite is green (8 files, 17 tests); awaiting independent review.
+- DB-10 — `chat_conversations` and `chat_messages` implemented on `feature/db-10-chat-tables`; documented checks, ADR-14/16 cascades, ordered-message index, uniform RLS, and GOV-6 tests are live. Full Cloud suite is green (9 files, 20 tests); awaiting independent review.
 - SHELL-07 (PR #14) — substance approved; needs rebase onto main + the PROJECT_STATE section fix. **Reassigned to Codex** (Antigravity and the multi-folder setup were scratched 2026-07-17; implementation is now Codex alone, alternating with Claude per task in one checkout).
 
 ## Blocked
@@ -72,8 +72,8 @@ Done: Sprint 0 (governance), Sprint 1 (repo & tooling foundation — all 21 task
 
 ## Current Branch
 
-`main`
+`feature/db-10-chat-tables`
 
 ## Last Updated
 
-2026-07-17 — DB-09 reviewed and merged (PR #27); DB-10..12 open, then DB-13 audit (Claude, reviewer role)
+2026-07-17 — DB-10 implemented and Cloud-validated; awaiting independent review (Codex, database implementation role)
