@@ -1,3 +1,5 @@
+import { randomUUID } from "node:crypto";
+
 import { describe, expect, it } from "vitest";
 
 import { createCloudIntegrationTestHarness } from "./supabase-test-harness";
@@ -31,5 +33,25 @@ describe("profiles RLS", () => {
 
     expect(ownReadError).toBeNull();
     expect(ownProfile).toMatchObject({ id: userB.id });
+  });
+
+  it("reserves profile creation and deletion for the Auth lifecycle", async () => {
+    const { error: insertError } = await userA.client.from("profiles").insert({
+      display_name: "forbidden",
+      id: randomUUID(),
+    });
+    const { error: deleteError } = await userA.client.from("profiles").delete().eq("id", userA.id);
+
+    expect(insertError).toMatchObject({ code: "42501" });
+    expect(deleteError).toMatchObject({ code: "42501" });
+
+    const { data: ownProfile, error: readError } = await userA.client
+      .from("profiles")
+      .select("id")
+      .eq("id", userA.id)
+      .single();
+
+    expect(readError).toBeNull();
+    expect(ownProfile).toEqual({ id: userA.id });
   });
 });
