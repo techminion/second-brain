@@ -21,6 +21,21 @@ Estimated Context Needed:
 
 ---
 
+## 2026-07-18 — Claude (Implementer, user-authorized) — DB-15 completed from Cursor's in-flight start
+
+**Session Date:** 2026-07-18
+**Agent:** Claude — implementation role for this task by explicit user authorization (all implementation agents out of credits). Reviewer independence is therefore suspended for DB-15; compensated with live verification beyond the usual bar.
+**Objective:** Complete DB-15 (ADR-18 retention purge). On claiming, discovered **uncommitted in-flight work by Cursor** in the tree (claimed in queue as Cursor, never pushed): migration with Vault-guarded SECURITY DEFINER invoker + cron schedule, repository/service split, webhook-auth helper, route handler, env plumbing, service unit tests. Reviewed it as inherited code and completed it — preserved, not rewritten.
+**Files Modified (on top of Cursor's):** `src/shared/lib/webhook-auth.ts` (constant-time comparison via hashed `timingSafeEqual` — was `===`), `src/app/api/internal/retention-purge/route.ts` (OBS-01 logging, try/catch → 500, `{ data }` envelope), `src/features/retention/retention-purge-repository.ts` (**bug fix, test-caught:** PostgREST returns the 1:1 `attachments` embed as an object, not an array — Cursor's `attachments?.[0]` always yielded null, so binaries were never deleted while envelopes were, the exact orphan scenario ADR-18 forbids; also removed dead logic), `src/features/retention/retention-purge-service.test.ts` (mock typing fix), `vitest.integration.config.ts` (`@/` alias so integration tests can import src), `tests/integration/supabase-test-harness.ts` (`createServiceRoleTestClient` — reuses hostname pin + fail-closed checks, ADR-12).
+**Files Added:** `src/app/api/internal/retention-purge/route.test.ts` (401/200-envelope/500 coverage), `tests/integration/retention-purge.integration.test.ts` (live end-to-end purge).
+**Architecture Decisions:** None beyond ADR-18. Internal job endpoints return the 05_API `{ data }` envelope (consistency choice, reported here).
+**Verification performed:** typecheck/lint/format/26 unit tests/production build green. **Live Cloud purge test green (suite 12 files, 27/27):** expired note + attachment purged with binary confirmed deleted (service-role download fails), fresh soft-deleted note spared, expired folder purged with child falling to root (ADR-15), and **idempotent rerun returns all-zero counts**. The two orphaned binaries created by the pre-fix failed runs were swept from the dev bucket (verified empty).
+**Outstanding Work:** **The migration `20260718030000_schedule_retention_purge.sql` is NOT applied to Cloud** — I have no Supabase credentials (Cursor/Codex used their own). Apply with `npx supabase link --project-ref zkzyfwclvquiargnwgtw && npx supabase db push`. Safe order-independent: the scheduled job no-ops until CI-07 stores `retention_purge_url`/`retention_purge_secret` in Vault. Until applied, repo↔Cloud history diverges by this one file (tracked in PROJECT_STATE).
+**Known Bugs:** None known after fixes.
+**Risks:** Self-review on this task (user-accepted). The embed-shape bug class may exist in future embedded queries — worth a note in the eventual repository-layer review checklist.
+**Suggested Next Task:** Sprint remainder: PR #14 completion, AUTH-01, CI-04/05/07, OBS-02, SHELL-02/03/10.
+**Estimated Context Needed:** ADR-18, this entry, `src/features/retention/`.
+
 ## 2026-07-18 — Claude (Architect) — ADR-18: retention purge design decided, DB-15 unblocked
 
 **Session Date:** 2026-07-18

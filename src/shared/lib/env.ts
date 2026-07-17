@@ -9,6 +9,10 @@ interface ServerEnvironment extends PublicEnvironment {
   supabaseServiceRoleKey: string;
 }
 
+interface PurgeWorkerEnvironment extends SupabaseServiceRoleEnvironment {
+  purgeWebhookSecret: string;
+}
+
 interface SupabaseServiceRoleEnvironment extends PublicEnvironment {
   supabaseServiceRoleKey: string;
 }
@@ -18,7 +22,8 @@ type RequiredEnvironmentVariable =
   | "NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY"
   | "SUPABASE_SERVICE_ROLE_KEY"
   | "OPENAI_API_KEY"
-  | "EMBEDDING_WEBHOOK_SECRET";
+  | "EMBEDDING_WEBHOOK_SECRET"
+  | "PURGE_WEBHOOK_SECRET";
 
 function getRequiredServerEnvironmentVariable(
   name: Exclude<
@@ -61,6 +66,13 @@ export function getSupabaseServiceRoleEnvironment(): SupabaseServiceRoleEnvironm
   return {
     ...getPublicEnvironment(),
     supabaseServiceRoleKey: getRequiredServerEnvironmentVariable("SUPABASE_SERVICE_ROLE_KEY"),
+  };
+}
+
+export function getPurgeWorkerEnvironment(): PurgeWorkerEnvironment {
+  return {
+    ...getSupabaseServiceRoleEnvironment(),
+    purgeWebhookSecret: getRequiredServerEnvironmentVariable("PURGE_WEBHOOK_SECRET"),
   };
 }
 
