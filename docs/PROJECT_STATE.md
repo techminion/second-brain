@@ -50,6 +50,7 @@ Done: Sprint 0 (governance), Sprint 1 (repo & tooling foundation — all 21 task
 - DB-15: retention purge live — ADR-18 worker + pg_cron schedule, migration applied to Cloud via Supabase MCP (history 17/17, advisors clean, no-op path verified). **Database phase complete: DB-01..16.** Merged via PRs #40/#43.
 - OBS-02: request logging wired — `withRequestLogging` wrapper on all existing route boundaries, AUTH-04-ready user resolver slot. **Merged 2026-07-18** via PR #44 (self-implemented, user-authorized; 31 unit tests green).
 - SHELL-07: TanStack Query provider live — sane defaults, dev-gated devtools, ThemeProvider→QueryProvider nesting. **Reviewed and merged 2026-07-18** via PR #14 (`13b3ff6`) after rebase; the Antigravity-era backlog is fully cleared. SHELL-02/03/10 remain on the shell track.
+- AUTH-01: Supabase Auth configured on the dev project per ADR-19 — confirmation off (FR-AUTH-1), password minimum 8, localhost URL allow-list; canonical record in `supabase/auth-config.md`, templates staged for CI-07. **Live-verified 2026-07-18** via signup probes (pre/post dashboard apply). Merged via PR #47 (`215b198`). **Auth UI track (AUTH-02/03/06) unblocked.**
 
 ## In Progress
 
