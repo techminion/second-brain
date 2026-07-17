@@ -21,6 +21,24 @@ Estimated Context Needed:
 
 ---
 
+## 2026-07-17 — Codex (Database) — DB-07 implementation complete
+
+**Session Date:** 2026-07-17
+**Agent:** Codex, database implementation role
+**Objective:** Implement DB-07 (`links`) only, after DB-06 was reviewed and merged.
+**Files Modified:** `.ai/TASK_QUEUE.md` (DB-07 → In Review), `docs/PROJECT_STATE.md` (implementation state), `docs/AI_HANDOFF.md` (this entry).
+**Files Added:** `supabase/migrations/20260717051646_create_links.sql`, `tests/integration/links-rls.integration.test.ts`.
+**Architecture Decisions:** None. Implemented `docs/04_DATABASE.md §4.8`, ADR-14, and GOV-6 exactly; no same-owner FK hardening was invented because DB-13 owns that audit.
+**Migration applied:** `20260717051646_create_links`; repository filename exactly matches Cloud migration history.
+**Policies created:** `links_select_own`, `links_insert_own`, `links_update_own`, `links_delete_own`. All target `authenticated`; update has both `USING` and `WITH CHECK`; every predicate compares initplan-cached `(select auth.uid())` with `owner_id`.
+**Indexes created:** `links_pkey`; unique constraint index `links_source_object_id_target_object_id_key`; explicit `links_source_object_id_idx`; explicit critical-backlink `links_target_object_id_idx`.
+**Verification performed:** The exact migration SQL first succeeded inside a rolled-back Cloud transaction. After applying, live catalog inspection confirmed the documented five columns and defaults, all three ADR-14 `ON DELETE CASCADE` FKs, unique source-target pair, both direction indexes, RLS enabled, four policies, and CRUD-only grants for `authenticated`/`service_role` with no `anon` grants. Focused DB-07 Cloud tests passed (2 tests): duplicate-edge rejection, owner access, cross-user read/update/delete denial, cross-owner insert denial, and live cascades from both source and target endpoints. The full Cloud integration suite passed (6 files, 12 tests). Security advisors returned no findings. Local format, strict typecheck, lint, unit tests, and production build were run before publication.
+**Outstanding Work:** Independent reviewer must verify the PR and Cloud-attested state before merge. DB-07 remains In Review; no subsequent DB task was started. The harness clock-skew retry remains separate technical debt.
+**Known Bugs:** None.
+**Risks:** The performance advisor reports an INFO-only unindexed-FK notice for `links.owner_id`; §4.8 explicitly requires the source and target direction indexes but does not specify an owner index, so no undocumented index was added. The prior unrelated INFO findings remain. DB-13 should evaluate owner-index and same-owner-FK hardening consistently across all tables.
+**Suggested Next Task:** Review DB-07. After merge, the database role may claim DB-08.
+**Estimated Context Needed:** DB-07 diff; `docs/04_DATABASE.md §4.8, §7, §11`; ADR-14; GOV-6.
+
 ## 2026-07-17 — Claude (Reviewer) — DB-06 review & merge; workflow simplified
 
 **Session Date:** 2026-07-17
