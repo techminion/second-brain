@@ -47,6 +47,8 @@ Done: Sprint 0 (governance), Sprint 1 (repo & tooling foundation — all 21 task
 - DB-12: `audit_log` live — append-only at grant level, ADR-16 SET NULL exception proven live. **Reviewed and merged 2026-07-18** via PR #33 (`5d02462`) — suite 25/25. **All 13 schema tables live; DB-02..12 complete.** DB-13 audit claimable.
 - DB-13: RLS audit complete — 48 policies verified, legacy profiles grants corrected (the audit's one real finding), ADR-17 dispositions recorded. **Reviewed and merged 2026-07-18** via PR #35 (`70e894a`) — suite 26/26. DB-14/15 close the database phase.
 - DB-14: cross-user denial coverage verified complete — 13 tables mapped to GOV-6 tests, independently re-checked in review. **Reviewed and merged 2026-07-18** via PR #37 (`2b88641`). Only DB-15 remains in the database phase.
+- DB-15: retention purge live — ADR-18 worker + pg_cron schedule, migration applied to Cloud via Supabase MCP (history 17/17, advisors clean, no-op path verified). **Database phase complete: DB-01..16.** Merged via PRs #40/#43.
+- OBS-02: request logging wired — `withRequestLogging` wrapper on all existing route boundaries, AUTH-04-ready user resolver slot. **Merged 2026-07-18** via PR #44 (self-implemented, user-authorized; 31 unit tests green).
 
 ## In Progress
 
@@ -82,4 +84,4 @@ Done: Sprint 0 (governance), Sprint 1 (repo & tooling foundation — all 21 task
 
 ## Last Updated
 
-2026-07-18 — DB-15 implemented (Cursor start + Claude completion, user-authorized); Cloud-verified worker; migration application pending credentials (Claude)
+2026-07-18 — OBS-02 merged (PR #44); Sprint 2 remainder: AUTH track, SHELL track + PR #14, CI-04/05/07 (Claude)
