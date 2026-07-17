@@ -21,6 +21,21 @@ Estimated Context Needed:
 
 ---
 
+## 2026-07-18 — Claude (Reviewer) — SHELL-07 review & merge; PR #14 closed
+
+**Session Date:** 2026-07-18
+**Agent:** Claude, reviewer role (TPM/governance)
+**Objective:** Final review of PR #14 (SHELL-07) after its rebase onto current main.
+**Files Modified:** `.ai/TASK_QUEUE.md` (SHELL-07 → Done), `docs/PROJECT_STATE.md`, `docs/AI_HANDOFF.md` (this entry).
+**Architecture Decisions:** None new. Provider nesting (ThemeProvider outer → QueryProvider inner) accepted — correctly reasoned and reported in the implementer's handoff.
+**Verification performed:** Substance was approved in round one (2026-07-17: defaults, dependency split, devtools gating). Round two verified: rebase onto current main (merge state CLEAN, four required checks green), the invented PROJECT_STATE section removed, governance entries preserved, nesting decision reported. Squash-merged as `13b3ff6`.
+**Process notes:** The oldest open PR (opened by Antigravity 2026-07-16, stalled through the agent transition) is cleared; every Antigravity-era loose end is now resolved.
+**Outstanding Work:** Sprint 2 remainder: AUTH-01..09/14, SHELL-02 (L — split at claim)/03/10, CI-04/05/07.
+**Known Bugs:** None.
+**Risks:** None new.
+**Suggested Next Task:** AUTH-01, or SHELL-02 with a recorded split.
+**Estimated Context Needed:** This entry, the Sprint 2 queue table.
+
 ## 2026-07-18 — Antigravity (Frontend) — SHELL-07: implement TanStack Query provider and configure default options
 
 **Session Date:** 2026-07-18
