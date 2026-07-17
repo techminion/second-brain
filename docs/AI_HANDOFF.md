@@ -21,6 +21,22 @@ Estimated Context Needed:
 
 ---
 
+## 2026-07-17 — Claude (Reviewer) — DB-08 review & merge; harness debt closed
+
+**Session Date:** 2026-07-17
+**Agent:** Claude, reviewer role (TPM/governance)
+**Objective:** Review PR #25 (DB-08: pgvector + `embeddings`, with the harness-hardening ride-along), merge if sound.
+**Files Modified:** `.ai/TASK_QUEUE.md` (DB-08 → Done, Completed entry), `docs/PROJECT_STATE.md`, `docs/AI_HANDOFF.md` (this entry).
+**Files Added:** None.
+**Architecture Decisions:** None. `vector(1536)` matches 07_AI's small-embedding-tier; cosine HNSW matches 08_SEARCH §3.
+**Verification performed:** Migration line-checked against §4.9 (all seven columns, chunk uniqueness, ADR-14 cascades, uniform RLS, least-privilege in-migration). Harness refactor source-verified: dev-project hostname pin and fail-closed behavior preserved; retry is bounded (1s/2s/4s) and scoped to 429/clock-skew only; service-role confined to global setup — workers get ephemeral tokens only (tighter ADR-12 posture). **Live: 4 consecutive full-suite passes (7 files, 14/14) including back-to-back repetition — the exact pattern that tripped Supabase Auth's rate limiter during the DB-07 review.** Both Known Technical Debt harness items are closed. Squash-merged as `1257a09`.
+**Process notes:** Model ride-along: the debt item was picked up unprompted-in-scope, implemented beyond the ask (token-only workers), and the one deviation candidate (`owner_id` unindexed FK advisor notice) was flagged rather than silently "fixed" with an undocumented index — routed to DB-13 to assess owner-leading indexes uniformly.
+**Outstanding Work:** DB-09..12 → DB-13 audit (which now has two accumulated review notes: composite same-owner FKs, owner-leading indexes). PR #14 rebase. AUTH-01, CI-04 unclaimed.
+**Known Bugs:** None.
+**Risks:** None new; suite-vs-limiter risk retired.
+**Suggested Next Task:** Codex: DB-09 (attachments + storage bucket — the storage policy is the novel part). Or the PR #14 rebase for variety.
+**Estimated Context Needed:** This entry, DB-08 Completed entry, [04_DATABASE §4.4](04_DATABASE.md#44-attachments) + [09_SECURITY §4](09_SECURITY.md#4-attachment-security) for DB-09.
+
 ## 2026-07-17 — Codex (Database) — DB-08 implementation complete
 
 **Session Date:** 2026-07-17

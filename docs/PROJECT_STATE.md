@@ -40,10 +40,10 @@ Done: Sprint 0 (governance), Sprint 1 (repo & tooling foundation — all 21 task
 - DB-04: `notes` subtype live — generated FTS vector per 08_SEARCH §2, daily-note partial unique index, ADR-14/15 FKs, uniform RLS. **Reviewed and merged 2026-07-17** via PR #17 (`c3594bf`) — reviewer ran the Cloud suite live from a worktree (8/8 on rerun). DB-06..10 remain for the schema chain.
 - DB-06: `tags` + `knowledge_object_tags` live — ADR-16 tag-cascade verified against Cloud, case-insensitive uniqueness, uniform RLS. **Reviewed and merged 2026-07-17** via PR #21 (`08d4095`) — full suite 10/10. Remaining schema chain: DB-07..12 → DB-13.
 - DB-07: `links` live — unique pair edges, backlinks-critical target index, ADR-14 cascades. **Reviewed and merged 2026-07-17** via PR #23 (`341eeb8`) — 3× 12/12 Cloud-suite passes. Schema chain: 7/13 tables; DB-08..12 remain.
+- DB-08: pgvector + `embeddings` live — 1536-dim cosine HNSW per spec; harness hardening shipped alongside (shared user pair + bounded retry; both debt items closed). **Reviewed and merged 2026-07-17** via PR #25 (`1257a09`) — 4× consecutive 14/14 suite passes. Schema chain: 8/13; DB-09..12 remain.
 
 ## In Progress
 
-- DB-08 (`embeddings`) — pgvector 0.8.2 and the documented 1536-dimension cosine-HNSW table are live on the shared Cloud development project; uniform RLS, GOV-6 coverage, and the shared-user/retry harness hardening are ready for independent review.
 - SHELL-07 (PR #14) — substance approved; needs rebase onto main + the PROJECT_STATE section fix. **Reassigned to Codex** (Antigravity and the multi-folder setup were scratched 2026-07-17; implementation is now Codex alone, alternating with Claude per task in one checkout).
 
 ## Blocked
@@ -70,8 +70,8 @@ Done: Sprint 0 (governance), Sprint 1 (repo & tooling foundation — all 21 task
 
 ## Current Branch
 
-`feature/db-08-embeddings`
+`main`
 
 ## Last Updated
 
-2026-07-17 — DB-08 implemented and applied to Cloud; shared-user harness hardening validated with a clean 14-test suite and teardown; awaiting review (Codex, database role)
+2026-07-17 — DB-08 reviewed and merged (PR #25); harness debt closed; DB-09..12 open (Claude, reviewer role)
