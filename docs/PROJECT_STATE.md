@@ -17,7 +17,7 @@ Done: Sprint 0 (governance), Sprint 1 (repo & tooling foundation — all 21 task
 |---|---|
 | Engineering documentation (12 docs) | ✅ Complete, audited twice for consistency |
 | Governance layer (this file set) | ✅ Complete |
-| Implementation | 25 Done + 5 In Review / 309 tasks ([12_TASKS.md](12_TASKS.md)) |
+| Implementation | 26 Done + 5 In Review / 309 tasks ([12_TASKS.md](12_TASKS.md)) |
 
 ## Completed
 
@@ -48,7 +48,7 @@ Done: Sprint 0 (governance), Sprint 1 (repo & tooling foundation — all 21 task
 
 ## In Progress
 
-- DB-12: append-only `audit_log` is live on the shared Cloud project with SELECT/INSERT-only grants and policies, ADR-14 owner cascade, and the ADR-16 object-reference `SET NULL` exception. **In Review** — focused tests 3/3 and full Cloud suite 25/25 green; DB-13 was not started.
+- DB-13: full 13-table RLS/policy/grant audit complete. **In Review** — corrected legacy `profiles` privileges to the documented SELECT/UPDATE-only contract; focused tests 2/2 and full Cloud suite 26/26 green; security advisors clean. All documented indexes exist. Undocumented same-owner composite FKs and blanket owner/FK indexing were not added and remain reviewer/architect hardening decisions.
 - SHELL-07 (PR #14) — substance approved; needs rebase onto main + the PROJECT_STATE section fix. **Reassigned to Codex** (Antigravity and the multi-folder setup were scratched 2026-07-17; implementation is now Codex alone, alternating with Claude per task in one checkout).
 
 ## Blocked
@@ -75,8 +75,8 @@ Done: Sprint 0 (governance), Sprint 1 (repo & tooling foundation — all 21 task
 
 ## Current Branch
 
-`main`
+`chore/db-13-rls-audit`
 
 ## Last Updated
 
-2026-07-18 — DB-12 reviewed and merged (PR #33); full 13-table schema live; DB-13 audit next (Claude, reviewer role)
+2026-07-18 — DB-13 audit complete and awaiting review; profile privileges corrected; Cloud suite 26/26 (Codex, database role)

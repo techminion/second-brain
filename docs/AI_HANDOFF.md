@@ -21,6 +21,24 @@ Estimated Context Needed:
 
 ---
 
+## 2026-07-18 — Codex (Database) — DB-13 RLS audit complete
+
+**Session Date:** 2026-07-18
+**Agent:** Codex, database implementation role
+**Objective:** Audit RLS, table privileges, documented indexes, and ownership integrity across all 13 public tables.
+**Files Modified:** `.ai/TASK_QUEUE.md` (DB-13 → In Review), `docs/PROJECT_STATE.md`, `docs/AI_HANDOFF.md` (this entry), `tests/integration/profiles-rls.integration.test.ts` (Auth-lifecycle privilege regression test).
+**Files Added:** `supabase/migrations/20260717204329_restrict_profiles_privileges.sql`.
+**Architecture Decisions:** None. The audit did not invent same-owner composite foreign keys or blanket owner/FK indexes because neither is part of the documented schema contract. They remain explicit reviewer/architect hardening decisions.
+**Migration applied:** `20260717204329_restrict_profiles_privileges`. It removes legacy broad grants from `public.profiles` and restores the documented contract: no `anon` privileges and only `SELECT`/`UPDATE` for `authenticated` and `service_role`. Signup remains owned by the existing hardened Auth trigger; account deletion remains owned by the `auth.users` cascade.
+**Policies created:** None. All 48 existing policies match §7: authenticated-only permissive policies, initplan-cached `auth.uid()` ownership predicates, and both `USING`/`WITH CHECK` on every update policy. `profiles` has SELECT/UPDATE only, `audit_log` has SELECT/INSERT only, and the other 11 tables have uniform CRUD policies.
+**Indexes created:** None. Every index explicitly documented in §4 exists. Performance advisors report INFO-only unindexed foreign keys and expected unused pre-feature indexes; no undocumented index was added without a measured query requirement.
+**Verification performed:** Compared the live Cloud catalog with `docs/04_DATABASE.md`: exactly 13 public tables, 48 policies, exact columns/defaults/nullability/checks, documented FK delete actions, constraints, indexes, storage bucket/policies, and hardened profile trigger. The correction migration passed a rollback-only Cloud assertion before application. The focused profile suite passed 2/2, including owner INSERT/DELETE rejection with `42501`; the full Cloud integration suite passed 11 files / 26 tests. Security advisors are clean. Cleanup confirmed zero test users and zero application rows. Local format check, strict typecheck, lint, 18 unit tests, and production build all passed.
+**Outstanding Work:** Independent reviewer must verify DB-13 and decide whether same-owner composite FKs and broader FK/owner indexing should become separately documented follow-up tasks. DB-14 and DB-15 were not started.
+**Known Bugs:** None.
+**Risks:** The current schema prevents cross-user access through RLS but does not enforce same-owner equality between every pair of related rows at FK level. Several FK columns also have no dedicated leading index. Both are documented here for architecture review rather than silently changing the schema.
+**Suggested Next Task:** Review DB-13. After the implementation and reviewer-outcome PRs merge, DB-14 is next in queue order.
+**Estimated Context Needed:** This entry, DB-13 diff, `docs/04_DATABASE.md §4, §7–8, §11`, GOV-6, and the live advisor output summarized above.
+
 ## 2026-07-18 — Claude (Reviewer) — DB-12 review & merge; 13-table schema complete
 
 **Session Date:** 2026-07-18
