@@ -21,6 +21,21 @@ Estimated Context Needed:
 
 ---
 
+## 2026-07-18 — Claude (Implementer, user-authorized) — OBS-02: request logging wired
+
+**Session Date:** 2026-07-18
+**Agent:** Claude, implementation role (continuing user-authorized coverage while agents are out of credits)
+**Objective:** OBS-02 — wire the OBS-01 logger across request boundaries.
+**Files Added:** `src/shared/lib/request-logging.ts` (+ colocated test).
+**Files Modified:** `src/app/api/theme/route.ts` and `src/app/api/internal/retention-purge/route.ts` (both wrapped; purge route's own logger replaced by the wrapper-provided one), `.ai/TASK_QUEUE.md`, `docs/AI_HANDOFF.md` (this entry).
+**Architecture Decisions:** None new. Two implementation choices reported: (1) route identity is encoded in the *event name* (`request.<route>.completed|failed`) because the OBS-01 logger structurally rejects string metadata — route names are validated against the same stable-identifier pattern; (2) the wrapper takes an optional `resolveUserId` whose failure degrades to `userId: null` rather than failing the request — AUTH-04 plugs session resolution into this slot; MCP-01/EMB-02 wire their boundaries with the same wrapper when those endpoints exist (all three documented boundaries covered by one mechanism, two of three not yet built).
+**Verification performed:** typecheck / lint / format / 31 unit tests / production build green. Wrapper tests cover: stable-name rejection, completion log with status + numeric duration, exception → 500 + failure event, resolver-provided user id tagging both domain and request events, resolver failure → null. Purge-route tests unchanged and green.
+**Outstanding Work:** Review + merge (self-implemented; live verification stands in for reviewer independence). AUTH-04 adds the session resolver; MCP-01/EMB-02 adopt the wrapper.
+**Known Bugs:** None.
+**Risks:** None new.
+**Suggested Next Task:** AUTH-01, or PR #14 / SHELL work.
+**Estimated Context Needed:** This entry, `src/shared/lib/request-logging.ts`.
+
 ## 2026-07-18 — Claude — DB-15 migration applied to Cloud via Supabase MCP; database phase complete
 
 **Session Date:** 2026-07-18
