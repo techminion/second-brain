@@ -1,13 +1,14 @@
 import { NextResponse } from "next/server";
 
 import { isProductionEnvironment } from "@/shared/lib/env";
+import { withRequestLogging } from "@/shared/lib/request-logging";
 import { isThemePreference, themeCookieName } from "@/shared/lib/theme";
 
 interface ThemeRequestBody {
   preference?: unknown;
 }
 
-export async function POST(request: Request) {
+export const POST = withRequestLogging("api.theme.update", async (request) => {
   const body: ThemeRequestBody = await request.json().catch(() => ({}));
 
   if (typeof body.preference !== "string" || !isThemePreference(body.preference)) {
@@ -24,4 +25,4 @@ export async function POST(request: Request) {
   });
 
   return response;
-}
+});
