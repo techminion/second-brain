@@ -42,10 +42,10 @@ Done: Sprint 0 (governance), Sprint 1 (repo & tooling foundation — all 21 task
 - DB-07: `links` live — unique pair edges, backlinks-critical target index, ADR-14 cascades. **Reviewed and merged 2026-07-17** via PR #23 (`341eeb8`) — 3× 12/12 Cloud-suite passes. Schema chain: 7/13 tables; DB-08..12 remain.
 - DB-08: pgvector + `embeddings` live — 1536-dim cosine HNSW per spec; harness hardening shipped alongside (shared user pair + bounded retry; both debt items closed). **Reviewed and merged 2026-07-17** via PR #25 (`1257a09`) — 4× consecutive 14/14 suite passes. Schema chain: 8/13; DB-09..12 remain.
 - DB-09: `attachments` + private storage live — signed-URL-only reads DB-enforced via operation-scoped policies; owner-path defense-in-depth. **Reviewed and merged 2026-07-17** via PR #27 (`6182d17`) — suite 17/17 live. Schema chain: 9/13; DB-10..12 remain.
+- DB-10: chat tables live — scope/role CHECKs, both cascade chains verified live. **Reviewed and merged 2026-07-17** via PR #29 (`bbb5042`) — suite 20/20. Schema chain: 10/13; DB-11/12 then the DB-13 audit.
 
 ## In Progress
 
-- DB-10 — `chat_conversations` and `chat_messages` implemented on `feature/db-10-chat-tables`; documented checks, ADR-14/16 cascades, ordered-message index, uniform RLS, and GOV-6 tests are live. Full Cloud suite is green (9 files, 20 tests); awaiting independent review.
 - SHELL-07 (PR #14) — substance approved; needs rebase onto main + the PROJECT_STATE section fix. **Reassigned to Codex** (Antigravity and the multi-folder setup were scratched 2026-07-17; implementation is now Codex alone, alternating with Claude per task in one checkout).
 
 ## Blocked
@@ -72,8 +72,8 @@ Done: Sprint 0 (governance), Sprint 1 (repo & tooling foundation — all 21 task
 
 ## Current Branch
 
-`feature/db-10-chat-tables`
+`main`
 
 ## Last Updated
 
-2026-07-17 — DB-10 implemented and Cloud-validated; awaiting independent review (Codex, database implementation role)
+2026-07-17 — DB-10 reviewed and merged (PR #29); DB-11/12 open, then DB-13 (Claude, reviewer role)
