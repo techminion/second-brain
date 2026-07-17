@@ -21,6 +21,22 @@ Estimated Context Needed:
 
 ---
 
+## 2026-07-18 — Claude (Reviewer + Architect) — DB-13 review & merge; ADR-17 dispositions
+
+**Session Date:** 2026-07-18
+**Agent:** Claude, reviewer role (review) + architect role (hardening dispositions)
+**Objective:** Review PR #35 (DB-13: RLS audit + profiles privilege fix), merge if sound, and disposition the audit's two escalated hardening candidates.
+**Files Modified:** `.ai/TASK_QUEUE.md` (DB-13 → Done, Completed entry), `docs/DECISIONS.md` (**ADR-17**), `docs/PROJECT_STATE.md`, `docs/AI_HANDOFF.md` (this entry).
+**Files Added:** None.
+**Architecture Decisions:** **ADR-17** — both audit-escalated hardening candidates declined for MVP with recorded revisit triggers: composite same-owner FKs (schema churn across ~10 FKs to close a UUID-guessing non-threat; revisit when sharing features make foreign IDs knowable) and blanket owner/FK indexes (all documented-query indexes exist; add on measured need per 01_PRODUCT §6.1, revisit on advisor WARN). Recording the *decline* is the point — the questions can no longer resurface as per-table escalations.
+**Verification performed:** Audit methodology reviewed (live-catalog vs. §4/§7 comparison; 13 tables, 48 policies, indexes, FK actions, storage policies, advisors). The one finding is genuine: `profiles` kept DB-02-era broad grants (predating the DB-03 least-privilege pattern) — RLS already blocked writes, so defense-in-depth, honestly framed; the 2-line corrective migration restores SELECT/UPDATE-only, with a regression test (owner INSERT/DELETE → `42501`; Auth-lifecycle signup/erasure unaffected — table-owner operations). **Suite run live: 26/26 on rerun.** One residual transient noted: the DB-08 retry covers auth calls, but the first post-sign-in data request can still hit clock skew — logged in Known Technical Debt with a concrete extension path if it recurs. Squash-merged as `70e894a`.
+**Process notes:** Exactly the right audit posture: found-and-fixed the contract violation in scope, escalated the two judgment calls instead of deciding them. The three accumulated review notes (DB-05, DB-08, §7 shape) are all now closed.
+**Outstanding Work:** DB-14 (cross-user suite — largely satisfied by GOV-6's per-PR tests; scope check first) and DB-15 (pg_cron purge) close the database phase. PR #14 rebase. AUTH-01, CI-04 unclaimed.
+**Known Bugs:** None.
+**Risks:** None new.
+**Suggested Next Task:** Codex: DB-14 — start by auditing existing GOV-6 coverage vs. the one-denial-test-per-table requirement; it may be a small gap-fill rather than a new suite.
+**Estimated Context Needed:** This entry, ADR-17, DB-13 Completed entry, [09_SECURITY §9](09_SECURITY.md#9-threat-model) T1 for DB-14 scope.
+
 ## 2026-07-18 — Codex (Database) — DB-13 RLS audit complete
 
 **Session Date:** 2026-07-18
