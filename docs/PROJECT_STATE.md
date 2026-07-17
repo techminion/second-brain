@@ -46,10 +46,10 @@ Done: Sprint 0 (governance), Sprint 1 (repo & tooling foundation — all 21 task
 - DB-11: `mcp_credentials` live — hash-only credential storage, uniform RLS. **Reviewed and merged 2026-07-17** via PR #31 (`d4c8d1b`) — suite 22/22. Schema chain: 11/13; DB-12 then DB-13.
 - DB-12: `audit_log` live — append-only at grant level, ADR-16 SET NULL exception proven live. **Reviewed and merged 2026-07-18** via PR #33 (`5d02462`) — suite 25/25. **All 13 schema tables live; DB-02..12 complete.** DB-13 audit claimable.
 - DB-13: RLS audit complete — 48 policies verified, legacy profiles grants corrected (the audit's one real finding), ADR-17 dispositions recorded. **Reviewed and merged 2026-07-18** via PR #35 (`70e894a`) — suite 26/26. DB-14/15 close the database phase.
+- DB-14: cross-user denial coverage verified complete — 13 tables mapped to GOV-6 tests, independently re-checked in review. **Reviewed and merged 2026-07-18** via PR #37 (`2b88641`). Only DB-15 remains in the database phase.
 
 ## In Progress
 
-- DB-14: cross-user RLS integration coverage audit complete. **In Review** — all 13 public tables have explicit user-B read/write denial assertions across the existing GOV-6 Cloud suite; no duplicate tests were added. Full suite 26/26; cleanup confirmed zero integration users and application rows.
 - SHELL-07 (PR #14) — substance approved; needs rebase onto main + the PROJECT_STATE section fix. **Reassigned to Codex** (Antigravity and the multi-folder setup were scratched 2026-07-17; implementation is now Codex alone, alternating with Claude per task in one checkout).
 
 ## Blocked
@@ -77,8 +77,8 @@ Done: Sprint 0 (governance), Sprint 1 (repo & tooling foundation — all 21 task
 
 ## Current Branch
 
-`chore/db-14-cross-user-rls-suite`
+`main`
 
 ## Last Updated
 
-2026-07-18 — DB-14 coverage audit complete and awaiting review; Cloud suite 26/26 (Codex, database role)
+2026-07-18 — DB-14 reviewed and merged (PR #37); DB-15 is the last database task (Claude, reviewer role)
