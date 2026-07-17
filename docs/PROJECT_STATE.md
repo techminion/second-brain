@@ -50,7 +50,6 @@ Done: Sprint 0 (governance), Sprint 1 (repo & tooling foundation — all 21 task
 
 ## In Progress
 
-- DB-15 (retention purge) — implemented and Cloud-verified at the worker level (PR pending). **The pg_cron migration is committed but NOT applied to the Cloud project** — apply with `npx supabase link --project-ref zkzyfwclvquiargnwgtw && npx supabase db push` when Supabase credentials are available (safe: the job no-ops until CI-07 stores Vault values). Until applied, repo↔Cloud migration history intentionally diverges by this one file.
 
 - SHELL-07 (PR #14) — substance approved; needs rebase onto main + the PROJECT_STATE section fix. **Reassigned to Codex** (Antigravity and the multi-folder setup were scratched 2026-07-17; implementation is now Codex alone, alternating with Claude per task in one checkout).
 
