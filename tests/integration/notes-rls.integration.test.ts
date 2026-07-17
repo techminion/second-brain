@@ -1,4 +1,4 @@
-import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { describe, expect, it } from "vitest";
 
 import {
   createCloudIntegrationTestHarness,
@@ -6,21 +6,7 @@ import {
 } from "./supabase-test-harness";
 
 describe("notes schema and RLS", () => {
-  const harness = createCloudIntegrationTestHarness();
-  const users: AuthenticatedTestUser[] = [];
-  let userA: AuthenticatedTestUser;
-  let userB: AuthenticatedTestUser;
-
-  beforeAll(async () => {
-    userA = await harness.createAuthenticatedUser();
-    users.push(userA);
-    userB = await harness.createAuthenticatedUser();
-    users.push(userB);
-  });
-
-  afterAll(async () => {
-    await harness.deleteUsers(users);
-  });
+  const { userA, userB } = createCloudIntegrationTestHarness();
 
   async function createNoteEnvelope(user: AuthenticatedTestUser, title: string): Promise<string> {
     const { data, error } = await user.client
