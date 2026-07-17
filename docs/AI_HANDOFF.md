@@ -21,6 +21,22 @@ Estimated Context Needed:
 
 ---
 
+## 2026-07-18 — Claude (Implementer + Reviewer) — AUTH-01: Supabase Auth configuration (ADR-19)
+
+**Session Date:** 2026-07-18
+**Agent:** Claude, implementer + reviewer (independence suspended per user authorization; compensated with live verification)
+**Objective:** AUTH-01 — configure Supabase Auth (email/password + templates) on the dev project and record the configuration durably.
+**Files Modified:** `docs/DECISIONS.md` (ADR-19), `.ai/TASK_QUEUE.md` (AUTH-01), `docs/PROJECT_STATE.md`, `docs/AI_HANDOFF.md` (this entry).
+**Files Added:** `supabase/auth-config.md` (canonical per-environment setting record — the dashboard must match this file), `supabase/templates/confirmation.html`, `supabase/templates/recovery.html`.
+**Architecture Decisions:** ADR-19 — email confirmation **off** (forced by FR-AUTH-1's acceptance criterion: signup must return an authenticated session; Supabase returns none while confirmation is pending), minimum password length 8 (no composition rules), templates committed but not applied to dev (free-tier projects created after 2026-06-03 cannot customize templates on default SMTP — Supabase changelog 46599); CI-07 applies them on production with custom SMTP.
+**Verification performed:** Live signup probes against the dev project (disposable plus-tagged users, admin-API cleanup). Pre-change: confirmation ON (no session at signup — FR-AUTH-1 violation), password minimum 6. Post-change (user applied the dashboard checklist): 7-char password rejected, signup returns a session with `email_confirmed_at` set, immediate password sign-in succeeds. One transient "email rate limit exceeded" during verification was the built-in SMTP quota consumed by the pre-change probe, not a config failure.
+**Process notes:** Auth config is dashboard-state, not SQL — it cannot ride a migration. `supabase/auth-config.md` is the reviewable proxy; treat dashboard drift from that file as a defect.
+**Outstanding Work:** Sprint 2 remainder: AUTH-02..09/14 (UI track now unblocked), SHELL-02 (L — split at claim)/03/10, CI-04/05, CI-07 (custom SMTP + template apply + confirmation-setting revisit are called out in ADR-19/auth-config.md).
+**Known Bugs:** None.
+**Risks:** Dev's built-in SMTP delivers only to project team addresses at tiny rate limits — AUTH-06 manual testing must use a team email and tolerate the quota.
+**Suggested Next Task:** AUTH-02 (frontend, now unblocked) in parallel with SHELL-02; AUTH-04 (backend) for Claude.
+**Estimated Context Needed:** This entry, ADR-19, `supabase/auth-config.md`.
+
 ## 2026-07-18 — Claude (Reviewer) — SHELL-07 review & merge; PR #14 closed
 
 **Session Date:** 2026-07-18
