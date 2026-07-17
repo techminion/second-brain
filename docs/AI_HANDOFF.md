@@ -21,6 +21,24 @@ Estimated Context Needed:
 
 ---
 
+## 2026-07-17 — Codex (Database) — DB-09 implementation complete
+
+**Session Date:** 2026-07-17
+**Agent:** Codex, database implementation role
+**Objective:** Implement DB-09 only: the `attachments` subtype plus its private, owner-scoped Supabase Storage bucket.
+**Files Modified:** `.ai/TASK_QUEUE.md` (DB-09 → In Review), `docs/PROJECT_STATE.md` (implementation state), `docs/AI_HANDOFF.md` (this entry).
+**Files Added:** `supabase/migrations/20260717144012_create_attachments.sql`, `supabase/migrations/20260717144624_restrict_attachment_reads_to_signed_urls.sql`, `supabase/migrations/20260717145024_permit_attachment_delete_lookup.sql`, `tests/integration/attachments-rls.integration.test.ts`.
+**Architecture Decisions:** None. Implemented `docs/04_DATABASE.md §4.4`, `docs/09_SECURITY.md §4`, ADR-14, and GOV-6. The owner id is the first Storage path segment, following Supabase's documented `storage.foldername(name)` ownership pattern. Storage permissions are least-privilege for the documented `AttachmentService` operations: `INSERT` for upload, operation-scoped `SELECT` only for signed-URL creation and delete lookup, and `DELETE` for removal; no direct authenticated download/list, undocumented update/upsert capability, bucket size limit, or MIME allowlist was added.
+**Migrations applied:** `20260717144012_create_attachments` creates the subtype table and private `attachments` bucket; `20260717144624_restrict_attachment_reads_to_signed_urls` operation-scopes Storage reads; `20260717145024_permit_attachment_delete_lookup` is the forward-only correction that admits Storage's delete/delete-many lookup operations without reopening direct reads. All repository filenames exactly match Cloud migration history.
+**Policies created:** Table policies `attachments_select_own`, `attachments_insert_own`, `attachments_update_own`, `attachments_delete_own`; Storage policies `attachments_storage_select_own`, `attachments_storage_insert_own`, `attachments_storage_delete_own`. All target `authenticated`, use initplan-cached `(select auth.uid())`, and Storage policies additionally require `bucket_id = 'attachments'` plus the first path segment equal to the authenticated user id. The Storage `SELECT` policy also requires `storage.allow_any_operation(...)` for only `storage.object.sign`, `storage.object.delete`, or `storage.object.delete_many`.
+**Indexes created:** `attachments_pkey` only, backing the documented primary key on `knowledge_object_id`; no undocumented index was added.
+**Verification performed:** All three exact migrations first passed inside rollback-only Cloud transactions with catalog assertions. After application, live catalog inspection confirmed all six documented columns, both ADR-14 cascade FKs, RLS enabled, CRUD-only table grants for `authenticated`/`service_role` with none for `anon`, the private bucket, and all seven policies in the intended shapes. Focused Cloud tests passed 3/3: owner metadata access, cross-user metadata denial, object-delete cascade, real Storage upload, owner signed URL and signed download, owner direct-download denial, cross-user download/sign/upload/delete denial, owner-prefix enforcement, and verified physical removal. A cleanup audit exposed two objects left by the intermediate sign-only policy; they were removed through the Storage API, the delete-lookup migration and regression assertion were added, and the final full Cloud suite passed 8 files / 17 tests with zero ephemeral Auth users, attachment rows, or Storage objects afterward. Security advisors returned no findings. Local format, strict typecheck, lint, 18 unit tests, and production build all passed.
+**Outstanding Work:** Independent reviewer must verify the PR and Cloud-attested state before merge. DB-09 remains In Review; DB-10 was not started.
+**Known Bugs:** None.
+**Risks:** Performance advisors report an INFO-only unindexed `attachments.owner_id` FK, matching the existing cross-table pattern already routed to DB-13 for a uniform owner-leading-index decision. No undocumented index was invented.
+**Suggested Next Task:** Review DB-09. After merge, the database role may claim DB-10.
+**Estimated Context Needed:** DB-09 diff; `docs/04_DATABASE.md §4.4, §7, §11`; `docs/09_SECURITY.md §4`; ADR-14; GOV-6.
+
 ## 2026-07-17 — Claude (Reviewer) — DB-08 review & merge; harness debt closed
 
 **Session Date:** 2026-07-17

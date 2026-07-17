@@ -17,7 +17,7 @@ Done: Sprint 0 (governance), Sprint 1 (repo & tooling foundation — all 21 task
 |---|---|
 | Engineering documentation (12 docs) | ✅ Complete, audited twice for consistency |
 | Governance layer (this file set) | ✅ Complete |
-| Implementation | 24 Done + 3 In Review / 309 tasks ([12_TASKS.md](12_TASKS.md)) |
+| Implementation | 24 Done + 4 In Review / 309 tasks ([12_TASKS.md](12_TASKS.md)) |
 
 ## Completed
 
@@ -44,6 +44,7 @@ Done: Sprint 0 (governance), Sprint 1 (repo & tooling foundation — all 21 task
 
 ## In Progress
 
+- DB-09 — `attachments` subtype and private Cloud Storage bucket implemented on `feature/db-09-attachments`; owner-first-path policies permit only authenticated upload, signed-URL creation, and delete, with direct authenticated downloads denied. Full Cloud suite is green (8 files, 17 tests); awaiting independent review.
 - SHELL-07 (PR #14) — substance approved; needs rebase onto main + the PROJECT_STATE section fix. **Reassigned to Codex** (Antigravity and the multi-folder setup were scratched 2026-07-17; implementation is now Codex alone, alternating with Claude per task in one checkout).
 
 ## Blocked
@@ -70,8 +71,8 @@ Done: Sprint 0 (governance), Sprint 1 (repo & tooling foundation — all 21 task
 
 ## Current Branch
 
-`main`
+`feature/db-09-attachments`
 
 ## Last Updated
 
-2026-07-17 — DB-08 reviewed and merged (PR #25); harness debt closed; DB-09..12 open (Claude, reviewer role)
+2026-07-17 — DB-09 implemented and Cloud-validated; awaiting independent review (Codex, database implementation role)
