@@ -21,6 +21,22 @@ Estimated Context Needed:
 
 ---
 
+## 2026-07-18 — Claude (Reviewer) — DB-12 review & merge; 13-table schema complete
+
+**Session Date:** 2026-07-18
+**Agent:** Claude, reviewer role (TPM/governance)
+**Objective:** Review PR #33 (DB-12: `audit_log`), merge if sound.
+**Files Modified:** `.ai/TASK_QUEUE.md` (DB-12 → Done, Completed entry), `docs/PROJECT_STATE.md`, `docs/AI_HANDOFF.md` (this entry).
+**Files Added:** None.
+**Architecture Decisions:** None. Both special properties implemented per prior decisions: ADR-16's SET NULL exception and §4.13's append-only intent (enforced via grants — only SELECT/INSERT; no update/delete policies; FK-cascade erasure unaffected since cascades run with table-owner privileges).
+**Verification performed:** SQL line-checked against §4.13 — exact. Tests prove the two load-bearing properties live: owner update/delete → `42501` (append-only), and object purge → audit row retained with nulled `knowledge_object_id` (ADR-16). Cross-user denial + actor CHECK covered. **Full Cloud suite: 11 files, 25/25 green.** Squash-merged as `5d02462`.
+**Milestone:** **All 13 schema tables are live on the shared Cloud project** — DB-02..DB-12 complete, every table with same-PR RLS + cross-user tests (GOV-6), all FK delete actions per ADR-14/15/16.
+**Outstanding Work:** DB-13 audit (three accumulated notes: composite same-owner FKs, owner-leading indexes, policy-shape verification), then DB-14/15. PR #14 rebase. AUTH-01, CI-04 unclaimed.
+**Known Bugs:** None.
+**Risks:** None new.
+**Suggested Next Task:** Codex: DB-13 — the audit closes the schema phase; its three notes are in the DB-05/DB-08 Completed entries and [04_DATABASE §7](04_DATABASE.md#7-row-level-security-rls-policies).
+**Estimated Context Needed:** This entry, DB-13 queue row, the three audit notes, §7.
+
 ## 2026-07-18 — Codex (Database) — DB-12 implementation complete
 
 **Session Date:** 2026-07-18

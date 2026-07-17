@@ -44,6 +44,7 @@ Done: Sprint 0 (governance), Sprint 1 (repo & tooling foundation — all 21 task
 - DB-09: `attachments` + private storage live — signed-URL-only reads DB-enforced via operation-scoped policies; owner-path defense-in-depth. **Reviewed and merged 2026-07-17** via PR #27 (`6182d17`) — suite 17/17 live. Schema chain: 9/13; DB-10..12 remain.
 - DB-10: chat tables live — scope/role CHECKs, both cascade chains verified live. **Reviewed and merged 2026-07-17** via PR #29 (`bbb5042`) — suite 20/20. Schema chain: 10/13; DB-11/12 then the DB-13 audit.
 - DB-11: `mcp_credentials` live — hash-only credential storage, uniform RLS. **Reviewed and merged 2026-07-17** via PR #31 (`d4c8d1b`) — suite 22/22. Schema chain: 11/13; DB-12 then DB-13.
+- DB-12: `audit_log` live — append-only at grant level, ADR-16 SET NULL exception proven live. **Reviewed and merged 2026-07-18** via PR #33 (`5d02462`) — suite 25/25. **All 13 schema tables live; DB-02..12 complete.** DB-13 audit claimable.
 
 ## In Progress
 
@@ -74,8 +75,8 @@ Done: Sprint 0 (governance), Sprint 1 (repo & tooling foundation — all 21 task
 
 ## Current Branch
 
-`feature/db-12-audit-log`
+`main`
 
 ## Last Updated
 
-2026-07-18 — DB-12 implemented and awaiting independent review; DB-13 not started (Codex, database implementation role)
+2026-07-18 — DB-12 reviewed and merged (PR #33); full 13-table schema live; DB-13 audit next (Claude, reviewer role)
