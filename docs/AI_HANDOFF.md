@@ -21,6 +21,21 @@ Estimated Context Needed:
 
 ---
 
+## 2026-07-18 — Claude — DB-15 migration applied to Cloud via Supabase MCP; database phase complete
+
+**Session Date:** 2026-07-18
+**Agent:** Claude (user set up the project-scoped Supabase MCP server + OAuth, closing the credentials gap)
+**Objective:** Apply the reviewed `20260718030000_schedule_retention_purge` migration to the shared Cloud project — the one step DB-15's PR could not perform.
+**Files Modified:** `.ai/TASK_QUEUE.md` (DB-15 → Done), `docs/PROJECT_STATE.md` (pending-application note cleared), `docs/AI_HANDOFF.md` (this entry).
+**Architecture Decisions:** None. Applied via `execute_sql` in one transaction with an explicit `supabase_migrations.schema_migrations` insert of version `20260718030000` so repo↔Cloud history stays byte-identical (MCP `apply_migration` would have minted a different version).
+**Verification performed:** History 17/17 matches the repo exactly; `cron.job` shows `retention-purge-daily` active at `0 3 * * *`; `invoke_retention_purge_worker()` manually invoked — Vault-empty no-op path confirmed live; **security advisors: zero findings** (the SECURITY DEFINER invoker passes because EXECUTE is revoked from public/anon/authenticated — Cursor's original hardening).
+**Milestone:** **Database phase complete — DB-01..DB-16 all Done.** 13 tables + RLS + tests + audit + purge, all live and verified.
+**Outstanding Work:** Sprint 2 remainder: PR #14, AUTH-01..09/14, SHELL-02/03/10, CI-04/05/07, OBS-02. CI-07 wires the purge worker's Vault values.
+**Known Bugs:** None.
+**Risks:** None new.
+**Suggested Next Task:** AUTH-01 (now feasible solo — the Supabase MCP may cover auth config) or CI-05/OBS-02.
+**Estimated Context Needed:** This entry, DB-15 queue row.
+
 ## 2026-07-18 — Claude (Implementer, user-authorized) — DB-15 completed from Cursor's in-flight start
 
 **Session Date:** 2026-07-18
