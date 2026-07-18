@@ -21,6 +21,21 @@ Estimated Context Needed:
 
 ---
 
+## 2026-07-18 — Claude (Implementer + Reviewer) — AUTH-02: signup page + form
+
+**Session Date:** 2026-07-18
+**Agent:** Claude, implementer + reviewer (independence suspended per user authorization; compensated with live verification)
+**Objective:** AUTH-02 — signup page + form (FR-AUTH-1), React Hook Form + zod.
+**Files Modified:** `package.json`/`package-lock.json` (added `react-hook-form` — already in the 03_ARCHITECTURE §2.1 stack table — plus `zod` and `@hookform/resolvers`, both named by the task), `.ai/TASK_QUEUE.md`, `docs/AI_HANDOFF.md` (this entry).
+**Files Added:** `src/app/(auth)/layout.tsx` (centered unauthenticated layout; the `(auth)` group is deliberately outside the `(app)` group AUTH-05 will protect), `src/app/(auth)/signup/page.tsx` (+ test), `src/features/auth/sign-up-schema.ts` (zod; password 8–72 mirroring ADR-19 + bcrypt bound), `src/features/auth/sign-up.ts` (browser-client wrapper; typed result union; maps `user_already_exists`/`weak_password`; treats a sessionless success as failure — the ADR-19 drift guard), `src/features/auth/components/sign-up-form.tsx` (RHF + zodResolver, labeled fields, `aria-describedby`/`aria-invalid` error wiring, `role="alert"` submit failures, pending-disabled submit), colocated tests for all of it.
+**Architecture Decisions:** None new. Notable applications of existing rules: no `AuthService` — 05_API's catalog deliberately starts after authentication and 03_ARCHITECTURE §6.1 has the UI calling Supabase Auth directly, so the wrapper is a plain feature function (the naming rule reserves `<Domain>Service` for 05_API names); success redirects to `/` — the authenticated shell lands there when SHELL-02/AUTH-05 arrive.
+**Verification performed:** typecheck, lint, format all green; unit suite 48/48 (17 new tests: schema bounds, error mapping incl. drift guard, form validation/a11y/pending/redirect, page render); production build emits `/signup`; live smoke against `next start`: HTTP 200 with server-rendered form.
+**Outstanding Work:** AUTH-03 (login) should add the "already have an account?" cross-link on the signup page (omitted now to avoid a dead link) and `/login`. AUTH-14 owns richer error states. Pre-existing `npm audit` moderate findings (Next.js bundled postcss) predate this task — resolving means a Next upgrade, separate chore.
+**Known Bugs:** None.
+**Risks:** None new.
+**Suggested Next Task:** AUTH-03 (login page — natural continuation), or AUTH-04 (backend session/middleware, gates AUTH-05/07/08).
+**Estimated Context Needed:** This entry, the AUTH-01 entry (auth config), `src/features/auth/`.
+
 ## 2026-07-18 — Claude (Implementer + Reviewer) — AUTH-01: Supabase Auth configuration (ADR-19)
 
 **Session Date:** 2026-07-18
