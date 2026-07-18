@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 
 import { SignUpForm } from "@/features/auth/components/sign-up-form";
 
@@ -14,6 +15,12 @@ export default function SignUpPage() {
         </p>
       </div>
       <SignUpForm />
+      <p className="text-muted-foreground text-sm">
+        Already have an account?{" "}
+        <Link className="text-primary underline-offset-4 hover:underline" href="/login">
+          Log in
+        </Link>
+      </p>
     </section>
   );
 }
