@@ -52,6 +52,7 @@ Done: Sprint 0 (governance), Sprint 1 (repo & tooling foundation — all 21 task
 - SHELL-07: TanStack Query provider live — sane defaults, dev-gated devtools, ThemeProvider→QueryProvider nesting. **Reviewed and merged 2026-07-18** via PR #14 (`13b3ff6`) after rebase; the Antigravity-era backlog is fully cleared. SHELL-02/03/10 remain on the shell track.
 - AUTH-01: Supabase Auth configured on the dev project per ADR-19 — confirmation off (FR-AUTH-1), password minimum 8, localhost URL allow-list; canonical record in `supabase/auth-config.md`, templates staged for CI-07. **Live-verified 2026-07-18** via signup probes (pre/post dashboard apply). Merged via PR #47 (`215b198`). **Auth UI track (AUTH-02/03/06) unblocked.**
 - AUTH-02: signup live at `/signup` — new `(auth)` route group, `src/features/auth/` (zod schema mirroring ADR-19, browser-client signUp wrapper with typed error mapping + confirmation-drift guard, accessible RHF form), RHF/zod/resolvers deps added per §2.1. 17 unit tests; production-server smoke green. **Merged 2026-07-18** via PR #49 (`56c7a1d`). AUTH-03 (login) claimable.
+- AUTH-03: login live at `/login` — shape-only login schema, neutral invalid-credentials message (no account-existence leak), shared `AuthFormField` extracted and signup form refactored onto it, signup↔login cross-links. 16 unit tests; both pages smoke-tested on the production server. **Merged 2026-07-18** via PR #51 (`a3dadc6`). Auth UI: signup + login complete; AUTH-04 (session middleware) is the next gate.
 
 ## In Progress
 
