@@ -16,4 +16,10 @@ describe("SignUpPage", () => {
     expect(screen.getByLabelText("Password")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Create account" })).toBeInTheDocument();
   });
+
+  it("links to the login page", () => {
+    render(<SignUpPage />);
+
+    expect(screen.getByRole("link", { name: "Log in" })).toHaveAttribute("href", "/login");
+  });
 });

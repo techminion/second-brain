@@ -7,23 +7,23 @@ import { useForm } from "react-hook-form";
 
 import { Button } from "@/shared/ui/button";
 
-import { signUpWithPassword } from "../sign-up";
-import { type SignUpInput, signUpSchema } from "../sign-up-schema";
+import { signInWithPassword } from "../sign-in";
+import { type SignInInput, signInSchema } from "../sign-in-schema";
 import { AuthFormField } from "./auth-form-field";
 
-export function SignUpForm() {
+export function SignInForm() {
   const router = useRouter();
   const [submitError, setSubmitError] = useState<string | null>(null);
   const {
     formState: { errors, isSubmitting },
     handleSubmit,
     register,
-  } = useForm<SignUpInput>({ resolver: zodResolver(signUpSchema) });
+  } = useForm<SignInInput>({ resolver: zodResolver(signInSchema) });
 
   const onSubmit = handleSubmit(async (input) => {
     setSubmitError(null);
 
-    const result = await signUpWithPassword(input);
+    const result = await signInWithPassword(input);
 
     if (!result.ok) {
       setSubmitError(result.message);
@@ -39,15 +39,15 @@ export function SignUpForm() {
       <AuthFormField
         autoComplete="email"
         error={errors.email?.message}
-        id="sign-up-email"
+        id="sign-in-email"
         label="Email"
         registration={register("email")}
         type="email"
       />
       <AuthFormField
-        autoComplete="new-password"
+        autoComplete="current-password"
         error={errors.password?.message}
-        id="sign-up-password"
+        id="sign-in-password"
         label="Password"
         registration={register("password")}
         type="password"
@@ -58,7 +58,7 @@ export function SignUpForm() {
         </p>
       ) : null}
       <Button disabled={isSubmitting} type="submit">
-        {isSubmitting ? "Creating account…" : "Create account"}
+        {isSubmitting ? "Logging in…" : "Log in"}
       </Button>
     </form>
   );

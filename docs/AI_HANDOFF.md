@@ -21,6 +21,21 @@ Estimated Context Needed:
 
 ---
 
+## 2026-07-18 — Claude (Implementer + Reviewer) — AUTH-03: login page + form
+
+**Session Date:** 2026-07-18
+**Agent:** Claude, implementer + reviewer (independence suspended per user authorization; compensated with live verification)
+**Objective:** AUTH-03 — login page + form (FR-AUTH-1); add the deferred signup↔login cross-links.
+**Files Modified:** `src/features/auth/components/sign-up-form.tsx` (refactored onto the shared field component — behavior unchanged, proven by the untouched AUTH-02 form tests), `src/app/(auth)/signup/page.tsx` (+ test: "Log in" cross-link), `.ai/TASK_QUEUE.md`, `docs/AI_HANDOFF.md` (this entry).
+**Files Added:** `src/app/(auth)/login/page.tsx` (+ test), `src/features/auth/sign-in-schema.ts` (email shape + password presence only — strength rules deliberately not applied on login), `src/features/auth/sign-in.ts` (browser-client wrapper; `invalid_credentials` → one neutral "Incorrect email or password." that never reveals account existence, 09_SECURITY §9 T8; missing-session guard), `src/features/auth/components/auth-form-field.tsx` (shared labeled-input-with-error block used by both auth forms), `src/features/auth/components/sign-in-form.tsx` (+ test).
+**Architecture Decisions:** None new. Composition-over-duplication applied: the repeated field block was extracted to `AuthFormField` when the second consumer appeared, not before.
+**Verification performed:** typecheck, lint, format green; unit suite 64/64 (16 new); production build emits `/login`; live smoke via `next start`: `/login` HTTP 200 server-rendered with form and `/signup` cross-link, `/signup` links back. The underlying `signInWithPassword` API path was live-verified against the dev project during AUTH-01 (immediate password sign-in OK).
+**Outstanding Work:** AUTH-06 adds the "Forgot password?" link on `/login`. AUTH-14 owns richer error states. AUTH-04 (session cookies + middleware refresh) is the next backend gate — until it lands, sessions live in browser-managed cookies without server-side refresh.
+**Known Bugs:** None.
+**Risks:** None new.
+**Suggested Next Task:** AUTH-04 (backend; gates AUTH-05/07/08), or SHELL-02 for a parallel frontend agent.
+**Estimated Context Needed:** This entry, the AUTH-02 entry, `src/features/auth/`.
+
 ## 2026-07-18 — Claude (Implementer + Reviewer) — AUTH-02: signup page + form
 
 **Session Date:** 2026-07-18
