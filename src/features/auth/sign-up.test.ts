@@ -1,10 +1,10 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { createBrowserSupabaseClient } from "@/shared/lib/supabase-browser-client";
+import { createServerActionSupabaseClient } from "@/shared/lib/supabase-server-action-client";
 
 import { signUpWithPassword } from "./sign-up";
 
-vi.mock("@/shared/lib/supabase-browser-client");
+vi.mock("@/shared/lib/supabase-server-action-client");
 
 const signUpMock = vi.fn();
 
@@ -13,9 +13,9 @@ function stubSupabaseSignUp(result: {
   error: { code?: string; message: string } | null;
 }): void {
   signUpMock.mockResolvedValue(result);
-  vi.mocked(createBrowserSupabaseClient).mockReturnValue({
+  vi.mocked(createServerActionSupabaseClient).mockResolvedValue({
     auth: { signUp: signUpMock },
-  } as unknown as ReturnType<typeof createBrowserSupabaseClient>);
+  } as unknown as Awaited<ReturnType<typeof createServerActionSupabaseClient>>);
 }
 
 describe("signUpWithPassword", () => {
@@ -36,6 +36,22 @@ describe("signUpWithPassword", () => {
       password: "long-enough-password",
     });
     expect(result).toEqual({ ok: true });
+  });
+
+  it("re-validates input server-side and never calls Supabase for invalid input", async () => {
+    stubSupabaseSignUp({ data: { session: {} }, error: null });
+
+    const result = await signUpWithPassword({
+      email: "person@example.com",
+      password: "1234567",
+    });
+
+    expect(signUpMock).not.toHaveBeenCalled();
+    expect(result).toEqual({
+      message: "Password must be at least 8 characters.",
+      ok: false,
+      reason: "invalid-input",
+    });
   });
 
   it("maps the existing-email error to a stable reason", async () => {

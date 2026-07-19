@@ -21,6 +21,22 @@ Estimated Context Needed:
 
 ---
 
+## 2026-07-19 — Claude (Implementer + Reviewer) — AUTH-04: session cookies + middleware refresh (ADR-20)
+
+**Session Date:** 2026-07-19
+**Agent:** Claude, implementer + reviewer (independence suspended per user authorization; compensated with live e2e verification)
+**Objective:** AUTH-04 — session cookie handling per 09_SECURITY §3 (`HttpOnly`/`Secure`/`SameSite=Lax`) + middleware token refresh (FR-AUTH-4).
+**Files Modified:** `src/shared/lib/supabase-server-client.ts` (+`hardenSessionCookieOptions` — every session-cookie writer passes through it), `src/features/auth/sign-up.ts` / `sign-in.ts` (**converted to server actions** with server-side schema re-validation and a new `invalid-input` reason; same result unions, forms unchanged), `src/app/api/theme/route.ts` (wired `resolveSessionUserId` into the OBS-02 slot), `.ai/TASK_QUEUE.md`, `docs/DECISIONS.md` (ADR-20), `docs/AI_HANDOFF.md` (this entry).
+**Files Added:** `src/middleware.ts` (per-request `getClaims()` refresh writing rotated cookies with hardened flags; AUTH-05 adds route protection here), `src/shared/lib/supabase-server-action-client.ts` (cookie-store-bound client for actions/route handlers), `src/features/auth/resolve-user-id.ts` (verified-claims user id, never throws), `e2e/auth-session.spec.ts` (live browser proof), colocated unit tests.
+**Files Deleted:** `src/shared/lib/supabase-browser-client.ts` — under ADR-20 a JS-token-reading client is exactly the XSS surface the spec eliminates; no remaining consumers.
+**Architecture Decisions:** **ADR-20** — auth tokens handled exclusively server-side; 09_SECURITY §3's HttpOnly requirement is incompatible with the `@supabase/ssr` browser-client pattern, and the spec won. AUTH-02/03's wrappers became server actions (two-function conversion; their tests and forms survived structurally unchanged).
+**Verification performed:** typecheck/lint/format green; unit suite 77/77 (13 new); production build emits the middleware; **live Playwright e2e against the dev project**: real signup → HttpOnly + SameSite=Lax `sb-*` cookies, `document.cookie` exposes no token to JavaScript, cleared cookies → login re-establishes the session, service-role cleanup of the e2e user. E2E self-skips without `.env` (CI/fork-safe, GOV-7).
+**Outstanding Work:** AUTH-05 (route protection — extend `src/middleware.ts`), AUTH-07 (Google OAuth — its callback exchange must use the server-action client), AUTH-08 (logout — server-side revocation). `Secure` flag is production-only (localhost exemption, same as the theme cookie).
+**Known Bugs:** None.
+**Risks:** Any future client-side Supabase need (e.g. Realtime) must not resurrect a browser client — ADR-20 requires a token-broker design instead.
+**Suggested Next Task:** AUTH-05 (S, now unblocked — protect `(app)` routes), then AUTH-08/07.
+**Estimated Context Needed:** This entry, ADR-20, `src/middleware.ts`, `src/features/auth/`.
+
 ## 2026-07-18 — Claude (Implementer + Reviewer) — AUTH-03: login page + form
 
 **Session Date:** 2026-07-18

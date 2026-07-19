@@ -1,8 +1,10 @@
-import { createBrowserSupabaseClient } from "@/shared/lib/supabase-browser-client";
+"use server";
 
-import type { SignInInput } from "./sign-in-schema";
+import { createServerActionSupabaseClient } from "@/shared/lib/supabase-server-action-client";
 
-export type SignInFailureReason = "invalid-credentials" | "unknown";
+import { type SignInInput, signInSchema } from "./sign-in-schema";
+
+export type SignInFailureReason = "invalid-credentials" | "invalid-input" | "unknown";
 
 export type SignInResult =
   { ok: true } | { ok: false; reason: SignInFailureReason; message: string };
@@ -12,11 +14,25 @@ export type SignInResult =
 const invalidCredentialsMessage = "Incorrect email or password.";
 const unknownFailureMessage = "Could not log you in. Please try again.";
 
+/**
+ * Server action (ADR-20): tokens never reach browser JavaScript — Supabase
+ * Auth is called here and the session lands in HttpOnly cookies.
+ */
 export async function signInWithPassword(input: SignInInput): Promise<SignInResult> {
-  const client = createBrowserSupabaseClient();
+  const parsed = signInSchema.safeParse(input);
+
+  if (!parsed.success) {
+    return {
+      message: parsed.error.issues[0]?.message ?? unknownFailureMessage,
+      ok: false,
+      reason: "invalid-input",
+    };
+  }
+
+  const client = await createServerActionSupabaseClient();
   const { data, error } = await client.auth.signInWithPassword({
-    email: input.email,
-    password: input.password,
+    email: parsed.data.email,
+    password: parsed.data.password,
   });
 
   if (error) {

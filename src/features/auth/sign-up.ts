@@ -1,8 +1,10 @@
-import { createBrowserSupabaseClient } from "@/shared/lib/supabase-browser-client";
+"use server";
 
-import type { SignUpInput } from "./sign-up-schema";
+import { createServerActionSupabaseClient } from "@/shared/lib/supabase-server-action-client";
 
-export type SignUpFailureReason = "email-taken" | "weak-password" | "unknown";
+import { type SignUpInput, signUpSchema } from "./sign-up-schema";
+
+export type SignUpFailureReason = "email-taken" | "invalid-input" | "weak-password" | "unknown";
 
 export type SignUpResult =
   { ok: true } | { ok: false; reason: SignUpFailureReason; message: string };
@@ -11,15 +13,26 @@ const emailTakenMessage = "An account with this email already exists.";
 const unknownFailureMessage = "Could not create your account. Please try again.";
 
 /**
- * Signup talks to Supabase Auth directly from the browser — there is
- * deliberately no service-layer method for it (03_ARCHITECTURE §6.1; the
+ * Server action (ADR-20): tokens never reach browser JavaScript — Supabase
+ * Auth is called here and the session lands in HttpOnly cookies. There is
+ * deliberately no service-layer method for signup (03_ARCHITECTURE §6.1; the
  * 05_API catalog starts after authentication).
  */
 export async function signUpWithPassword(input: SignUpInput): Promise<SignUpResult> {
-  const client = createBrowserSupabaseClient();
+  const parsed = signUpSchema.safeParse(input);
+
+  if (!parsed.success) {
+    return {
+      message: parsed.error.issues[0]?.message ?? unknownFailureMessage,
+      ok: false,
+      reason: "invalid-input",
+    };
+  }
+
+  const client = await createServerActionSupabaseClient();
   const { data, error } = await client.auth.signUp({
-    email: input.email,
-    password: input.password,
+    email: parsed.data.email,
+    password: parsed.data.password,
   });
 
   if (error) {

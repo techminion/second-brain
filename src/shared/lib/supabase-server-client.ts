@@ -1,7 +1,7 @@
 import { type CookieOptions, createServerClient } from "@supabase/ssr";
 import type { SupabaseClient } from "@supabase/supabase-js";
 
-import { getPublicEnvironment } from "@/shared/lib/env";
+import { getPublicEnvironment, isProductionEnvironment } from "@/shared/lib/env";
 
 interface SessionCookie {
   name: string;
@@ -15,6 +15,21 @@ interface SessionCookieUpdate extends SessionCookie {
 export interface SessionCookieAdapter {
   getAll(): SessionCookie[];
   setAll(cookies: SessionCookieUpdate[]): void;
+}
+
+/**
+ * 09_SECURITY §3 / ADR-20: session cookies are HttpOnly + SameSite=Lax
+ * everywhere, and Secure in production (plain-HTTP localhost drops Secure
+ * cookies in some browsers — same rule as the theme cookie). Every writer of
+ * session cookies must pass its options through here.
+ */
+export function hardenSessionCookieOptions(options: CookieOptions): CookieOptions {
+  return {
+    ...options,
+    httpOnly: true,
+    sameSite: "lax",
+    secure: isProductionEnvironment,
+  };
 }
 
 export function createServerSessionSupabaseClient(

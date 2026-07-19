@@ -1,10 +1,10 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { createBrowserSupabaseClient } from "@/shared/lib/supabase-browser-client";
+import { createServerActionSupabaseClient } from "@/shared/lib/supabase-server-action-client";
 
 import { signInWithPassword } from "./sign-in";
 
-vi.mock("@/shared/lib/supabase-browser-client");
+vi.mock("@/shared/lib/supabase-server-action-client");
 
 const signInMock = vi.fn();
 
@@ -13,9 +13,9 @@ function stubSupabaseSignIn(result: {
   error: { code?: string; message: string } | null;
 }): void {
   signInMock.mockResolvedValue(result);
-  vi.mocked(createBrowserSupabaseClient).mockReturnValue({
+  vi.mocked(createServerActionSupabaseClient).mockResolvedValue({
     auth: { signInWithPassword: signInMock },
-  } as unknown as ReturnType<typeof createBrowserSupabaseClient>);
+  } as unknown as Awaited<ReturnType<typeof createServerActionSupabaseClient>>);
 }
 
 describe("signInWithPassword", () => {
@@ -36,6 +36,22 @@ describe("signInWithPassword", () => {
       password: "long-enough-password",
     });
     expect(result).toEqual({ ok: true });
+  });
+
+  it("re-validates input server-side and never calls Supabase for invalid input", async () => {
+    stubSupabaseSignIn({ data: { session: {} }, error: null });
+
+    const result = await signInWithPassword({
+      email: "not-an-email",
+      password: "whatever",
+    });
+
+    expect(signInMock).not.toHaveBeenCalled();
+    expect(result).toEqual({
+      message: "Enter a valid email address.",
+      ok: false,
+      reason: "invalid-input",
+    });
   });
 
   it("maps credential mismatch to one neutral message", async () => {
