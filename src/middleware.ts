@@ -5,12 +5,20 @@ import {
   hardenSessionCookieOptions,
 } from "@/shared/lib/supabase-server-client";
 
+const publicPagePaths = new Set(["/login", "/signup"]);
+
+function isProtectedPageRequest(request: NextRequest): boolean {
+  const { pathname } = request.nextUrl;
+
+  return !pathname.startsWith("/api/") && !publicPagePaths.has(pathname);
+}
+
 /**
  * Refreshes an expired Supabase access token on every matched request
  * (FR-AUTH-4): getClaims() validates the JWT and, when it has expired, uses
  * the refresh token to rotate the session, which lands in `response` through
- * the adapter with the ADR-20 hardened flags. AUTH-05 adds route protection
- * on top of this.
+ * the adapter with the ADR-20 hardened flags. Page routes outside the public
+ * auth surface require verified claims (AUTH-05).
  */
 export async function middleware(request: NextRequest) {
   let response = NextResponse.next({ request });
@@ -30,7 +38,25 @@ export async function middleware(request: NextRequest) {
     },
   });
 
-  await client.auth.getClaims();
+  let isAuthenticated = false;
+
+  try {
+    const { data, error } = await client.auth.getClaims();
+    isAuthenticated = !error && typeof data?.claims.sub === "string";
+  } catch {
+    // Authentication failures must fail closed for protected page routes.
+  }
+
+  if (isProtectedPageRequest(request) && !isAuthenticated) {
+    const redirectResponse = NextResponse.redirect(new URL("/login", request.url));
+
+    // A failed/expired session can clear or rotate cookies before redirecting.
+    for (const cookie of response.cookies.getAll()) {
+      redirectResponse.cookies.set(cookie);
+    }
+
+    return redirectResponse;
+  }
 
   return response;
 }

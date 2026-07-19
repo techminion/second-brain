@@ -7,6 +7,7 @@ All notable changes to Second Brain are documented here, following [Keep a Chang
 ## [Unreleased]
 
 ### Changed
+- **2026-07-19** — Authenticated app routes now redirect anonymous visitors to `/login`; verified sessions enter the `(app)` route group while auth pages and API routes retain their own access policies (AUTH-05).
 - **2026-07-16** — DB-16 adds typed Supabase browser/session/service-role client factories and a Cloud RLS integration harness; the public environment contract now uses Supabase publishable keys instead of the legacy anon key.
 - **2026-07-16** — Security spec: the service-role-key enumeration in `09_SECURITY.md §5` gains a third, tightly-constrained context — the Cloud integration-test harness (test code only, dev project only) — and `@supabase/supabase-js` + `@supabase/ssr` are recorded as the approved client packages (ADR-12), unblocking DB-16.
 - **2026-07-16** — Database spec conflict resolved: `profiles` RLS policy explicitly defined as `id = auth.uid()` — the sole exception to the uniform `owner_id` shape (ADR-11) — and RLS now ships inside each table's own migration with DB-13 redefined as an audit task (GOV-6).
