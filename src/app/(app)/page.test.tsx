@@ -7,6 +7,6 @@ describe("HomePage", () => {
   it("renders the application name", () => {
     render(<HomePage />);
 
-    expect(screen.getByRole("main")).toHaveTextContent("Second Brain");
+    expect(screen.getByText("Second Brain")).toBeInTheDocument();
   });
 });
