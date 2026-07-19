@@ -17,7 +17,7 @@ Done: Sprint 0 (governance), Sprint 1 (repo & tooling foundation — all 21 task
 |---|---|
 | Engineering documentation (12 docs) | ✅ Complete, audited twice for consistency |
 | Governance layer (this file set) | ✅ Complete |
-| Implementation | 43 Done / 309 tasks ([12_TASKS.md](12_TASKS.md)) |
+| Implementation | 44 Done / 309 tasks ([12_TASKS.md](12_TASKS.md)) |
 
 ## Completed
 
@@ -55,10 +55,11 @@ Done: Sprint 0 (governance), Sprint 1 (repo & tooling foundation — all 21 task
 - AUTH-03: login live at `/login` — shape-only login schema, neutral invalid-credentials message (no account-existence leak), shared `AuthFormField` extracted and signup form refactored onto it, signup↔login cross-links. 16 unit tests; both pages smoke-tested on the production server. **Merged 2026-07-18** via PR #51 (`a3dadc6`). Auth UI: signup + login complete; AUTH-04 (session middleware) is the next gate.
 - AUTH-04: session handling live per 09_SECURITY §3 — ADR-20 (auth tokens exclusively server-side): sign-up/in converted to server actions, all session cookies forced `HttpOnly`/`SameSite=Lax` (+`Secure` in prod) through one hardening chokepoint, `src/middleware.ts` refreshes tokens per request via `getClaims()`, browser Supabase client deleted, OBS-02 user-id resolver wired. Proven by a live Playwright e2e (real signup/login against the dev project; `document.cookie` shows no token). **Merged 2026-07-19** via PR #53 (`e77fa1c`). AUTH-05/07/08 unblocked.
 - AUTH-05: route protection live — fail-closed middleware gate over the ADR-20 refresh (anonymous page requests redirect to `/login`; `/login`/`/signup`/`/api/*` keep their own policies; cookie rotation survives redirects); root page moved into `(app)` unchanged at `/`. Implemented by Codex; reviewer re-verified units (81/81) and live Playwright (2/2) in an isolated worktree. **Reviewed and merged 2026-07-19** via PR #55 (`b9fd739`). **All P0 auth tasks Done.**
+- CI-05: dependency audit gate live — every PR runs `npm audit --audit-level=high` as the fifth strict, Actions-pinned required context. Implemented by Codex; reviewer verified live protection readback. **Reviewed and merged 2026-07-19** via PRs #57/#58 (`506a48e`/`574ad7a`).
+- CI-04: migration gate live — every PR replays the full migration history on the pinned Supabase Postgres 17 image from a checksum- and provenance-verified official baseline, asserts the documented end-state (13 tables, full RLS, storage helpers, private bucket, extensions, cron job), and same-repo PRs verify repo↔Cloud history parity; fork-safe throughout (GOV-7). Implemented by Codex under ADR-13/21; reviewer independently re-verified fixture provenance (upstream blob hash-identical) and live protection (strict, six Actions-pinned contexts). **Reviewed and merged 2026-07-19** via PR #62 (`e8b3ef0`). CI track: only CI-07 remains.
 
 ## In Progress
 
-- CI-04: Supabase migration gate is implemented in PR #62 and ready for independent review. Full-history replay and Cloud drift validation are green; `Migration check` is live as the sixth strict, GitHub-Actions-pinned required context on `main`.
 
 ## Blocked
 
@@ -89,4 +90,4 @@ Done: Sprint 0 (governance), Sprint 1 (repo & tooling foundation — all 21 task
 
 ## Last Updated
 
-2026-07-19 — CI-04 implemented in PR #62: full-history replay + Cloud drift check green; six strict required CI contexts now live. Independent review and merge pending (Codex, backend implementation role)
+2026-07-19 — CI-04 reviewed and merged (PR #62); migration gate live as the sixth required context. Sprint 2 remainder: AUTH-06/07/08/09/14, SHELL-02/03/10, CI-07 (Claude, reviewer role)
