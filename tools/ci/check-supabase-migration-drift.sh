@@ -16,23 +16,45 @@ fi
 supabase link --project-ref "$SUPABASE_PROJECT_REF" --password "$SUPABASE_DB_PASSWORD"
 supabase migration list \
   --linked \
-  --password "$SUPABASE_DB_PASSWORD" \
-  --output json >"$migration_list_file"
+  --password "$SUPABASE_DB_PASSWORD" >"$migration_list_file"
 
-if ! jq -e '
-  (if type == "array"
-    then .
-    else (.migrations // .data.migrations // .result.migrations // [])
-  end) as $migrations
-  | ($migrations | length > 0)
-    and ($migrations | all(
-      ((.local // "") | length > 0)
-      and ((.remote // "") | length > 0)
-      and (.local == .remote)
-    ))
-' "$migration_list_file" >/dev/null; then
+migration_files=(supabase/migrations/*.sql)
+
+if [[ ! -e "${migration_files[0]}" ]]; then
+  echo "No Supabase migrations found." >&2
+  exit 1
+fi
+
+if ! awk -v expected_rows="${#migration_files[@]}" '
+  {
+    line = $0
+    version_count = 0
+    delete versions
+
+    while (match(line, /[0-9]{14}/)) {
+      version_count++
+      versions[version_count] = substr(line, RSTART, RLENGTH)
+      line = substr(line, RSTART + RLENGTH)
+    }
+
+    if (version_count == 0) {
+      next
+    }
+
+    migration_rows++
+    if (version_count != 2 || versions[1] != versions[2]) {
+      histories_differ = 1
+    }
+  }
+
+  END {
+    if (migration_rows != expected_rows || histories_differ) {
+      exit 1
+    }
+  }
+' "$migration_list_file"; then
   echo "Repository and Cloud migration histories differ:" >&2
-  jq '.' "$migration_list_file" >&2
+  cat "$migration_list_file" >&2
   exit 1
 fi
 
