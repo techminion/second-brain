@@ -27,12 +27,55 @@ beforeEach(() => {
 });
 
 describe("middleware", () => {
-  it("validates the session on every matched request", async () => {
+  it("keeps public auth pages available without a session", async () => {
     getClaimsMock.mockResolvedValue({ data: null, error: null });
 
-    await middleware(new NextRequest("http://localhost:3000/signup"));
+    const response = await middleware(new NextRequest("http://localhost:3000/signup"));
 
     expect(getClaimsMock).toHaveBeenCalledTimes(1);
+    expect(response.status).toBe(200);
+    expect(response.headers.get("location")).toBeNull();
+  });
+
+  it("keeps API routes available for their own authentication policies", async () => {
+    getClaimsMock.mockResolvedValue({ data: null, error: null });
+
+    const response = await middleware(
+      new NextRequest("http://localhost:3000/api/internal/retention-purge"),
+    );
+
+    expect(response.status).toBe(200);
+    expect(response.headers.get("location")).toBeNull();
+  });
+
+  it("redirects unauthenticated app requests to login", async () => {
+    getClaimsMock.mockResolvedValue({ data: null, error: null });
+
+    const response = await middleware(new NextRequest("http://localhost:3000/"));
+
+    expect(response.status).toBe(307);
+    expect(response.headers.get("location")).toBe("http://localhost:3000/login");
+  });
+
+  it("allows authenticated app requests", async () => {
+    getClaimsMock.mockResolvedValue({
+      data: { claims: { sub: "d2b8a9c4-1111-4222-8333-444455556666" } },
+      error: null,
+    });
+
+    const response = await middleware(new NextRequest("http://localhost:3000/"));
+
+    expect(response.status).toBe(200);
+    expect(response.headers.get("location")).toBeNull();
+  });
+
+  it("fails closed when session validation throws", async () => {
+    getClaimsMock.mockRejectedValue(new Error("Auth unavailable"));
+
+    const response = await middleware(new NextRequest("http://localhost:3000/"));
+
+    expect(response.status).toBe(307);
+    expect(response.headers.get("location")).toBe("http://localhost:3000/login");
   });
 
   it("exposes the request's cookies to the Supabase client", async () => {
@@ -66,5 +109,6 @@ describe("middleware", () => {
     expect(cookie?.httpOnly).toBe(true);
     expect(cookie?.sameSite).toBe("lax");
     expect(cookie?.maxAge).toBe(3600);
+    expect(response.headers.get("location")).toBe("http://localhost:3000/login");
   });
 });

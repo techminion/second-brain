@@ -17,7 +17,7 @@ Done: Sprint 0 (governance), Sprint 1 (repo & tooling foundation — all 21 task
 |---|---|
 | Engineering documentation (12 docs) | ✅ Complete, audited twice for consistency |
 | Governance layer (this file set) | ✅ Complete |
-| Implementation | 27 Done + 5 In Review / 309 tasks ([12_TASKS.md](12_TASKS.md)) |
+| Implementation | 41 Done + 1 In Review / 309 tasks ([12_TASKS.md](12_TASKS.md)) |
 
 ## Completed
 
@@ -57,6 +57,7 @@ Done: Sprint 0 (governance), Sprint 1 (repo & tooling foundation — all 21 task
 
 ## In Progress
 
+- AUTH-05: `(app)` route protection complete. **In Review** — unauthenticated page requests redirect to `/login`; verified sessions enter `/`; `/login`, `/signup`, and API routes retain their own access policies. Refresh/clear cookies survive redirect responses. Unit suite 81/81, production build, and live Playwright anonymous/authenticated paths are green.
 
 ## Blocked
 
@@ -83,8 +84,8 @@ Done: Sprint 0 (governance), Sprint 1 (repo & tooling foundation — all 21 task
 
 ## Current Branch
 
-`main`
+`feat/auth-05-route-protection`
 
 ## Last Updated
 
-2026-07-18 — SHELL-07 reviewed and merged (PR #14); Sprint 2 remainder: AUTH track, SHELL-02/03/10, CI-04/05/07 (Claude, reviewer role)
+2026-07-19 — AUTH-05 route protection complete and awaiting review; live anonymous/authenticated browser paths green (Codex, backend role)

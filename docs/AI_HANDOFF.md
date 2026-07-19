@@ -21,6 +21,23 @@ Estimated Context Needed:
 
 ---
 
+## 2026-07-19 — Codex (Backend) — AUTH-05 route protection complete
+
+**Session Date:** 2026-07-19
+**Agent:** Codex, backend implementation role
+**Objective:** Protect the `(app)` route group and redirect unauthenticated visitors to login.
+**Files Modified:** `.ai/TASK_QUEUE.md` (AUTH-05 → In Review), `docs/PROJECT_STATE.md`, `docs/AI_HANDOFF.md` (this entry), `docs/CHANGELOG.md`, `src/middleware.ts`, `src/middleware.test.ts`, `e2e/home.spec.ts`.
+**Files Moved:** `src/app/page.tsx` and its test → `src/app/(app)/`; the route remains `/`.
+**Files Deleted:** `src/app/(app)/.gitkeep`, replaced by the real app page.
+**Architecture Decisions:** None. Implemented AUTH-05 on top of ADR-20: middleware continues verified-claims refresh, then fails closed for protected page routes. `/login`, `/signup`, and `/api/*` remain outside this page-route gate; API handlers keep their existing per-surface authentication policies.
+**Implementation:** Anonymous or invalid sessions requesting app pages receive a 307 redirect to `/login`. A verified claims subject permits the request. Session cookies rotated or cleared during validation are copied to redirect responses with the existing ADR-20 hardening intact. Auth validation exceptions fail closed for app pages without making public auth pages unavailable.
+**Verification performed:** Focused middleware/root tests passed 8/8. Full format check, strict typecheck, lint, 81 unit tests, and production build passed. Live Playwright passed 2/2: anonymous `/` redirects to `/login`; real Cloud signup and login sessions enter `/` with HttpOnly cookies, followed by service-role cleanup of the isolated user.
+**Outstanding Work:** Independent reviewer must verify AUTH-05. AUTH-06/07/08/09 remain queued; no next auth task was started.
+**Known Bugs:** None.
+**Risks:** The public-page allowlist must be extended when AUTH-06 or AUTH-07 adds password-recovery or OAuth callback pages. API routes are deliberately excluded from page redirects and must continue authenticating according to their own contracts.
+**Suggested Next Task:** Review AUTH-05. After both implementation and reviewer-outcome PRs merge, AUTH-08 is the smallest dependency-ready continuation; AUTH-06/07/09 are also ready.
+**Estimated Context Needed:** This entry, AUTH-05 diff, ADR-20, `src/middleware.ts`, and `e2e/auth-session.spec.ts`.
+
 ## 2026-07-19 — Claude (Implementer + Reviewer) — AUTH-04: session cookies + middleware refresh (ADR-20)
 
 **Session Date:** 2026-07-19
