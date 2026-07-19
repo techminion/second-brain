@@ -17,7 +17,7 @@ Done: Sprint 0 (governance), Sprint 1 (repo & tooling foundation — all 21 task
 |---|---|
 | Engineering documentation (12 docs) | ✅ Complete, audited twice for consistency |
 | Governance layer (this file set) | ✅ Complete |
-| Implementation | 41 Done + 1 In Review / 309 tasks ([12_TASKS.md](12_TASKS.md)) |
+| Implementation | 42 Done + 1 In Review / 309 tasks ([12_TASKS.md](12_TASKS.md)) |
 
 ## Completed
 
@@ -58,6 +58,7 @@ Done: Sprint 0 (governance), Sprint 1 (repo & tooling foundation — all 21 task
 
 ## In Progress
 
+- CI-05: high-severity dependency audit gate complete. **In Review** — every PR now runs an independent `Dependency audit` job, and strict `main` protection requires it as a fifth GitHub Actions-owned context without weakening the existing four checks.
 
 ## Blocked
 
@@ -84,8 +85,8 @@ Done: Sprint 0 (governance), Sprint 1 (repo & tooling foundation — all 21 task
 
 ## Current Branch
 
-`main`
+`chore/ci-05-npm-audit-gate`
 
 ## Last Updated
 
-2026-07-19 — AUTH-05 reviewed and merged (PR #55); P0 auth complete. Remaining Sprint 2: AUTH-06/07/08/09/14, SHELL-02/03/10, CI-04/05/07 (Claude, reviewer role)
+2026-07-19 — CI-05 dependency audit gate complete and awaiting review; live branch protection requires all five CI contexts (Codex, backend role)
