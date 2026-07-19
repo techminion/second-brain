@@ -54,10 +54,10 @@ Done: Sprint 0 (governance), Sprint 1 (repo & tooling foundation — all 21 task
 - AUTH-02: signup live at `/signup` — new `(auth)` route group, `src/features/auth/` (zod schema mirroring ADR-19, browser-client signUp wrapper with typed error mapping + confirmation-drift guard, accessible RHF form), RHF/zod/resolvers deps added per §2.1. 17 unit tests; production-server smoke green. **Merged 2026-07-18** via PR #49 (`56c7a1d`). AUTH-03 (login) claimable.
 - AUTH-03: login live at `/login` — shape-only login schema, neutral invalid-credentials message (no account-existence leak), shared `AuthFormField` extracted and signup form refactored onto it, signup↔login cross-links. 16 unit tests; both pages smoke-tested on the production server. **Merged 2026-07-18** via PR #51 (`a3dadc6`). Auth UI: signup + login complete; AUTH-04 (session middleware) is the next gate.
 - AUTH-04: session handling live per 09_SECURITY §3 — ADR-20 (auth tokens exclusively server-side): sign-up/in converted to server actions, all session cookies forced `HttpOnly`/`SameSite=Lax` (+`Secure` in prod) through one hardening chokepoint, `src/middleware.ts` refreshes tokens per request via `getClaims()`, browser Supabase client deleted, OBS-02 user-id resolver wired. Proven by a live Playwright e2e (real signup/login against the dev project; `document.cookie` shows no token). **Merged 2026-07-19** via PR #53 (`e77fa1c`). AUTH-05/07/08 unblocked.
+- AUTH-05: route protection live — fail-closed middleware gate over the ADR-20 refresh (anonymous page requests redirect to `/login`; `/login`/`/signup`/`/api/*` keep their own policies; cookie rotation survives redirects); root page moved into `(app)` unchanged at `/`. Implemented by Codex; reviewer re-verified units (81/81) and live Playwright (2/2) in an isolated worktree. **Reviewed and merged 2026-07-19** via PR #55 (`b9fd739`). **All P0 auth tasks Done.**
 
 ## In Progress
 
-- AUTH-05: `(app)` route protection complete. **In Review** — unauthenticated page requests redirect to `/login`; verified sessions enter `/`; `/login`, `/signup`, and API routes retain their own access policies. Refresh/clear cookies survive redirect responses. Unit suite 81/81, production build, and live Playwright anonymous/authenticated paths are green.
 
 ## Blocked
 
@@ -84,8 +84,8 @@ Done: Sprint 0 (governance), Sprint 1 (repo & tooling foundation — all 21 task
 
 ## Current Branch
 
-`feat/auth-05-route-protection`
+`main`
 
 ## Last Updated
 
-2026-07-19 — AUTH-05 route protection complete and awaiting review; live anonymous/authenticated browser paths green (Codex, backend role)
+2026-07-19 — AUTH-05 reviewed and merged (PR #55); P0 auth complete. Remaining Sprint 2: AUTH-06/07/08/09/14, SHELL-02/03/10, CI-04/05/07 (Claude, reviewer role)
