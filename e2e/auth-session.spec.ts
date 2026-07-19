@@ -1,0 +1,87 @@
+import { expect, test } from "@playwright/test";
+import { createClient } from "@supabase/supabase-js";
+
+// The dev server loads .env itself; the spec needs the same values for
+// service-role cleanup. Node 22+.
+try {
+  process.loadEnvFile(".env");
+} catch {
+  // Missing .env — the skip below reports it.
+}
+
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+async function deleteUserByEmail(email: string): Promise<void> {
+  if (!supabaseUrl || !serviceRoleKey) {
+    return;
+  }
+
+  const admin = createClient(supabaseUrl, serviceRoleKey, { auth: { persistSession: false } });
+  const { data, error } = await admin.auth.admin.listUsers({ page: 1, perPage: 1000 });
+
+  if (error) {
+    throw new Error(`e2e cleanup failed listing users: ${error.message}`);
+  }
+
+  const user = data.users.find((candidate) => candidate.email === email);
+
+  if (user) {
+    const { error: deleteError } = await admin.auth.admin.deleteUser(user.id);
+
+    if (deleteError) {
+      throw new Error(`e2e cleanup failed deleting ${user.id}: ${deleteError.message}`);
+    }
+  }
+}
+
+test("signup and login establish HttpOnly SameSite=Lax session cookies (ADR-20)", async ({
+  context,
+  page,
+}) => {
+  test.skip(!supabaseUrl || !serviceRoleKey, "requires .env with dev-project credentials");
+
+  const email = `ameybro11+e2e${Date.now()}@gmail.com`;
+  const password = "Correct-Horse-42-Battery";
+
+  try {
+    await page.goto("/signup");
+    await page.getByLabel("Email").fill(email);
+    await page.getByLabel("Password").fill(password);
+    await page.getByRole("button", { name: "Create account" }).click();
+    await page.waitForURL("/");
+
+    const signupCookies = (await context.cookies()).filter((cookie) =>
+      cookie.name.startsWith("sb-"),
+    );
+    expect(signupCookies.length).toBeGreaterThan(0);
+
+    for (const cookie of signupCookies) {
+      expect(cookie.httpOnly, `${cookie.name} must be HttpOnly`).toBe(true);
+      expect(cookie.sameSite, `${cookie.name} must be SameSite=Lax`).toBe("Lax");
+    }
+
+    // The browser's JavaScript must not see any session cookie at all.
+    const documentCookie = await page.evaluate(() => document.cookie);
+    expect(documentCookie).not.toContain("sb-");
+
+    // Fresh context state: prove login re-establishes the session.
+    await context.clearCookies();
+    await page.goto("/login");
+    await page.getByLabel("Email").fill(email);
+    await page.getByLabel("Password").fill(password);
+    await page.getByRole("button", { name: "Log in" }).click();
+    await page.waitForURL("/");
+
+    const loginCookies = (await context.cookies()).filter((cookie) =>
+      cookie.name.startsWith("sb-"),
+    );
+    expect(loginCookies.length).toBeGreaterThan(0);
+
+    for (const cookie of loginCookies) {
+      expect(cookie.httpOnly, `${cookie.name} must be HttpOnly`).toBe(true);
+    }
+  } finally {
+    await deleteUserByEmail(email);
+  }
+});
