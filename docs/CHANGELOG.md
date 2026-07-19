@@ -7,6 +7,7 @@ All notable changes to Second Brain are documented here, following [Keep a Chang
 ## [Unreleased]
 
 ### Added
+- **2026-07-19** — Authenticated routes now render inside a server-composed three-zone shell with independently collapsible, accessible left and right rails (SHELL-02; PR #64).
 - **2026-07-19** — Pull requests now replay the complete Supabase migration history against a pinned Postgres 17 service and verify repository↔Cloud migration-history parity; the fork-safe `Migration check` is required by `main` branch protection (CI-04, ADR-13/21).
 - **2026-07-19** — Pull requests now run a high-severity dependency audit, enforced as a required `main` branch-protection check (CI-05).
 - **2026-07-19** — Sessions persist across browser restarts and refresh transparently; session cookies are `HttpOnly`/`SameSite=Lax` and auth tokens are never exposed to browser JavaScript (AUTH-04, ADR-20). _Backfilled by the reviewer alongside AUTH-02/03 — these shipped without changelog entries._
