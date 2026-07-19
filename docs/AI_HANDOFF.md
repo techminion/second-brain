@@ -21,6 +21,22 @@ Estimated Context Needed:
 
 ---
 
+## 2026-07-19 — Codex (Backend) — CI-05 dependency audit gate complete
+
+**Session Date:** 2026-07-19
+**Agent:** Codex, backend implementation role
+**Objective:** Make high-severity dependency findings block pull-request merges (CI-05).
+**Files Modified:** `.github/workflows/ci.yml`, `.ai/TASK_QUEUE.md`, `docs/PROJECT_STATE.md`, `docs/AI_HANDOFF.md` (this entry), `docs/CHANGELOG.md`.
+**Files Added:** None.
+**Architecture Decisions:** None. Implemented the existing `11_CONTRIBUTING §6` and `09_SECURITY §10` policy as an independent, credential-free PR job.
+**Implementation:** Added the stable `Dependency audit` job on pinned Node 22.12.0, running `npm audit --audit-level=high` against all dependencies in the lockfile. After GitHub emitted the new context successfully, extended live `main` protection from four to five required checks while preserving strict up-to-date enforcement and pinning every context to the GitHub Actions app (`app_id` 15368).
+**Verification performed:** Local `npm audit --audit-level=high` exited successfully and reported only the two known moderate transitive PostCSS findings. Format check, strict typecheck, lint, 81 unit tests, and production build passed. The first GitHub `Dependency audit` run passed; branch protection was independently read back as `strict: true` with exactly `Typecheck`, `Lint`, `Format`, `Unit tests`, and `Dependency audit`, all Actions-owned.
+**Outstanding Work:** Independent reviewer must verify CI-05 and the live protection setting. No other task was started.
+**Known Bugs:** None.
+**Risks:** The audit uses npm's current advisory feed, so registry availability is an external dependency of the PR gate. Moderate findings remain non-blocking by documented policy; SEC-07 owns dependency pinning/audit review.
+**Suggested Next Task:** Review CI-05. After both implementation and reviewer-outcome PRs merge, CI-04 is the remaining P0 Sprint 2 backend task; AUTH-08 needs its logout trigger clarified, and AUTH-09 needs a defined `Profile` shape/display-name validation contract before implementation.
+**Estimated Context Needed:** This entry, PR CI results, `.github/workflows/ci.yml`, `11_CONTRIBUTING §6`, and the live required-status-check response.
+
 ## 2026-07-19 — Codex (Backend) — AUTH-05 route protection complete
 
 **Session Date:** 2026-07-19
