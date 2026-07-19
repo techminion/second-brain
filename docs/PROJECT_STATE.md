@@ -17,7 +17,7 @@ Done: Sprint 0 (governance), Sprint 1 (repo & tooling foundation — all 21 task
 |---|---|
 | Engineering documentation (12 docs) | ✅ Complete, audited twice for consistency |
 | Governance layer (this file set) | ✅ Complete |
-| Implementation | 44 Done / 309 tasks ([12_TASKS.md](12_TASKS.md)) |
+| Implementation | 45 Done / 309 tasks ([12_TASKS.md](12_TASKS.md)) |
 
 ## Completed
 
@@ -57,10 +57,10 @@ Done: Sprint 0 (governance), Sprint 1 (repo & tooling foundation — all 21 task
 - AUTH-05: route protection live — fail-closed middleware gate over the ADR-20 refresh (anonymous page requests redirect to `/login`; `/login`/`/signup`/`/api/*` keep their own policies; cookie rotation survives redirects); root page moved into `(app)` unchanged at `/`. Implemented by Codex; reviewer re-verified units (81/81) and live Playwright (2/2) in an isolated worktree. **Reviewed and merged 2026-07-19** via PR #55 (`b9fd739`). **All P0 auth tasks Done.**
 - CI-05: dependency audit gate live — every PR runs `npm audit --audit-level=high` as the fifth strict, Actions-pinned required context. Implemented by Codex; reviewer verified live protection readback. **Reviewed and merged 2026-07-19** via PRs #57/#58 (`506a48e`/`574ad7a`).
 - CI-04: migration gate live — every PR replays the full migration history on the pinned Supabase Postgres 17 image from a checksum- and provenance-verified official baseline, asserts the documented end-state (13 tables, full RLS, storage helpers, private bucket, extensions, cron job), and same-repo PRs verify repo↔Cloud history parity; fork-safe throughout (GOV-7). Implemented by Codex under ADR-13/21; reviewer independently re-verified fixture provenance (upstream blob hash-identical) and live protection (strict, six Actions-pinned contexts). **Reviewed and merged 2026-07-19** via PR #62 (`e8b3ef0`). CI track: only CI-07 remains.
+- SHELL-02: three-zone app shell live — 10_DESIGN §3.2 layout (collapsible sidebar · server-rendered main · collapsible context panel), server-composed with one client island per rail, accessible collapse controls, ephemeral per-rail state. Implemented by Codex (L-split recorded: SHELL-03/05/06/10 scoped out); reviewer re-verified 84/84 units + live Playwright in an isolated worktree. **Reviewed and merged 2026-07-19** via PR #64 (`282e594`). SHELL-03 claimable.
 
 ## In Progress
 
-- SHELL-02: three-zone authenticated app shell implemented by Codex in PR #64 — server-composed main content with independently collapsible left/right rails; awaiting independent review.
 
 ## Blocked
 
@@ -91,4 +91,4 @@ Done: Sprint 0 (governance), Sprint 1 (repo & tooling foundation — all 21 task
 
 ## Last Updated
 
-2026-07-19 — SHELL-02 implemented in PR #64: server-composed three-zone shell with independently collapsible accessible rails; awaiting independent review (Codex, frontend implementation role)
+2026-07-19 — SHELL-02 reviewed and merged (PR #64); shell track continues with SHELL-03/10. Sprint 2 remainder: AUTH-06/07/08/09/14, SHELL-03/10, CI-07 (Claude, reviewer role)
