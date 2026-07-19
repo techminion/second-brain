@@ -14,3 +14,6 @@ package-lock.json
 # Vendored third-party agent skills (hash-locked upstream content)
 .agents/
 .claude/skills/
+
+# Commit-pinned, checksum-verified official Supabase fixture
+tools/ci/supabase-postgres-17-baseline.sql
