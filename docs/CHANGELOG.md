@@ -6,6 +6,11 @@ All notable changes to Second Brain are documented here, following [Keep a Chang
 
 ## [Unreleased]
 
+### Added
+- **2026-07-19** — Sessions persist across browser restarts and refresh transparently; session cookies are `HttpOnly`/`SameSite=Lax` and auth tokens are never exposed to browser JavaScript (AUTH-04, ADR-20). _Backfilled by the reviewer alongside AUTH-02/03 — these shipped without changelog entries._
+- **2026-07-18** — Login page at `/login` with a neutral incorrect-credentials message; signup and login pages cross-link (AUTH-03).
+- **2026-07-18** — Email/password signup at `/signup`: creates an account and lands signed in (AUTH-02; server policy per ADR-19).
+
 ### Changed
 - **2026-07-19** — Authenticated app routes now redirect anonymous visitors to `/login`; verified sessions enter the `(app)` route group while auth pages and API routes retain their own access policies (AUTH-05).
 - **2026-07-16** — DB-16 adds typed Supabase browser/session/service-role client factories and a Cloud RLS integration harness; the public environment contract now uses Supabase publishable keys instead of the legacy anon key.
