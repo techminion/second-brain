@@ -21,6 +21,20 @@ Estimated Context Needed:
 
 ---
 
+## 2026-07-19 — Claude (Architect) — ADR-21: CI-04 escalation arbitrated
+
+**Session Date:** 2026-07-19
+**Agent:** Claude, architect role
+**Objective:** Arbitrate Codex's CI-04 blocker (two ADR-13 inaccuracies) — no implementation.
+**Files Modified:** `docs/DECISIONS.md` (ADR-21 recorded; ADR-13 marked amended), `.ai/TASK_QUEUE.md` (CI-04 → Blocked (repo secrets) with the amended contract), `docs/AI_HANDOFF.md` (this entry).
+**Architecture Decisions:** ADR-21 — replay job pins `supabase/postgres:17.6.1.136` + a commit-pinned official baseline fixture (bare image lacks `auth.users`/`storage.objects`/storage helpers); drift check requires `SUPABASE_ACCESS_TOKEN` **and** `SUPABASE_DB_PASSWORD` repo secrets, fork-skipped (GOV-7). Both Codex claims verified against Supabase docs and Docker Hub before accepting.
+**Verification performed:** Docs fetch (managing-environments CI guidance names both secrets); Docker Hub tag lookup (17.6.1.136 published 2026-06-15).
+**Outstanding Work:** User must add the two repo secrets (`gh secret set` — values never through chat); then CI-04 is claimable under the amended contract.
+**Known Bugs:** None.
+**Risks:** Vendored fixture must be bumped when migrations reference newer platform objects — reviewable by design.
+**Suggested Next Task:** CI-04 (Codex, once secrets exist); AUTH-06/08/09 open in parallel.
+**Estimated Context Needed:** ADR-21, the CI-04 queue row.
+
 ## 2026-07-19 — Codex (Backend) — CI-05 dependency audit gate complete
 
 **Session Date:** 2026-07-19
