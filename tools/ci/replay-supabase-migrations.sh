@@ -3,6 +3,7 @@
 set -euo pipefail
 
 readonly database_url="${DATABASE_URL:?DATABASE_URL is required}"
+readonly baseline_database_url="${BASELINE_DATABASE_URL:?BASELINE_DATABASE_URL is required}"
 readonly baseline="tools/ci/supabase-postgres-17-baseline.sql"
 readonly expected_baseline_sha256="89b5d0fd9c0d2457b49602203fb927b9fc5e7d1aef5614f90ce9e2a5cb60623a"
 
@@ -13,7 +14,7 @@ if [[ "$actual_baseline_sha256" != "$expected_baseline_sha256" ]]; then
   exit 1
 fi
 
-psql "$database_url" \
+psql "$baseline_database_url" \
   --no-psqlrc \
   --set=ON_ERROR_STOP=on \
   --single-transaction \

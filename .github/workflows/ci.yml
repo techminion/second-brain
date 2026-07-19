@@ -48,6 +48,7 @@ jobs:
         uses: actions/checkout@v7
       - name: Replay complete migration history
         env:
+          BASELINE_DATABASE_URL: postgresql://supabase_admin:postgres@localhost:54322/postgres
           DATABASE_URL: postgresql://postgres:postgres@localhost:54322/postgres
         run: ./tools/ci/replay-supabase-migrations.sh
       - name: Set up Supabase CLI
