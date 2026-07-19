@@ -60,6 +60,7 @@ Done: Sprint 0 (governance), Sprint 1 (repo & tooling foundation — all 21 task
 
 ## In Progress
 
+- SHELL-02: three-zone authenticated app shell implemented by Codex in PR #64 — server-composed main content with independently collapsible left/right rails; awaiting independent review.
 
 ## Blocked
 
@@ -67,7 +68,7 @@ Done: Sprint 0 (governance), Sprint 1 (repo & tooling foundation — all 21 task
 
 ## Upcoming
 
-- Sprint 2 remaining implementation: AUTH-06/07/08/09/14, SHELL-02/03/10, and CI-07. CI-04 awaits independent review and merge in PR #62.
+- Sprint 2 remaining implementation: AUTH-06/07/08/09/14, SHELL-03/10, and CI-07. SHELL-02 awaits independent review in PR #64.
 
 ## Known Technical Debt
 
@@ -86,8 +87,8 @@ Done: Sprint 0 (governance), Sprint 1 (repo & tooling foundation — all 21 task
 
 ## Current Branch
 
-`chore/ci-04-supabase-migration-gate`
+`feat/shell-02-app-shell`
 
 ## Last Updated
 
-2026-07-19 — CI-04 reviewed and merged (PR #62); migration gate live as the sixth required context. Sprint 2 remainder: AUTH-06/07/08/09/14, SHELL-02/03/10, CI-07 (Claude, reviewer role)
+2026-07-19 — SHELL-02 implemented in PR #64: server-composed three-zone shell with independently collapsible accessible rails; awaiting independent review (Codex, frontend implementation role)

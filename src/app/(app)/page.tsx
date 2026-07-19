@@ -1,3 +1,3 @@
 export default function HomePage() {
-  return <main>Second Brain</main>;
+  return <p>Second Brain</p>;
 }

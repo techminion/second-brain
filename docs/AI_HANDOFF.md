@@ -21,6 +21,22 @@ Estimated Context Needed:
 
 ---
 
+## 2026-07-19 — Codex (Frontend) — SHELL-02 three-zone app shell complete
+
+**Session Date:** 2026-07-19
+**Agent:** Codex, frontend implementation role
+**Objective:** Establish the documented three-zone authenticated app shell with collapsible left and right panels (SHELL-02).
+**Files Modified:** `.ai/TASK_QUEUE.md`, `src/app/(app)/page.tsx`, `src/app/(app)/page.test.tsx`, `docs/PROJECT_STATE.md`, `docs/AI_HANDOFF.md` (this entry), `docs/CHANGELOG.md`.
+**Files Added:** `src/app/(app)/layout.tsx`, `src/features/shell/components/app-shell.tsx`, `src/features/shell/components/shell-panel.tsx`, `src/features/shell/components/app-shell.test.tsx`.
+**Architecture Decisions:** None. Implemented the existing server-component default and `10_DESIGN §3.2` three-zone contract; the client boundary is confined to each independently stateful rail.
+**Implementation:** Added the authenticated route-group layout, a server-composed shell with semantic sidebar/main/context landmarks, and accessible icon controls that collapse each rail without affecting the other. Removed the page-level `<main>` so the shell owns the single main landmark. No dependencies, design tokens, business logic, data access, shortcuts, breakpoint behavior, or motion were introduced.
+**Verification performed:** `npm test` (23 files, 84 tests), strict typecheck, lint, format check, and production build all passed. Authenticated rendered QA at 1440×900 passed in light and dark themes using the installed Playwright fallback: title/route/main content present, both controls proven independently, console clean, no framework error overlay. The disposable Supabase dev user was deleted after each run. Concept and implementation screenshots were inspected directly.
+**Outstanding Work:** Independent reviewer must verify and merge PR #64. SHELL-03 owns navigation contents; SHELL-05 owns shortcuts; SHELL-06 owns responsive drawers/overlays; SHELL-10 owns motion/reduced motion. No follow-on task was started.
+**Known Bugs:** None.
+**Risks:** Until SHELL-06, the shell intentionally implements only the documented desktop three-zone behavior. The Next dev server emitted its known cross-origin future-warning during fallback QA because Playwright used `127.0.0.1` while Next advertised `localhost`; production build and page console were clean.
+**Suggested Next Task:** Review and merge SHELL-02. After merge, SHELL-03 is unblocked; do not auto-monitor the merge.
+**Estimated Context Needed:** This entry, PR #64, `docs/10_DESIGN.md §3.2`, and `src/features/shell/components/`.
+
 ## 2026-07-19 — Codex (Backend) — CI-04 Supabase migration gate complete
 
 **Session Date:** 2026-07-19
