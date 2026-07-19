@@ -21,6 +21,22 @@ Estimated Context Needed:
 
 ---
 
+## 2026-07-19 — Codex (Backend) — CI-04 Supabase migration gate complete
+
+**Session Date:** 2026-07-19
+**Agent:** Codex, backend implementation role
+**Objective:** Make migration execution and repository↔Cloud migration-history parity required pull-request checks (CI-04).
+**Files Modified:** `.github/workflows/ci.yml`, `.prettierignore`, `.ai/TASK_QUEUE.md`, `docs/PROJECT_STATE.md`, `docs/AI_HANDOFF.md` (this entry), `docs/CHANGELOG.md`.
+**Files Added:** `tools/ci/replay-supabase-migrations.sh`, `tools/ci/check-supabase-migration-drift.sh`, `tools/ci/supabase-postgres-17-baseline.sql`, `tools/ci/supabase-postgres-17-baseline.source.md`.
+**Architecture Decisions:** None. Implemented ADR-13 as amended by ADR-21: CI-only pinned Postgres, commit-pinned official platform fixture, and a two-secret Cloud drift check skipped for fork PRs.
+**Implementation:** Added the independent `Migration check` job on `supabase/postgres:17.6.1.136`. The checksum-verified fixture is vendored unchanged from `supabase/pg-toolbelt@f2420d9e0f6f5b399386b5f77bd581af55a7a141` (SHA-256 `89b5d0fd9c0d2457b49602203fb927b9fc5e7d1aef5614f90ce9e2a5cb60623a`) and runs as the image's `supabase_admin`; project migrations run separately as the Cloud-equivalent `postgres` role. Replay asserts all 13 public tables, RLS on every public table, Auth/Storage baseline objects and operation helpers, the private attachments bucket, vector/pg_cron/pg_net, and the retention schedule. Same-repository PRs install Supabase CLI `2.109.1`, link to the dev project with the approved repository secrets, and fail closed unless every documented 14-digit Local/Remote history row matches; fork PRs retain credential-free replay and skip only this Cloud step.
+**Verification performed:** Shell syntax and fixture checksum passed; the vendored SQL was byte-identical to its pinned upstream source. Format, strict typecheck, lint, 81 unit tests, and production build passed locally. GitHub Actions run #72 passed all six jobs; `Migration check` passed in 53s after replaying the full history and validating Cloud parity. Live `main` protection was updated and read back as `strict: true` with exactly six GitHub-Actions-owned contexts (`app_id` 15368): Typecheck, Lint, Format, Unit tests, Dependency audit, Migration check.
+**Outstanding Work:** Independent reviewer must verify CI-04 and merge PR #62. No follow-on task was started; automatic merge monitoring remains disabled per user instruction.
+**Known Bugs:** None.
+**Risks:** The fixture and image pin must be updated together when the managed project's Postgres/platform baseline changes. The current Go CLI renders `migration list` as a table even when given its global JSON-output flag, so the fail-closed parser intentionally follows the pinned CLI's documented 14-digit version format. Credentialed drift validation remains same-repository-only per GOV-7.
+**Suggested Next Task:** Review CI-04. After review/merge, choose one remaining queued Sprint 2 task; do not auto-monitor PR merge status.
+**Estimated Context Needed:** This entry, PR #62, `.github/workflows/ci.yml`, `tools/ci/`, ADR-13/21, and the live required-status-check response.
+
 ## 2026-07-19 — Claude (Architect) — ADR-21: CI-04 escalation arbitrated
 
 **Session Date:** 2026-07-19

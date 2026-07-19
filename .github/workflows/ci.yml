@@ -26,6 +26,44 @@ jobs:
       - name: Audit dependencies
         run: npm audit --audit-level=high
 
+  migration-check:
+    name: Migration check
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    services:
+      postgres:
+        image: supabase/postgres:17.6.1.136
+        env:
+          POSTGRES_DB: postgres
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 54322:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d postgres"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 10
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7
+      - name: Replay complete migration history
+        env:
+          BASELINE_DATABASE_URL: postgresql://supabase_admin:postgres@localhost:54322/postgres
+          DATABASE_URL: postgresql://postgres:postgres@localhost:54322/postgres
+        run: ./tools/ci/replay-supabase-migrations.sh
+      - name: Set up Supabase CLI
+        if: github.event.pull_request.head.repo.full_name == github.repository
+        uses: supabase/setup-cli@v1
+        with:
+          version: 2.109.1
+      - name: Check Cloud migration history (same-repository PRs only)
+        if: github.event.pull_request.head.repo.full_name == github.repository
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          SUPABASE_DB_PASSWORD: ${{ secrets.SUPABASE_DB_PASSWORD }}
+          SUPABASE_PROJECT_REF: zkzyfwclvquiargnwgtw
+        run: ./tools/ci/check-supabase-migration-drift.sh
+
   typecheck:
     name: Typecheck
     runs-on: ubuntu-latest

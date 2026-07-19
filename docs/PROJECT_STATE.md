@@ -58,6 +58,7 @@ Done: Sprint 0 (governance), Sprint 1 (repo & tooling foundation — all 21 task
 
 ## In Progress
 
+- CI-04: Supabase migration gate is implemented in PR #62 and ready for independent review. Full-history replay and Cloud drift validation are green; `Migration check` is live as the sixth strict, GitHub-Actions-pinned required context on `main`.
 
 ## Blocked
 
@@ -65,7 +66,7 @@ Done: Sprint 0 (governance), Sprint 1 (repo & tooling foundation — all 21 task
 
 ## Upcoming
 
-- Sprint 2 critical path: the DB-03..13 schema chain (database), AUTH-01..05 (backend/frontend), SHELL-01..02 (frontend). Sprint 3 candidates listed in the queue's deferred note.
+- Sprint 2 remaining implementation: AUTH-06/07/08/09/14, SHELL-02/03/10, and CI-07. CI-04 awaits independent review and merge in PR #62.
 
 ## Known Technical Debt
 
@@ -84,8 +85,8 @@ Done: Sprint 0 (governance), Sprint 1 (repo & tooling foundation — all 21 task
 
 ## Current Branch
 
-`chore/ci-05-npm-audit-gate`
+`chore/ci-04-supabase-migration-gate`
 
 ## Last Updated
 
-2026-07-19 — CI-05 reviewed and merged (PRs #57/#58); five required CI contexts live. Remaining Sprint 2: AUTH-06/07/08/09/14, SHELL-02/03/10, CI-04/07 (Claude, reviewer role)
+2026-07-19 — CI-04 implemented in PR #62: full-history replay + Cloud drift check green; six strict required CI contexts now live. Independent review and merge pending (Codex, backend implementation role)
