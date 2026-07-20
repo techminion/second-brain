@@ -17,7 +17,7 @@ Done: Sprint 0 (governance), Sprint 1 (repo & tooling foundation — all 21 task
 |---|---|
 | Engineering documentation (12 docs) | ✅ Complete, audited twice for consistency |
 | Governance layer (this file set) | ✅ Complete |
-| Implementation | 45 Done / 309 tasks ([12_TASKS.md](12_TASKS.md)) |
+| Implementation | 46 Done / 309 tasks ([12_TASKS.md](12_TASKS.md)) |
 
 ## Completed
 
@@ -58,10 +58,10 @@ Done: Sprint 0 (governance), Sprint 1 (repo & tooling foundation — all 21 task
 - CI-05: dependency audit gate live — every PR runs `npm audit --audit-level=high` as the fifth strict, Actions-pinned required context. Implemented by Codex; reviewer verified live protection readback. **Reviewed and merged 2026-07-19** via PRs #57/#58 (`506a48e`/`574ad7a`).
 - CI-04: migration gate live — every PR replays the full migration history on the pinned Supabase Postgres 17 image from a checksum- and provenance-verified official baseline, asserts the documented end-state (13 tables, full RLS, storage helpers, private bucket, extensions, cron job), and same-repo PRs verify repo↔Cloud history parity; fork-safe throughout (GOV-7). Implemented by Codex under ADR-13/21; reviewer independently re-verified fixture provenance (upstream blob hash-identical) and live protection (strict, six Actions-pinned contexts). **Reviewed and merged 2026-07-19** via PR #62 (`e8b3ef0`). CI track: only CI-07 remains.
 - SHELL-02: three-zone app shell live — 10_DESIGN §3.2 layout (collapsible sidebar · server-rendered main · collapsible context panel), server-composed with one client island per rail, accessible collapse controls, ephemeral per-rail state. Implemented by Codex (L-split recorded: SHELL-03/05/06/10 scoped out); reviewer re-verified 84/84 units + live Playwright in an isolated worktree. **Reviewed and merged 2026-07-19** via PR #64 (`282e594`). SHELL-03 claimable.
+- AUTH-08: current-session logout action live — ADR-22 overrides Supabase JS's global default with `scope: "local"`, revoking only the acting session's refresh token, clearing ADR-20 HttpOnly cookies, and redirecting to `/login`. Two units; full suite 86/86; temporary live Playwright probe proved real signup → logout → no `sb-*` cookies → `/login` and was removed before commit. **Merged 2026-07-21** via PR #66 (`40b3b81`). SHELL-03 owns the visible trigger.
 
 ## In Progress
 
-- AUTH-08: server-side logout action implemented — ADR-22 explicitly uses Supabase `scope: "local"` (current session, not SDK-global default), revokes the refresh token, clears HttpOnly cookies through the ADR-20 adapter, and redirects to `/login` even if revocation fails. Unit suite 86/86; temporary live Playwright probe proved signup → logout → no `sb-*` cookies → `/login`, then was deleted. In Review; trigger button belongs to SHELL-03.
 
 ## Blocked
 
@@ -69,7 +69,7 @@ Done: Sprint 0 (governance), Sprint 1 (repo & tooling foundation — all 21 task
 
 ## Upcoming
 
-- Sprint 2 remaining implementation after AUTH-08 review: AUTH-06/07/09/14, SHELL-03/10, and CI-07.
+- Sprint 2 remaining implementation: AUTH-06/07/09/14, SHELL-03/10, and CI-07.
 
 ## Known Technical Debt
 
@@ -88,8 +88,8 @@ Done: Sprint 0 (governance), Sprint 1 (repo & tooling foundation — all 21 task
 
 ## Current Branch
 
-`feat/auth-08-logout`
+`main`
 
 ## Last Updated
 
-2026-07-21 — AUTH-08 logout action implemented and live-verified; awaiting independent review. Trigger wiring deferred to SHELL-03 (Claude, implementer+reviewer role)
+2026-07-21 — AUTH-08 merged (PR #66); current-session logout complete, trigger wiring deferred to SHELL-03. Sprint 2 remainder: AUTH-06/07/09/14, SHELL-03/10, CI-07 (Claude, implementer+reviewer role)
