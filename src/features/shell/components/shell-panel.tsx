@@ -7,7 +7,7 @@ import {
   PanelRightClose,
   PanelRightOpen,
 } from "lucide-react";
-import { useState } from "react";
+import { type ReactNode, useState } from "react";
 
 import { cn } from "@/shared/lib/utils";
 import { Button } from "@/shared/ui/button";
@@ -15,6 +15,7 @@ import { Button } from "@/shared/ui/button";
 type ShellPanelSide = "left" | "right";
 
 interface ShellPanelProps {
+  children?: ReactNode;
   label: string;
   side: ShellPanelSide;
 }
@@ -36,7 +37,7 @@ function getPanelControl(side: ShellPanelSide, isExpanded: boolean): PanelContro
     : { Icon: PanelRightOpen, label: "Expand context panel" };
 }
 
-function ShellPanel({ label, side }: Readonly<ShellPanelProps>) {
+function ShellPanel({ children, label, side }: Readonly<ShellPanelProps>) {
   const [isExpanded, setIsExpanded] = useState(true);
   const { Icon, label: controlLabel } = getPanelControl(side, isExpanded);
 
@@ -64,6 +65,7 @@ function ShellPanel({ label, side }: Readonly<ShellPanelProps>) {
           <Icon aria-hidden="true" className="size-4" />
         </Button>
       </div>
+      {isExpanded ? children : null}
     </aside>
   );
 }
