@@ -21,6 +21,21 @@ Estimated Context Needed:
 
 ---
 
+## 2026-07-21 — Claude (Implementer + Reviewer) — SHELL-03 sidebar navigation frame + logout trigger
+
+**Session Date:** 2026-07-21
+**Agent:** Claude, implementer + reviewer (independence suspended per user authorization; compensated with an inline review pass and full local gates)
+**Objective:** SHELL-03 — add the sidebar navigation frame for folders/tags/daily note, populated by later tasks; bind AUTH-08's visible logout trigger.
+**Files Modified:** `src/features/shell/components/app-shell.tsx` (server-composes `signOut` into navigation), `src/features/shell/components/shell-panel.tsx` (accepts children; unmounts them when collapsed), `e2e/auth-session.spec.ts` (extends real signup/login flow through the visible logout control), `.ai/TASK_QUEUE.md`, `docs/PROJECT_STATE.md`, `docs/AI_HANDOFF.md` (this entry).
+**Files Added:** `src/features/shell/components/sidebar-navigation.tsx`, `sidebar-navigation.test.tsx`.
+**Architecture Decisions:** None new. Inline reviewer removed initially-invented `/daily`/`/folders`/`/tags` links: no source-of-truth document defines these route paths yet, and SHELL-03 explicitly scopes the frame as “populated by later phases.” It now ships semantic labelled section landmarks without dead links; owning tasks add destinations. `signOut` is injected by the server `AppShell`, keeping the sidebar component isolated/testable and preserving ADR-20's server-only auth boundary.
+**Verification performed:** Typecheck/lint/format/build green; unit suite 25 files / 89 tests (3 new). Inline review checked composition, accessibility, no invented routes, collapsed-child behavior, and AUTH-08 binding. The existing Cloud e2e was extended to click the visible Log out button and assert `/login` + no `sb-*` cookies; local execution was denied by auto-mode policy because the test creates/deletes a real user in the shared dev project. This is reported honestly; required PR CI does not run e2e.
+**Outstanding Work:** Independent PR gate/review; later FOLD/NOTE/TAG tasks populate the section bodies and define navigation destinations. SHELL-05 adds shortcuts; SHELL-06 responsive behavior; SHELL-10 motion.
+**Known Bugs:** None.
+**Risks:** E2E extension is not locally executed this task due to the shared-project mutation denial; the same underlying AUTH-08 action was live-proven before PR #66.
+**Suggested Next Task:** AUTH-06 password reset flow (unblocks AUTH-14) in parallel with SHELL-10.
+**Estimated Context Needed:** This entry, `src/features/shell/components/sidebar-navigation.tsx`, AUTH-08 handoff.
+
 ## 2026-07-21 — Claude (Implementer + Reviewer) — AUTH-08 logout action (ADR-22)
 
 **Session Date:** 2026-07-21

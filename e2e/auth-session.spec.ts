@@ -81,6 +81,11 @@ test("signup and login establish HttpOnly SameSite=Lax session cookies (ADR-20)"
     for (const cookie of loginCookies) {
       expect(cookie.httpOnly, `${cookie.name} must be HttpOnly`).toBe(true);
     }
+
+    // SHELL-03 binds the visible control to AUTH-08's real server action.
+    await page.getByRole("button", { name: "Log out" }).click();
+    await page.waitForURL("/login");
+    expect((await context.cookies()).some((cookie) => cookie.name.startsWith("sb-"))).toBe(false);
   } finally {
     await deleteUserByEmail(email);
   }

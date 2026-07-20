@@ -7,6 +7,7 @@ All notable changes to Second Brain are documented here, following [Keep a Chang
 ## [Unreleased]
 
 ### Added
+- **2026-07-21** — The application sidebar now provides semantic Daily note, Folders, and Tags section frames for later feature population plus a working server-side Log out control (SHELL-03, AUTH-08).
 - **2026-07-19** — Authenticated routes now render inside a server-composed three-zone shell with independently collapsible, accessible left and right rails (SHELL-02; PR #64).
 - **2026-07-19** — Pull requests now replay the complete Supabase migration history against a pinned Postgres 17 service and verify repository↔Cloud migration-history parity; the fork-safe `Migration check` is required by `main` branch protection (CI-04, ADR-13/21).
 - **2026-07-19** — Pull requests now run a high-severity dependency audit, enforced as a required `main` branch-protection check (CI-05).

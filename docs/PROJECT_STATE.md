@@ -62,6 +62,7 @@ Done: Sprint 0 (governance), Sprint 1 (repo & tooling foundation — all 21 task
 
 ## In Progress
 
+- SHELL-03: sidebar navigation frame implemented — semantic Daily note/Folders/Tags sections ready for later population without inventing undefined route paths; AUTH-08 visible logout trigger bound server-side; panel children disappear when collapsed. Unit suite 89/89 and production build green. In Review; live Cloud e2e extension is committed but local execution was denied by auto mode because it mutates the shared dev Auth project.
 
 ## Blocked
 
@@ -88,8 +89,8 @@ Done: Sprint 0 (governance), Sprint 1 (repo & tooling foundation — all 21 task
 
 ## Current Branch
 
-`main`
+`feat/shell-03-sidebar-navigation`
 
 ## Last Updated
 
-2026-07-21 — AUTH-08 merged (PR #66); current-session logout complete, trigger wiring deferred to SHELL-03. Sprint 2 remainder: AUTH-06/07/09/14, SHELL-03/10, CI-07 (Claude, implementer+reviewer role)
+2026-07-21 — SHELL-03 implemented and awaiting review; sidebar frame + AUTH-08 trigger complete. Sprint 2 remainder after review: AUTH-06/07/09/14, SHELL-10, CI-07 (Claude, implementer+reviewer role)
