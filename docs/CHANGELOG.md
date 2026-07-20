@@ -15,6 +15,7 @@ All notable changes to Second Brain are documented here, following [Keep a Chang
 - **2026-07-18** — Email/password signup at `/signup`: creates an account and lands signed in (AUTH-02; server policy per ADR-19).
 
 ### Changed
+- **2026-07-21** — Logout now revokes the current session's refresh token server-side, clears its HttpOnly cookies, and redirects to `/login`; other device sessions remain active by design (AUTH-08, ADR-22). The visible trigger is wired when SHELL-03 populates the sidebar.
 - **2026-07-19** — Authenticated app routes now redirect anonymous visitors to `/login`; verified sessions enter the `(app)` route group while auth pages and API routes retain their own access policies (AUTH-05).
 - **2026-07-16** — DB-16 adds typed Supabase browser/session/service-role client factories and a Cloud RLS integration harness; the public environment contract now uses Supabase publishable keys instead of the legacy anon key.
 - **2026-07-16** — Security spec: the service-role-key enumeration in `09_SECURITY.md §5` gains a third, tightly-constrained context — the Cloud integration-test harness (test code only, dev project only) — and `@supabase/supabase-js` + `@supabase/ssr` are recorded as the approved client packages (ADR-12), unblocking DB-16.

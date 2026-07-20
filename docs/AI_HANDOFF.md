@@ -21,6 +21,22 @@ Estimated Context Needed:
 
 ---
 
+## 2026-07-21 — Claude (Implementer + Reviewer) — AUTH-08 logout action (ADR-22)
+
+**Session Date:** 2026-07-21
+**Agent:** Claude, implementer + reviewer (independence suspended per user authorization; compensated with live e2e verification)
+**Objective:** AUTH-08 — explicit logout revokes the current refresh token server-side (09_SECURITY §3).
+**Files Modified:** `docs/DECISIONS.md` (ADR-22), `.ai/TASK_QUEUE.md` (AUTH-08 → In Review), `docs/PROJECT_STATE.md`, `docs/CHANGELOG.md`, `docs/AI_HANDOFF.md` (this entry).
+**Files Added:** `src/features/auth/sign-out.ts` (server action), `src/features/auth/sign-out.test.ts` (2 units).
+**Architecture Decisions:** ADR-22 — call `signOut({ scope: "local" })` explicitly. Supabase JS defaults to `global` (kills every device session); the spec's singular “revokes the refresh token” and least-surprise logout semantics mean this session only. “Sign out everywhere” remains a future explicit account-security affordance.
+**Implementation:** Server action obtains the ADR-20 cookie-bound Supabase client, revokes the current session via `scope: "local"` (the SDK removes the cookie-backed session through the adapter), and always redirects to `/login`. Supabase Auth JS clears local session storage even when its remote revocation call returns an operational error, so redirect-on-error is safe. The visible trigger is intentionally not invented here — SHELL-03 owns sidebar contents and will bind `<form action={signOut}>`.
+**Verification performed:** Typecheck/lint/format/build green; unit suite 24 files / 86 tests. A temporary protected probe page + Playwright spec exercised the **real** server action against the dev project: real signup established `sb-*` cookies → logout cleared all session cookies → browser landed at `/login`; service-role user cleanup succeeded. Probe files were deleted before commit; cache cleared and final typecheck/build proved no probe route remains. First attempt hit a stale reused dev server/underscore-private-route 404; corrected to a non-underscore temporary route, rerun green.
+**Outstanding Work:** Independent reviewer must verify AUTH-08. SHELL-03 wires the visible trigger; AUTH-06/07/09/14 remain.
+**Known Bugs:** None.
+**Risks:** Supabase cannot revoke already-issued access JWTs; they remain valid until their ≤1h expiry (documented platform behavior, already bounded by 09_SECURITY §3). The refresh token is revoked immediately.
+**Suggested Next Task:** Review AUTH-08, then SHELL-03 (sidebar contents + logout trigger) or AUTH-06 (password reset).
+**Estimated Context Needed:** This entry, ADR-22, `src/features/auth/sign-out.ts`.
+
 ## 2026-07-19 — Codex (Frontend) — SHELL-02 three-zone app shell complete
 
 **Session Date:** 2026-07-19
