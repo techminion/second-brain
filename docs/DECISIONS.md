@@ -224,6 +224,16 @@ Future Revisit:
 **Tradeoffs:** A vendored fixture must be bumped when our migrations start referencing newer platform objects (reviewable, pinned). Two repository secrets to rotate instead of one.
 **Future Revisit:** When CI-07 provisions production, re-verify the fixture against the production project's Postgres version before reuse.
 
+## ADR-22 — Logout uses `signOut({ scope: "local" })`, not the SDK's global default
+
+**Decision:** AUTH-08 logout calls Supabase `signOut({ scope: "local" })` from a server action (ADR-20): it revokes **the current session's** refresh token server-side and clears the HttpOnly session cookies, then redirects to `/login`. It deliberately does **not** use the SDK default `scope: "global"` (which revokes every session on every device the user is signed into).
+**Status:** Accepted (2026-07-19)
+**Context:** AUTH-08. 09_SECURITY §3 says "explicit logout revokes **the** refresh token server-side" — singular, describing the acting session, not a fan-out to all of the user's devices. `@supabase/supabase-js` defaults `signOut` to `global`, so the correct behavior must be requested explicitly.
+**Options Considered:** (a) `local` — revoke only the logging-out session (chosen); (b) `global` — SDK default, revoke all of the user's sessions everywhere; (c) expose scope as a user choice ("log out everywhere" affordance).
+**Chosen Solution:** (a). It matches the spec's singular wording and the least-surprise meaning of a logout button: signing out here does not silently kill a user's phone session. Access tokens already expire in ≤1h (§3), so the revoked session's residual window is bounded regardless.
+**Tradeoffs:** A user who wants to invalidate a lost device's session cannot do it from a normal logout — that belongs to a future "sign out everywhere" security affordance (revisit trigger below).
+**Future Revisit:** A post-MVP account-security surface (alongside MFA on the §12 roadmap) can add an explicit `global`/`others` "sign out other devices" action.
+
 ## GOV-7 — Repository is public
 
 **Decision:** `techminion/second-brain` is a public GitHub repository. Consequences are binding: no secret may ever appear in the repository or its history (already policy — now with public blast radius); GitHub Actions workflows must assume fork PRs run them without secrets and with a read-only token; any future CI job that needs credentials (e.g., Cloud integration tests) must be gated so it cannot be triggered by a fork PR.

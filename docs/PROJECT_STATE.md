@@ -61,6 +61,7 @@ Done: Sprint 0 (governance), Sprint 1 (repo & tooling foundation — all 21 task
 
 ## In Progress
 
+- AUTH-08: server-side logout action implemented — ADR-22 explicitly uses Supabase `scope: "local"` (current session, not SDK-global default), revokes the refresh token, clears HttpOnly cookies through the ADR-20 adapter, and redirects to `/login` even if revocation fails. Unit suite 86/86; temporary live Playwright probe proved signup → logout → no `sb-*` cookies → `/login`, then was deleted. In Review; trigger button belongs to SHELL-03.
 
 ## Blocked
 
@@ -68,7 +69,7 @@ Done: Sprint 0 (governance), Sprint 1 (repo & tooling foundation — all 21 task
 
 ## Upcoming
 
-- Sprint 2 remaining implementation: AUTH-06/07/08/09/14, SHELL-03/10, and CI-07. SHELL-02 awaits independent review in PR #64.
+- Sprint 2 remaining implementation after AUTH-08 review: AUTH-06/07/09/14, SHELL-03/10, and CI-07.
 
 ## Known Technical Debt
 
@@ -87,8 +88,8 @@ Done: Sprint 0 (governance), Sprint 1 (repo & tooling foundation — all 21 task
 
 ## Current Branch
 
-`feat/shell-02-app-shell`
+`feat/auth-08-logout`
 
 ## Last Updated
 
-2026-07-19 — SHELL-02 reviewed and merged (PR #64); shell track continues with SHELL-03/10. Sprint 2 remainder: AUTH-06/07/08/09/14, SHELL-03/10, CI-07 (Claude, reviewer role)
+2026-07-21 — AUTH-08 logout action implemented and live-verified; awaiting independent review. Trigger wiring deferred to SHELL-03 (Claude, implementer+reviewer role)
