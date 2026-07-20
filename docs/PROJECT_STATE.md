@@ -17,7 +17,7 @@ Done: Sprint 0 (governance), Sprint 1 (repo & tooling foundation — all 21 task
 |---|---|
 | Engineering documentation (12 docs) | ✅ Complete, audited twice for consistency |
 | Governance layer (this file set) | ✅ Complete |
-| Implementation | 46 Done / 309 tasks ([12_TASKS.md](12_TASKS.md)) |
+| Implementation | 47 Done / 309 tasks ([12_TASKS.md](12_TASKS.md)) |
 
 ## Completed
 
@@ -59,10 +59,10 @@ Done: Sprint 0 (governance), Sprint 1 (repo & tooling foundation — all 21 task
 - CI-04: migration gate live — every PR replays the full migration history on the pinned Supabase Postgres 17 image from a checksum- and provenance-verified official baseline, asserts the documented end-state (13 tables, full RLS, storage helpers, private bucket, extensions, cron job), and same-repo PRs verify repo↔Cloud history parity; fork-safe throughout (GOV-7). Implemented by Codex under ADR-13/21; reviewer independently re-verified fixture provenance (upstream blob hash-identical) and live protection (strict, six Actions-pinned contexts). **Reviewed and merged 2026-07-19** via PR #62 (`e8b3ef0`). CI track: only CI-07 remains.
 - SHELL-02: three-zone app shell live — 10_DESIGN §3.2 layout (collapsible sidebar · server-rendered main · collapsible context panel), server-composed with one client island per rail, accessible collapse controls, ephemeral per-rail state. Implemented by Codex (L-split recorded: SHELL-03/05/06/10 scoped out); reviewer re-verified 84/84 units + live Playwright in an isolated worktree. **Reviewed and merged 2026-07-19** via PR #64 (`282e594`). SHELL-03 claimable.
 - AUTH-08: current-session logout action live — ADR-22 overrides Supabase JS's global default with `scope: "local"`, revoking only the acting session's refresh token, clearing ADR-20 HttpOnly cookies, and redirecting to `/login`. Two units; full suite 86/86; temporary live Playwright probe proved real signup → logout → no `sb-*` cookies → `/login` and was removed before commit. **Merged 2026-07-21** via PR #66 (`40b3b81`). SHELL-03 owns the visible trigger.
+- SHELL-03: sidebar navigation frame live — semantic Daily note/Folders/Tags landmarks ready for owning features without invented routes; AUTH-08 visible logout trigger bound server-side; collapsed rail removes child content. 3 units, suite 89/89, six required checks green. **Merged 2026-07-21** via PR #68 (`17b116a`). AUTH-10 and sidebar feature tasks unblocked.
 
 ## In Progress
 
-- SHELL-03: sidebar navigation frame implemented — semantic Daily note/Folders/Tags sections ready for later population without inventing undefined route paths; AUTH-08 visible logout trigger bound server-side; panel children disappear when collapsed. Unit suite 89/89 and production build green. In Review; live Cloud e2e extension is committed but local execution was denied by auto mode because it mutates the shared dev Auth project.
 
 ## Blocked
 
@@ -89,8 +89,8 @@ Done: Sprint 0 (governance), Sprint 1 (repo & tooling foundation — all 21 task
 
 ## Current Branch
 
-`feat/shell-03-sidebar-navigation`
+`main`
 
 ## Last Updated
 
-2026-07-21 — SHELL-03 implemented and awaiting review; sidebar frame + AUTH-08 trigger complete. Sprint 2 remainder after review: AUTH-06/07/09/14, SHELL-10, CI-07 (Claude, implementer+reviewer role)
+2026-07-21 — SHELL-03 merged (PR #68); sidebar frame + AUTH-08 trigger complete. Sprint 2 remainder: AUTH-06/07/09/14, SHELL-10, CI-07 (Claude, implementer+reviewer role)
