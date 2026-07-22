@@ -21,6 +21,21 @@ Estimated Context Needed:
 
 ---
 
+## 2026-07-22 — Claude (Reviewer) — AUTH-06 review + merge; SEC-07 sharp advisory unblock
+
+**Session Date:** 2026-07-22
+**Agent:** Claude, reviewer role (independence caveat: same agent implemented AUTH-06 this session; user explicitly authorized review+merge. Compensated with an adversarial code pass over the security-critical surfaces, a live e2e run, and full CI gates — reported honestly rather than rubber-stamped.)
+**Objective:** Review AUTH-06 (#70) and merge; resolve whatever blocked it.
+**Outcome:** Both #70 (AUTH-06) and #71 (SEC-07) merged to `main` (`602710c`, `714a3b3`).
+**What happened:** #70's `Dependency audit` required check was **failing**, `mergeStateStatus: BLOCKED`. Root cause was **not** AUTH-06 (which changed no dependency files): freshly-published high-severity libvips advisories (CVE-2026-33327/33328/35590/35591) reach the tree via Next.js 15 → `sharp@0.34.x`, failing the audit repo-wide. Per 11_CONTRIBUTING §9 (never merge past a failing/￼skipped required check) I did **not** admin-override. Investigated the fix: `next@15.5.21` still pins `sharp@^0.34.3` (can't reach the needed `>=0.35.0`), and `next@16` (also `sharp@^0.34.5`) would change the documented Next.js 15 stack — an architecture decision, not a chore. Fixed via an npm `overrides: { sharp: ^0.35.3 }` on a separate branch (SEC-07, #71), leaving the framework pin intact. Verified `npm audit --audit-level=high` → exit 0 (two pre-existing moderate PostCSS findings remain, non-blocking), plus typecheck/lint/build/tests green; merged #71. Rebased #70 onto it (clean, no conflicts), re-ran full local gates (123 units green) + the live recovery e2e (green), force-pushed, all six required checks passed (`CLEAN`), merged #70.
+**Files Modified (this record):** `.ai/TASK_QUEUE.md` (AUTH-06 → Done), `docs/PROJECT_STATE.md`, `docs/AI_HANDOFF.md` (this entry). (SEC-07's code — `package.json`/`package-lock.json`/`docs/CHANGELOG.md` — merged in #71.)
+**Review findings on AUTH-06:** No blocking issues. Redirect destinations are module constants (never user input); recovery cookies bound to the redirect response with `hardenSessionCookieOptions`; non-`recovery` OTP types rejected without a call; origin validation rejects cross-origin; completion action re-verifies claims fail-closed before `updateUser`. The `request as NextRequest` cast in the callback is safe (Next passes `NextRequest` at runtime).
+**Outstanding Work:** AUTH-14 (auth error states, incl. expired-reset-link copy) is now dependency-ready. The **broader SEC-07** (systematic dependency pinning + audit-review policy) remains — #71 was the targeted unblock, not the whole task; recorded as "partial" in PROJECT_STATE. Independent (non-author) review of AUTH-06 is still the ideal per workflow, waived here by explicit user authorization.
+**Known Bugs:** None.
+**Risks:** The `sharp` override must be revisited when Next.js itself moves its `sharp` pin to `>=0.35` (then the override becomes redundant and can be dropped). The two moderate PostCSS advisories remain until a Next upgrade.
+**Suggested Next Task:** AUTH-14 (now unblocked) or SHELL-10; SEC-07 full dependency-audit policy when prioritized.
+**Estimated Context Needed:** This entry, the AUTH-06 implementer entry below, PR #70/#71.
+
 ## 2026-07-22 — Claude (Implementer) — AUTH-06 password reset request + completion flow
 
 **Session Date:** 2026-07-22
