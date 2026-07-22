@@ -67,9 +67,11 @@ Done: Sprint 0 (governance), Sprint 1 (repo & tooling foundation — all 21 task
 - AUTH-09: `UserService` profile read/update live (ADR-23) — establishes feature-first `src/features/user/` (service + repository + types). Email is read from the verified JWT claims at read time (never input/table); `getVerifiedIdentity` fails closed when `claims.sub !== userId`; all `profiles` access stays in `UserRepository` under existing RLS (no service-role client). `updateProfile` trims, clears whitespace-only to null, caps at 80 Unicode code points (else `ValidationError`), and no-ops on an omitted field — validated before any data access. Necessary+safe `errors.ts` fix (`ServiceError` base ctor now `public`; class stays `abstract`). Implemented by Codex; reviewer (Claude, independent) traced the contract and confirmed 135 units + 29 Cloud integrations green. **Merged 2026-07-22** via PR #76 (`5c213c0`). AUTH-10/AUTH-11/CRED-01 now dependency-ready.
 - AUTH-14: auth error states complete as an audit-only closure — reviewer independently traced all three acceptance criteria to shipped, tested code: wrong-password `invalid_credentials` → neutral alert with no navigation (AUTH-03); existing-email `user_already_exists` → specific alert with no navigation (AUTH-02); expired/rejected recovery credentials → fixed `/forgot-password?error=invalid-link` redirect + `role="alert"` guidance, plus completion-time `session_not_found`/`bad_jwt` → `invalid-session` (AUTH-06). Covered at action/route/page/component boundaries (38 focused tests). No executable code added — new mappers/components would be dead/duplicate. Implemented (audit) by Codex. **Merged 2026-07-22** via PR #77 (`dea2d31`).
 
+- AUTH-07: Google OAuth live (FR-AUTH-2) — login/signup entry points start a fixed **server-side** Google PKCE flow; `/auth/oauth/callback` exchanges the code into ADR-20 HttpOnly cookies. No browser Supabase client; `redirectTo` derives from validated same-origin only; fixed redirects (`/` success, `/login?error=oauth` failure) with a generic `role="alert"`. Reviewer (Claude, independent) confirmed the extraction refactor is behavior-preserving — origin validation → `request-origin.ts`, callback cookie-plumbing → `auth-callback-session.ts` (byte-identical to AUTH-06, deferred to the 2nd consumer); recovery/reset paths delegate unchanged. 145 units + 29 Cloud integrations green; verifier proven HttpOnly/SameSite=Lax and not JS-readable; live handshake reached Google with the exact hosted callback URI. **Merged 2026-07-22** via PR #79 (`0bb18bb`). **Residual manual QA (user):** one real Google consent round-trip in preview to confirm provider client ID/secret wiring — Google's consent UI is un-automatable.
+
 ## In Progress
 
-- AUTH-07: Google OAuth implementation is complete on `feat/auth-07-google-oauth` and awaiting independent review. Login/signup entry points use a fixed server-side PKCE flow; the callback exchanges the code into ADR-20-hardened cookies. Static gates, 145 units, 29 Cloud integrations, production build, rendered desktop/mobile QA, live Supabase→Google handoff, Auth-log inspection, and PKCE-cookie hardening checks pass. Google account selection/consent was not automated.
+- None.
 
 ## Blocked
 
@@ -77,7 +79,7 @@ Done: Sprint 0 (governance), Sprint 1 (repo & tooling foundation — all 21 task
 
 ## Upcoming
 
-- Sprint 2 remaining implementation: CI-07. AUTH-07 is in review. AUTH-10 (account settings), AUTH-11 (delete account), and CRED-01 (MCP credentials) are dependency-ready behind AUTH-09.
+- Sprint 2 remaining implementation: CI-07. AUTH-10 (account settings), AUTH-11 (delete account), and CRED-01 (MCP credentials) are dependency-ready behind AUTH-09.
 
 ## Known Technical Debt
 
@@ -96,8 +98,8 @@ Done: Sprint 0 (governance), Sprint 1 (repo & tooling foundation — all 21 task
 
 ## Current Branch
 
-`feat/auth-07-google-oauth`
+`main`
 
 ## Last Updated
 
-2026-07-22 — Codex completed AUTH-07 on `feat/auth-07-google-oauth`: server-only Google PKCE initiation and callback exchange, login/signup entry points, generic error handling, hardened verifier/session cookies, and live Supabase→Google handoff verification. AUTH-07 is in review; CI-07 is the remaining queued Sprint 2 implementation task
+2026-07-22 — Reviewer (Claude, independent) verified and merged AUTH-07 Google OAuth (PR #79, `0bb18bb`): server-only PKCE preserving ADR-20, behavior-preserving extraction of the shared origin/callback modules, fixed redirects, 145 units + 29 Cloud integrations green. One residual manual QA (real Google consent round-trip in preview) is the user's to close. CI-07 is the remaining queued Sprint 2 implementation task
