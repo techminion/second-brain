@@ -27,7 +27,7 @@ beforeEach(() => {
 });
 
 describe("middleware", () => {
-  it.each(["/signup", "/forgot-password", "/auth/recovery/callback"])(
+  it.each(["/signup", "/forgot-password", "/auth/oauth/callback", "/auth/recovery/callback"])(
     "keeps the public auth page %s available without a session",
     async (path) => {
       getClaimsMock.mockResolvedValue({ data: null, error: null });

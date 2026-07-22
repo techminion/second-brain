@@ -1,20 +1,14 @@
-import { headers } from "next/headers";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { createServerActionSupabaseClient } from "@/shared/lib/supabase-server-action-client";
 
-import { getRequestOrigin, requestPasswordReset } from "./password-reset-request";
+import { requestPasswordReset } from "./password-reset-request";
+import { getRequestOrigin } from "./request-origin";
 
-vi.mock("next/headers", () => ({ headers: vi.fn() }));
 vi.mock("@/shared/lib/supabase-server-action-client");
+vi.mock("./request-origin");
 
 const resetPasswordMock = vi.fn();
-
-function stubHeaders(values: Record<string, string | null>): void {
-  vi.mocked(headers).mockResolvedValue({
-    get: (name: string) => values[name] ?? null,
-  } as unknown as Awaited<ReturnType<typeof headers>>);
-}
 
 function stubSupabaseReset(result: { error: { message: string } | null }): void {
   resetPasswordMock.mockResolvedValue(result);
@@ -26,7 +20,7 @@ function stubSupabaseReset(result: { error: { message: string } | null }): void 
 describe("requestPasswordReset", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    stubHeaders({ host: "localhost:3000", origin: "http://localhost:3000" });
+    vi.mocked(getRequestOrigin).mockResolvedValue("http://localhost:3000");
   });
 
   it("derives a same-origin callback URL and requests a reset email", async () => {
@@ -65,25 +59,13 @@ describe("requestPasswordReset", () => {
   });
 
   it("rejects a mismatched request origin and host", async () => {
-    stubHeaders({ host: "second-brain.example", origin: "https://attacker.example" });
+    vi.mocked(getRequestOrigin).mockRejectedValue(new Error("Invalid request origin"));
     stubSupabaseReset({ error: null });
 
-    await expect(getRequestOrigin()).rejects.toThrow("Invalid request origin");
     expect(await requestPasswordReset({ email: "person@example.com" })).toMatchObject({
       ok: false,
       reason: "unknown",
     });
     expect(resetPasswordMock).not.toHaveBeenCalled();
-  });
-
-  it("honors a trusted forwarded host and protocol only when the origin matches", async () => {
-    stubHeaders({
-      host: "internal.vercel",
-      origin: "https://preview.example",
-      "x-forwarded-host": "preview.example",
-      "x-forwarded-proto": "https",
-    });
-
-    await expect(getRequestOrigin()).resolves.toBe("https://preview.example");
   });
 });

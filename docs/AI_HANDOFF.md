@@ -21,6 +21,22 @@ Estimated Context Needed:
 
 ---
 
+## 2026-07-22 — Codex (Backend) — AUTH-07 Google OAuth complete
+
+**Session Date:** 2026-07-22
+**Agent:** Codex, backend implementation role
+**Objective:** Implement Google OAuth signup/login (AUTH-07, FR-AUTH-2) without weakening ADR-20's server-only token boundary.
+**Files Modified:** `src/app/(auth)/login/page.tsx` + test, `src/app/(auth)/signup/page.tsx` + test, `src/app/auth/recovery/callback/route.ts`, `src/features/auth/password-reset-request.ts` + test (shared origin-validation extraction only), `src/middleware.ts` + test, `supabase/auth-config.md`, `.ai/TASK_QUEUE.md`, `docs/PROJECT_STATE.md`, `docs/CHANGELOG.md`, `docs/AI_HANDOFF.md` (this entry).
+**Files Added:** `src/features/auth/auth-callback-session.ts`, `src/features/auth/request-origin.ts` + test, `src/features/auth/sign-in-with-google.ts` + test, `src/features/auth/components/google-sign-in-form.tsx`, `src/app/auth/oauth/callback/route.ts` + test.
+**Architecture Decisions:** None new. Applied the user-approved AUTH-07 contract and ADR-20: Google is fixed server-side; request origin is fail-closed and callback paths are fixed; neither success nor failure accepts a caller-controlled destination. The password-recovery origin validator and callback response-cookie adapter moved unchanged into feature-local modules because OAuth is their second real consumer. No browser Supabase client, service-role usage, dependency, schema change, or new infrastructure was introduced.
+**Implementation:** Both login and signup render an outline `Continue with Google` form backed directly by a server action. The action derives the trusted external origin, calls `signInWithOAuth({ provider: "google" })` with `/auth/oauth/callback`, and redirects to Supabase's returned authorization URL. The public callback exchanges the PKCE code and binds every cookie write to the redirect response through the existing hardening chokepoint before entering `/`. Missing/rejected codes and initiation failures return to `/login?error=oauth`, which announces a generic accessible error.
+**Verification performed:** Focused suite 7 files / 29 tests; full unit suite 39 files / 145 tests; Cloud integration suite 13 files / 29 tests; typecheck, lint, format check, production build, and high-severity dependency audit all green (two pre-existing moderate PostCSS findings remain under SEC-07). Rendered Playwright fallback QA passed at 1440×900 and 390×844: login/signup options visible, no horizontal overflow, generic error state visible, console clean, and no framework overlay. Live Cloud handshake reached `accounts.google.com` with a client ID and the exact `https://zkzyfwclvquiargnwgtw.supabase.co/auth/v1/callback`; Supabase Auth logs recorded provider `google` and successful 302 `/authorize` responses. The PKCE verifier cookie was present with HttpOnly + SameSite=Lax and absent from `document.cookie`. The in-app Browser runtime was unavailable; standalone Playwright was used. The first Cloud integration attempt failed only on sandbox DNS and passed outside the sandbox.
+**Outstanding Work:** Independent review and PR gate. A human/test Google identity must complete account selection/consent for an end-to-end provider callback proof; this session stopped at Google's consent boundary. CI-07 must repeat provider/domain configuration for production.
+**Known Bugs:** None.
+**Risks:** Google OAuth client configuration is dashboard/Google-Cloud state rather than a migration. `supabase/auth-config.md` is the reviewable source of truth; CI-07 must reproduce it for production. Google consent-screen publication/verification remains an external launch concern.
+**Suggested Next Task:** Review AUTH-07; CI-07 is the only remaining queued Sprint 2 implementation task.
+**Estimated Context Needed:** This entry, AUTH-07 diff, ADR-20, `supabase/auth-config.md`, and the live Auth-log evidence.
+
 ## 2026-07-22 — Codex (Frontend) — AUTH-14 auth error-state completion audit
 
 **Session Date:** 2026-07-22

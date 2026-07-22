@@ -1,17 +1,31 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 
+import { GoogleSignInForm } from "@/features/auth/components/google-sign-in-form";
 import { SignInForm } from "@/features/auth/components/sign-in-form";
 
 export const metadata: Metadata = { title: "Log in — Second Brain" };
 
-export default function LoginPage() {
+interface LoginPageProps {
+  searchParams: Promise<{ error?: string }>;
+}
+
+export default async function LoginPage({ searchParams }: LoginPageProps) {
+  const { error } = await searchParams;
+
   return (
     <section className="flex flex-col gap-6">
       <div className="flex flex-col gap-1">
         <h1 className="text-xl font-semibold">Log in</h1>
         <p className="text-muted-foreground text-sm">Pick up where you left off.</p>
       </div>
+      {error === "oauth" ? (
+        <p className="text-destructive text-sm" role="alert">
+          Could not sign in with Google. Please try again.
+        </p>
+      ) : null}
+      <GoogleSignInForm />
+      <p className="text-muted-foreground text-center text-sm">Or continue with email</p>
       <SignInForm />
       <div className="flex flex-col gap-2 text-sm">
         <Link

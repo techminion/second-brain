@@ -12,18 +12,31 @@
 
 Dashboard paths are relative to the project's **Authentication** section.
 
-| Setting                      | Dashboard location          | Dev (`zkzyfwclvquiargnwgtw`)  | Production (CI-07)                 | Why                                                                                                                                                                                                                                           |
-| ---------------------------- | --------------------------- | ----------------------------- | ---------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Email provider               | Sign In / Providers → Email | Enabled (default)             | Enabled                            | FR-AUTH-1                                                                                                                                                                                                                                     |
-| Confirm email                | Sign In / Providers → Email | **Off**                       | Off — revisit at launch (ADR-19)   | FR-AUTH-1 acceptance requires a session at signup; Supabase returns none while confirmation is pending                                                                                                                                        |
-| Minimum password length      | Sign In / Providers → Email | **8**                         | 8                                  | ADR-19: raised from default 6; length over composition rules                                                                                                                                                                                  |
-| Required password characters | Sign In / Providers → Email | None (default)                | None                               | ADR-19: composition rules add friction, not entropy                                                                                                                                                                                           |
-| Site URL                     | URL Configuration           | `http://localhost:3000`       | Production domain                  | Base for email links                                                                                                                                                                                                                          |
-| Redirect URLs                | URL Configuration           | `http://localhost:3000/**`    | Production domain + `/**`          | Allow-list for AUTH-06's concrete `/auth/recovery/callback` redirect                                                                                                                                                                          |
-| JWT expiry                   | Sessions                    | 3600 s (default)              | 3600 s                             | [09_SECURITY §3](../docs/09_SECURITY.md#3-authentication): short-lived access token, refresh-token rotation                                                                                                                                   |
-| SMTP                         | Emails → SMTP Settings      | Supabase default (unchanged)  | **Custom SMTP — required**         | Default SMTP delivers only to project team addresses, at heavy rate limits; unusable for real users                                                                                                                                           |
-| Email templates              | Emails → Templates          | Supabase defaults (unchanged) | Apply [templates/](templates/)     | Free-tier projects created after 2026-06-03 cannot customize templates on default SMTP ([changelog 46599](https://supabase.com/changelog/46599-changes-to-email-template-customisation-on-free-tier)); customization unlocks with custom SMTP |
-| OAuth providers              | Sign In / Providers         | None                          | Google — separate task (FR-AUTH-2) | Out of AUTH-01 scope                                                                                                                                                                                                                          |
+| Setting                      | Dashboard location          | Dev (`zkzyfwclvquiargnwgtw`)  | Production (CI-07)               | Why                                                                                                                                                                                                                                           |
+| ---------------------------- | --------------------------- | ----------------------------- | -------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Email provider               | Sign In / Providers → Email | Enabled (default)             | Enabled                          | FR-AUTH-1                                                                                                                                                                                                                                     |
+| Confirm email                | Sign In / Providers → Email | **Off**                       | Off — revisit at launch (ADR-19) | FR-AUTH-1 acceptance requires a session at signup; Supabase returns none while confirmation is pending                                                                                                                                        |
+| Minimum password length      | Sign In / Providers → Email | **8**                         | 8                                | ADR-19: raised from default 6; length over composition rules                                                                                                                                                                                  |
+| Required password characters | Sign In / Providers → Email | None (default)                | None                             | ADR-19: composition rules add friction, not entropy                                                                                                                                                                                           |
+| Site URL                     | URL Configuration           | `http://localhost:3000`       | Production domain                | Base for email links                                                                                                                                                                                                                          |
+| Redirect URLs                | URL Configuration           | `http://localhost:3000/**`    | Production domain + `/**`        | Allow-list for AUTH-06's `/auth/recovery/callback` and AUTH-07's `/auth/oauth/callback` redirects                                                                                                                                             |
+| JWT expiry                   | Sessions                    | 3600 s (default)              | 3600 s                           | [09_SECURITY §3](../docs/09_SECURITY.md#3-authentication): short-lived access token, refresh-token rotation                                                                                                                                   |
+| SMTP                         | Emails → SMTP Settings      | Supabase default (unchanged)  | **Custom SMTP — required**       | Default SMTP delivers only to project team addresses, at heavy rate limits; unusable for real users                                                                                                                                           |
+| Email templates              | Emails → Templates          | Supabase defaults (unchanged) | Apply [templates/](templates/)   | Free-tier projects created after 2026-06-03 cannot customize templates on default SMTP ([changelog 46599](https://supabase.com/changelog/46599-changes-to-email-template-customisation-on-free-tier)); customization unlocks with custom SMTP |
+| OAuth providers              | Sign In / Providers         | **Google enabled**            | Google                           | FR-AUTH-2; enabled for the development project by AUTH-07                                                                                                                                                                                     |
+
+## Google OAuth flow (AUTH-07)
+
+- The Google Cloud Web OAuth client redirects to Supabase's hosted callback:
+  `https://zkzyfwclvquiargnwgtw.supabase.co/auth/v1/callback`.
+- Login and signup submit the fixed Google provider to a server action. The action derives
+  the request origin with the same fail-closed validation as password recovery and sets
+  `redirectTo` to the fixed `/auth/oauth/callback` route; neither value comes from input.
+- Supabase uses PKCE. Its verifier is stored only in an ADR-20-hardened HttpOnly,
+  SameSite=Lax cookie, then the callback exchanges the returned code into the same
+  cookie-backed session before redirecting to `/`.
+- Missing, rejected, or misconfigured OAuth credentials return to the fixed
+  `/login?error=oauth` state without exposing provider details.
 
 ## Password recovery flow (AUTH-06)
 
@@ -58,3 +71,14 @@ Config changes here are live-verified with a disposable signup probe (anon clien
 3. Delete the probe user via the admin API.
 
 Last verified: 2026-07-18 (AUTH-01).
+
+AUTH-07 was live-verified on 2026-07-22:
+
+1. The login action reached `accounts.google.com` with a client ID and the exact hosted
+   Supabase callback URI above.
+2. Supabase Auth logs recorded provider `google` on `/authorize` and a successful 302
+   handoff to the external provider.
+3. The PKCE verifier cookie was present with HttpOnly + SameSite=Lax and was absent from
+   `document.cookie`.
+4. Google account selection/consent was not automated; callback success and hardened
+   session-cookie propagation are covered by focused route tests.
