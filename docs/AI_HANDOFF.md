@@ -21,6 +21,37 @@ Estimated Context Needed:
 
 ---
 
+## 2026-07-23 — Claude (Architect) — NOTE-01 migration-workflow question resolved (no CI change)
+
+**Session Date:** 2026-07-23
+**Agent:** Claude, architect/reviewer role
+**Objective:** Rule on Codex's escalated NOTE-01 "migration review vs. CI-04 drift" conflict and the proposed CI-04 weakening.
+**Files Modified:** `.ai/TASK_QUEUE.md` (NOTE-01 → Claimed, resolution recorded), `docs/PROJECT_STATE.md` (unblocked), `docs/04_DATABASE.md` (§11 ordering clarification), `docs/AI_HANDOFF.md`.
+**Decision:** **Rejected the CI-04 change.** Permitting repo-ahead migrations would let a PR merge a migration never applied to Cloud — defeating the exact drift invariant CI-04 (ADR-13/21) exists to enforce. The perceived deadlock is not real: [04_DATABASE §11](04_DATABASE.md#11-migration-strategy) already prescribes *review → apply-to-dev-Cloud → merge*, and CI-04's drift check being red while the migration is un-applied is expected — it gates merge, not review. Verified against the drift script (exact-equality, same-repo-gated) and the §11/§337 workflow.
+**Guidance to implementer:** (1) Open the NOTE-01 PR with the migration SQL + `NoteRepository` + tests (drift check red — expected). (2) I review the SQL first. (3) The exact reviewed migration is applied to the dev project via Supabase MCP (reviewer-gated, GOV-7). (4) Drift check + Cloud tests green. (5) Merge. The transactional write is a **`SECURITY INVOKER`** Postgres function via `rpc()` so RLS still enforces ownership (not `SECURITY DEFINER`).
+**Verification performed:** Read `check-supabase-migration-drift.sh` (requires exact repo↔Cloud parity, count + matched versions; same-repo-gated), the CI-04 job in `ci.yml`, 04_DATABASE §11, and confirmed NOTE-01 is plausibly the first new migration since CI-04's drift check went live (which is why the step surfaces now).
+**Outstanding Work:** Codex implements NOTE-01 per the guidance above. No further decision required.
+**Known Bugs:** None.
+**Risks:** None introduced; the CI gate is unchanged.
+**Suggested Next Task:** Implement NOTE-01 (Codex); other Sprint 3 tasks (AUTH-10, AUTH-13, SHELL-04, EDIT-01) remain independently claimable.
+**Estimated Context Needed:** This entry, NOTE-01's queue row, 04_DATABASE §11, and the CI-04 drift script.
+
+## 2026-07-23 — Codex (Backend) — NOTE-01 blocked before implementation
+
+**Session Date:** 2026-07-23
+**Agent:** Codex, backend implementation role
+**Objective:** Select and begin the next dependency-ready Sprint 3 task.
+**Files Modified:** `.ai/TASK_QUEUE.md`, `docs/PROJECT_STATE.md`, `docs/AI_HANDOFF.md`.
+**Files Added:** None.
+**Architecture Decisions:** None. A decision is required before implementation.
+**Implementation:** Selected NOTE-01, created `feature/note-01-repository`, read the governing database/API/security docs, and verified the current Supabase guidance. No application code, migration, dependency, or Cloud state changed.
+**Verification performed:** Confirmed NOTE-01 is P0 and both dependencies are Done. Supabase's current JavaScript documentation states that multiple Data API calls cannot share a transaction and directs multi-statement atomic work to a Postgres function invoked via `rpc()`. Confirmed CI-04 compares branch migration files with Cloud history for exact equality.
+**Outstanding Work:** Resolve the conflict between `04_DATABASE §11` (review migration before applying it to Cloud) and CI-04 (a repo-ahead migration fails the mandatory drift check). Recommended resolution: allow reviewed branches to be ahead of Cloud while still rejecting Cloud-only drift; after review, apply the exact migration, rerun CI, then merge migration and dependent code together. Once approved, implement an explicitly `SECURITY INVOKER`, least-privilege RPC plus the typed repository and tests.
+**Known Bugs:** None.
+**Risks:** Applying the migration before review violates the documented Cloud workflow; avoiding the RPC violates NOTE-01's transactional acceptance criterion. Splitting migration and code across PRs violates the same-PR rule for dependent code.
+**Suggested Next Task:** Architect/human resolves the NOTE-01 migration workflow conflict. Do not implement NOTE-01 until then.
+**Estimated Context Needed:** This entry, NOTE-01's queue row, `04_DATABASE §4.2–4.3/§11`, `05_API §1–4`, and `.github/workflows/ci.yml` migration-check job.
+
 ## 2026-07-22 — Codex (Backend) — CI-07 finalized under ADR-24
 
 **Session Date:** 2026-07-22

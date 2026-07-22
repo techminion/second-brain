@@ -336,6 +336,8 @@ Not built now — recorded so a future change doesn't have to rediscover these i
 
 **Cloud workflow:** author one forward-only migration in `supabase/migrations/`; review the SQL with its dependent code; apply that exact SQL to the shared Cloud development project through the Supabase migration API; then verify migration history, schema objects, RLS policies, indexes, and Supabase advisors. Cloud integration tests use isolated test users and clean up their own data.
 
+> **Ordering note (CI-04):** within a single PR the order is *review → apply → merge*. The CI-04 drift check ([`check-supabase-migration-drift.sh`](../.github/workflows/ci.yml)) compares the branch's migration files against Cloud for exact equality, so it is **expected to be red while a new migration sits in the branch un-applied** — that is not a deadlock. Review the SQL first (satisfying the review-before-apply rule), then apply the *exact reviewed* migration to the dev project; the drift check then goes green. Because migrations are forward-only, only apply SQL that review has approved — a post-apply fix is a new forward migration, never an edit to the applied one. The drift check gates **merge**, not review, and never permits a repo-ahead history to merge (that would let an un-applied migration reach `main`).
+
 ## 12. Related Documents
 
 - [01_PRODUCT.md §2](01_PRODUCT.md#2-the-knowledge-object) — the Knowledge Object concept this schema implements.
