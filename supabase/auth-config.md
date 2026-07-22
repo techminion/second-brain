@@ -19,11 +19,23 @@ Dashboard paths are relative to the project's **Authentication** section.
 | Minimum password length      | Sign In / Providers → Email | **8**                         | 8                                  | ADR-19: raised from default 6; length over composition rules                                                                                                                                                                                  |
 | Required password characters | Sign In / Providers → Email | None (default)                | None                               | ADR-19: composition rules add friction, not entropy                                                                                                                                                                                           |
 | Site URL                     | URL Configuration           | `http://localhost:3000`       | Production domain                  | Base for email links                                                                                                                                                                                                                          |
-| Redirect URLs                | URL Configuration           | `http://localhost:3000/**`    | Production domain + `/**`          | Allow-list for `resetPasswordForEmail` redirects (AUTH-06) without pre-deciding its route                                                                                                                                                     |
+| Redirect URLs                | URL Configuration           | `http://localhost:3000/**`    | Production domain + `/**`          | Allow-list for AUTH-06's concrete `/auth/recovery/callback` redirect                                                                                                                                                                          |
 | JWT expiry                   | Sessions                    | 3600 s (default)              | 3600 s                             | [09_SECURITY §3](../docs/09_SECURITY.md#3-authentication): short-lived access token, refresh-token rotation                                                                                                                                   |
 | SMTP                         | Emails → SMTP Settings      | Supabase default (unchanged)  | **Custom SMTP — required**         | Default SMTP delivers only to project team addresses, at heavy rate limits; unusable for real users                                                                                                                                           |
 | Email templates              | Emails → Templates          | Supabase defaults (unchanged) | Apply [templates/](templates/)     | Free-tier projects created after 2026-06-03 cannot customize templates on default SMTP ([changelog 46599](https://supabase.com/changelog/46599-changes-to-email-template-customisation-on-free-tier)); customization unlocks with custom SMTP |
 | OAuth providers              | Sign In / Providers         | None                          | Google — separate task (FR-AUTH-2) | Out of AUTH-01 scope                                                                                                                                                                                                                          |
+
+## Password recovery flow (AUTH-06)
+
+- `/forgot-password` calls `resetPasswordForEmail` server-side with the fixed
+  `/auth/recovery/callback` redirect; browser JavaScript never receives auth tokens or
+  the PKCE verifier (ADR-20).
+- The callback supports both Supabase recovery formats: the default dev template returns
+  a PKCE `code`, while the staged production template sends `TokenHash` with
+  `type=recovery`. Both establish the recovery session in hardened HttpOnly cookies and
+  continue to the authenticated `/reset-password` page.
+- `/reset-password` verifies the cookie-backed claims before calling `updateUser`; an
+  invalid or expired link returns to `/forgot-password` with generic recovery guidance.
 
 ## Dev-environment caveats
 

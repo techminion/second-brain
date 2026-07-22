@@ -12,12 +12,20 @@ try {
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
+function createAdminClient() {
+  if (!supabaseUrl || !serviceRoleKey) {
+    throw new Error("e2e admin client requires dev-project credentials");
+  }
+
+  return createClient(supabaseUrl, serviceRoleKey, { auth: { persistSession: false } });
+}
+
 async function deleteUserByEmail(email: string): Promise<void> {
   if (!supabaseUrl || !serviceRoleKey) {
     return;
   }
 
-  const admin = createClient(supabaseUrl, serviceRoleKey, { auth: { persistSession: false } });
+  const admin = createAdminClient();
   const { data, error } = await admin.auth.admin.listUsers({ page: 1, perPage: 1000 });
 
   if (error) {
@@ -34,6 +42,68 @@ async function deleteUserByEmail(email: string): Promise<void> {
     }
   }
 }
+
+test("password recovery creates an HttpOnly session and updates the password", async ({
+  context,
+  page,
+}) => {
+  test.skip(!supabaseUrl || !serviceRoleKey, "requires .env with dev-project credentials");
+
+  const admin = createAdminClient();
+  const email = `ameybro11+recovery${Date.now()}@gmail.com`;
+  const oldPassword = "Correct-Horse-42-Battery";
+  const newPassword = "Updated-Horse-43-Battery";
+
+  try {
+    const { error: createError } = await admin.auth.admin.createUser({
+      email,
+      email_confirm: true,
+      password: oldPassword,
+    });
+
+    if (createError) {
+      throw new Error(`e2e setup failed creating recovery user: ${createError.message}`);
+    }
+
+    const { data: linkData, error: linkError } = await admin.auth.admin.generateLink({
+      email,
+      type: "recovery",
+    });
+
+    if (linkError || !linkData.properties?.hashed_token) {
+      throw new Error(`e2e setup failed generating recovery link: ${linkError?.message}`);
+    }
+
+    await page.goto(
+      `/auth/recovery/callback?token_hash=${encodeURIComponent(linkData.properties.hashed_token)}&type=recovery`,
+    );
+    await page.waitForURL("/reset-password");
+
+    const recoveryCookies = (await context.cookies()).filter((cookie) =>
+      cookie.name.startsWith("sb-"),
+    );
+    expect(recoveryCookies.length).toBeGreaterThan(0);
+
+    for (const cookie of recoveryCookies) {
+      expect(cookie.httpOnly, `${cookie.name} must be HttpOnly`).toBe(true);
+      expect(cookie.sameSite, `${cookie.name} must be SameSite=Lax`).toBe("Lax");
+    }
+
+    await page.getByLabel("New password", { exact: true }).fill(newPassword);
+    await page.getByLabel("Confirm new password").fill(newPassword);
+    await page.getByRole("button", { name: "Update password" }).click();
+    await page.waitForURL("/");
+
+    await page.getByRole("button", { name: "Log out" }).click();
+    await page.waitForURL("/login");
+    await page.getByLabel("Email").fill(email);
+    await page.getByLabel("Password").fill(newPassword);
+    await page.getByRole("button", { name: "Log in" }).click();
+    await page.waitForURL("/");
+  } finally {
+    await deleteUserByEmail(email);
+  }
+});
 
 test("signup and login establish HttpOnly SameSite=Lax session cookies (ADR-20)", async ({
   context,

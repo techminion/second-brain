@@ -27,14 +27,26 @@ beforeEach(() => {
 });
 
 describe("middleware", () => {
-  it("keeps public auth pages available without a session", async () => {
+  it.each(["/signup", "/forgot-password", "/auth/recovery/callback"])(
+    "keeps the public auth page %s available without a session",
+    async (path) => {
+      getClaimsMock.mockResolvedValue({ data: null, error: null });
+
+      const response = await middleware(new NextRequest(`http://localhost:3000${path}`));
+
+      expect(getClaimsMock).toHaveBeenCalledTimes(1);
+      expect(response.status).toBe(200);
+      expect(response.headers.get("location")).toBeNull();
+    },
+  );
+
+  it("keeps the reset completion page protected", async () => {
     getClaimsMock.mockResolvedValue({ data: null, error: null });
 
-    const response = await middleware(new NextRequest("http://localhost:3000/signup"));
+    const response = await middleware(new NextRequest("http://localhost:3000/reset-password"));
 
-    expect(getClaimsMock).toHaveBeenCalledTimes(1);
-    expect(response.status).toBe(200);
-    expect(response.headers.get("location")).toBeNull();
+    expect(response.status).toBe(307);
+    expect(response.headers.get("location")).toBe("http://localhost:3000/login");
   });
 
   it("keeps API routes available for their own authentication policies", async () => {

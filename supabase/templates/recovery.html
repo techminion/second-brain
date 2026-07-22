@@ -20,7 +20,7 @@
   </p>
   <p style="margin: 0 0 24px">
     <a
-      href="{{ .ConfirmationURL }}"
+      href="{{ .SiteURL }}/auth/recovery/callback?token_hash={{ .TokenHash }}&amp;type=recovery"
       style="
         display: inline-block;
         padding: 10px 20px;
@@ -46,7 +46,7 @@
       word-break: break-all;
     "
   >
-    {{ .ConfirmationURL }}
+    {{ .SiteURL }}/auth/recovery/callback?token_hash={{ .TokenHash }}&amp;type=recovery
   </p>
   <p style="font-size: 12px; line-height: 1.6; color: #71717a; margin: 0">
     If you did not request a reset, you can ignore this email — your password is unchanged.
