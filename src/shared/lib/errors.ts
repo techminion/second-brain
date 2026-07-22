@@ -2,7 +2,7 @@ export abstract class ServiceError extends Error {
   abstract readonly code: string;
   abstract readonly statusCode: number;
 
-  protected constructor(message: string) {
+  constructor(message: string) {
     super(message);
     this.name = new.target.name;
   }
