@@ -31,11 +31,11 @@ Estimated Context Needed:
 **Architecture Decisions:** None. The task is satisfied cumulatively by reviewed AUTH-02/03/06 behavior, so adding another component, error mapper, or duplicate test would be unused abstraction/test padding.
 **Audit mapping:** (1) Wrong password: `signInWithPassword` maps Supabase `invalid_credentials` to the enumeration-safe “Incorrect email or password.” result; `SignInForm` renders it in `role="alert"`. (2) Existing email: `signUpWithPassword` maps `user_already_exists` to `email-taken` and “An account with this email already exists.”; `SignUpForm` announces it and does not navigate. (3) Expired reset link: the recovery callback sends missing/rejected/expired PKCE or OTP credentials to the fixed `/forgot-password?error=invalid-link` path; the page announces “That reset link is invalid or has expired. Request a new one below.” An expired recovery session during completion maps to `invalid-session`, and `PasswordResetForm` announces the request-new-link guidance.
 **Verification performed:** Focused audit suite: 8 files / 38 tests green across actions, client forms, recovery callback, reset request page, and reset completion. Full repository validation: 36 files / 135 tests, typecheck, lint, format, build, and high-severity audit green (two pre-existing moderate PostCSS findings remain under SEC-07). Source inspection confirmed every action error maps to a stable discriminated reason, every visible state is an alert, and failures do not navigate. The Browser plugin was listed but its control runtime was unavailable in this session; because no rendered code changed, no Playwright fallback was introduced without user approval. Existing Testing Library interaction tests are the rendered-state evidence.
-**Outstanding Work:** Independent review of the audit and queue completion. No next task was started.
+**Outstanding Work:** Independent review of PR #77 and queue completion. No next task was started.
 **Known Bugs:** None.
 **Risks:** The existing-email message intentionally reveals account existence on signup; that is the explicit AUTH-14 requirement, while login remains enumeration-safe. No live Supabase mutation was needed because this task audits already-covered mappings rather than provider configuration.
 **Suggested Next Task:** Review AUTH-14. Remaining queued Sprint 2 implementation: AUTH-07 or CI-07.
-**Estimated Context Needed:** This entry, AUTH-14 queue row, AUTH-02/03/06 handoffs, and the eight focused test files named by the audit.
+**Estimated Context Needed:** This entry, PR #77, AUTH-14 queue row, AUTH-02/03/06 handoffs, and the eight focused test files named by the audit.
 
 ## 2026-07-22 — Codex (Backend) — AUTH-09 user profile service complete
 

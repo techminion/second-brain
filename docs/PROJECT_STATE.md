@@ -68,7 +68,7 @@ Done: Sprint 0 (governance), Sprint 1 (repo & tooling foundation — all 21 task
 ## In Progress
 
 - AUTH-09: `UserService.getProfile` / `updateProfile` implemented by Codex per ADR-23; PR #76 awaits independent review. Local gates are green (135 units, 29 Cloud integrations, typecheck, lint, format, build, high-severity audit). No schema, UI, dependency, or configuration changes.
-- AUTH-14: completion audit confirms the three required auth error states already shipped with AUTH-02/03/06 and are covered at action, route, page, and accessible component boundaries. No executable changes were warranted; review PR pending.
+- AUTH-14: completion audit confirms the three required auth error states already shipped with AUTH-02/03/06 and are covered at action, route, page, and accessible component boundaries. No executable changes were warranted; PR #77 awaits independent review.
 
 ## Blocked
 
@@ -99,4 +99,4 @@ Done: Sprint 0 (governance), Sprint 1 (repo & tooling foundation — all 21 task
 
 ## Last Updated
 
-2026-07-22 — AUTH-14 completion audit found no implementation gap: wrong-password, existing-email, and invalid/expired-reset states already shipped through AUTH-02/03/06 with 38 focused tests green. Audit awaits review; remaining queued Sprint 2 implementation is AUTH-07 and CI-07
+2026-07-22 — AUTH-14 completion audit found no implementation gap: wrong-password, existing-email, and invalid/expired-reset states already shipped through AUTH-02/03/06 with 38 focused tests green. PR #77 awaits review; remaining queued Sprint 2 implementation is AUTH-07 and CI-07
