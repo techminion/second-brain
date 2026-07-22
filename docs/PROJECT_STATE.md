@@ -4,12 +4,12 @@
 
 ## Current Milestone
 
-**M0 — Foundations** (in progress — Sprint 1 of ~3 complete)
+**M0 — Foundations** (exit criteria met; open M0 deliverables — account mgmt + command palette — closing in Sprint 3) → transitioning into **M1 — Collect**
 
 ## Current Sprint
 
-**Sprint 2 — Schema, Auth Core & App Shell** (scope and priorities in [.ai/TASK_QUEUE.md](../.ai/TASK_QUEUE.md); promoted 2026-07-17)
-Done: Sprint 0 (governance), Sprint 1 (repo & tooling foundation — all 21 tasks reviewed and merged)
+**Sprint 3 — Account Management & Note Foundation** (M0 closeout + M1 foundation; scope and priorities in [.ai/TASK_QUEUE.md](../.ai/TASK_QUEUE.md); promoted 2026-07-23)
+Done: Sprint 0 (governance), Sprint 1 (repo & tooling foundation — 21 tasks), Sprint 2 (schema, auth core & app shell — all tasks reviewed and merged; M0 exit criteria met in production)
 
 ## Overall Progress
 
@@ -80,7 +80,8 @@ Done: Sprint 0 (governance), Sprint 1 (repo & tooling foundation — all 21 task
 
 ## Upcoming
 
-- **Next-wave promotion pending** (architect role): AUTH-10 (account settings), AUTH-11 (delete account), and CRED-01 (MCP credentials) are dependency-ready behind AUTH-09. ADR-24 assigns environment-scoped OpenAI keys to EMB-01 before first live AI use.
+- **Sprint 3 is promoted and Queued** (see [.ai/TASK_QUEUE.md](../.ai/TASK_QUEUE.md)): M0 closeout — AUTH-10 (account settings), AUTH-11/12 (delete account, FR-AUTH-6), AUTH-13 (signup→shell E2E), SHELL-04 (command palette); M1 foundation — NOTE-01..03 (note service) and EDIT-01 (Tiptap editor, highest-risk phase). No task claimed yet.
+- **Sprint 4 candidates:** the rest of NOTE/EDIT, then FOLD/TAG/ATT/DAILY (all behind the NOTE/EDIT foundation); SHELL-05/06/08/09 shell polish; CI-06 → CI-08. CRED-01 (MCP) tracks to M4; ADR-24/ADR-25 make EMB-01 (with its OpenAI key provisioning and AI gating) the first AI task, in M3.
 - **AI is per-user gated (ADR-25, user decision):** EMB/SEM/AICH/VCH are built but ship off by default, enabled per user via a single `profiles.ai_enabled` flag an operator toggles in SQL — **no admin role/panel in MVP** (deferred to a future phase). Before those tasks are implemented, the spec ripples in ADR-25 must be applied (04_DATABASE `profiles.ai_enabled` + self-grant-proof column `REVOKE`/RLS + GOV-6 self-enable-denial test, 09_SECURITY operator-only gate note, 05_API `updateProfile` exclusion, 07_AI/08_SEARCH runtime gating, 12_TASKS gating criteria).
 
 ## Known Technical Debt
@@ -101,8 +102,8 @@ Done: Sprint 0 (governance), Sprint 1 (repo & tooling foundation — all 21 task
 
 ## Current Branch
 
-`main`
+`chore/sprint-3-promotion`
 
 ## Last Updated
 
-2026-07-22 — Architect recorded ADR-25 (explicit user decision): AI features are built but **per-user gated**, off by default, via a single `profiles.ai_enabled` flag an operator toggles in SQL — no admin role/panel in MVP (deferred). Self-grant-proof column privileges required; spec ripples flagged for before the first AI task. Sprint 2 queue remains complete; next-wave promotion (AUTH-10/11, CRED-01, EMB-01) still pending the architect role
+2026-07-23 — Architect promoted **Sprint 3 — Account Management & Note Foundation** (user-chosen focus: close M0 + start M1 foundation). Queued: AUTH-10/11/12/13 + SHELL-04 (M0 closeout) and NOTE-01..03 + EDIT-01 (M1 foundation); Sprint 2 archived complete. NOTE-01 and EDIT-01 are the P0 critical-path/de-risk items. Deferred: rest of NOTE/EDIT, FOLD/TAG/ATT/DAILY, SHELL polish, CI-06/08 (Sprint 4)
