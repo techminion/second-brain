@@ -6,6 +6,9 @@ All notable changes to Second Brain are documented here, following [Keep a Chang
 
 ## [Unreleased]
 
+### Security
+- **2026-07-22** — Pinned `sharp` to `^0.35.3` via an npm `overrides` entry, clearing the high-severity libvips advisories (CVE-2026-33327/33328/35590/35591) that Next.js 15 pulled in transitively through `sharp@0.34.x`. Unblocks the `Dependency audit` gate without changing the documented Next.js 15 pin (SEC-07).
+
 ### Added
 - **2026-07-21** — The application sidebar now provides semantic Daily note, Folders, and Tags section frames for later feature population plus a working server-side Log out control (SHELL-03, AUTH-08).
 - **2026-07-19** — Authenticated routes now render inside a server-composed three-zone shell with independently collapsible, accessible left and right rails (SHELL-02; PR #64).
