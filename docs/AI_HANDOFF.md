@@ -21,6 +21,22 @@ Estimated Context Needed:
 
 ---
 
+## 2026-07-22 — Claude (Reviewer) — SHELL-10 review + merge
+
+**Session Date:** 2026-07-22
+**Agent:** Claude, reviewer role (genuinely independent — Codex authored SHELL-10; no independence caveat this time).
+**Objective:** Review SHELL-10 (#73) against 10_DESIGN §9 and merge if conformant.
+**Outcome:** Merged to `main` (`d6d882c`).
+**Review performed:** Checked out the branch (didn't just trust the PR body). Confirmed it is current with `main` (carries the SEC-07 `sharp` override, so the audit gate is legitimately green). Re-ran full local gates: typecheck / lint / format / **125 units** green. Built the app and grepped the compiled CSS to confirm the custom `@utility` classes (`duration-micro`, `duration-structural`, `transition-width`), the `hover:ease-out` rule, and the `prefers-reduced-motion` → `0ms` collapse all land in output. All six required PR checks pass, `CLEAN`.
+**Conformance to 10_DESIGN §9 (point-by-point):** two durations only — 150ms micro / 250ms structural, tokenized, **no raw `ms` or arbitrary `duration-[…]` anywhere in `src/`** (grepped); ease-out entrances / ease-in exits (panel `isExpanded ? ease-out : ease-in`; button `ease-in` default + `hover:ease-out`); panel collapse/expand animates via `transition-width` + `duration-structural`; reduced motion collapses both vars to 0ms.
+**Findings (all non-blocking, no changes required):** (1) Button easing initially looked inverted but is correct — hover-in is the entrance (ease-out), return-to-rest is the exit (ease-in). (2) Buttons aren't in §9's explicit "what animates" list, but they already had `transition-colors` and §9 names "hovers, toggles" as the micro category, so tokenizing the existing hover micro-interaction is in-scope, not an invented animation. (3) `overflow-hidden` added to the panel alongside the width transition — prevents content spill during collapse, a good touch. (4) Reduced-motion override targets `:root` only, but it zeroes vars both themes inherit, so dark mode is covered.
+**Files Modified (this record):** `.ai/TASK_QUEUE.md` (SHELL-10 → Done), `docs/PROJECT_STATE.md` (fixed a stray `Current Branch: feat/shell-10-motion-tokens` left by the PR back to `main`), `docs/AI_HANDOFF.md` (this entry).
+**Outstanding Work:** None for SHELL-10. Remaining queued Sprint 2: AUTH-07/09/14, CI-07 (AUTH-09 still needs the architect to define the `Profile` shape / display-name validation before implementation).
+**Known Bugs:** None.
+**Risks:** Future components must deliberately pick one of the two documented duration tokens rather than introduce new values — the "two durations only" constraint is a convention, not yet lint-enforced.
+**Suggested Next Task:** AUTH-14 (auth error states, incl. expired-reset-link copy AUTH-06 left generic) or AUTH-07 (Google OAuth).
+**Estimated Context Needed:** This entry, the Codex SHELL-10 entry below, 10_DESIGN §9.
+
 ## 2026-07-22 — Codex (Frontend) — SHELL-10 motion tokens complete
 
 **Session Date:** 2026-07-22
