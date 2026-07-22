@@ -68,6 +68,7 @@ Done: Sprint 0 (governance), Sprint 1 (repo & tooling foundation — all 21 task
 ## In Progress
 
 - AUTH-09: `UserService.getProfile` / `updateProfile` implemented by Codex per ADR-23; PR #76 awaits independent review. Local gates are green (135 units, 29 Cloud integrations, typecheck, lint, format, build, high-severity audit). No schema, UI, dependency, or configuration changes.
+- AUTH-14: completion audit confirms the three required auth error states already shipped with AUTH-02/03/06 and are covered at action, route, page, and accessible component boundaries. No executable changes were warranted; review PR pending.
 
 ## Blocked
 
@@ -75,7 +76,7 @@ Done: Sprint 0 (governance), Sprint 1 (repo & tooling foundation — all 21 task
 
 ## Upcoming
 
-- Sprint 2 remaining implementation: AUTH-07/14 and CI-07; AUTH-09 is in review.
+- Sprint 2 remaining implementation: AUTH-07 and CI-07; AUTH-09 and the AUTH-14 completion audit await review records.
 
 ## Known Technical Debt
 
@@ -94,8 +95,8 @@ Done: Sprint 0 (governance), Sprint 1 (repo & tooling foundation — all 21 task
 
 ## Current Branch
 
-`feat/auth-09-user-service`
+`chore/auth-14-error-states-audit`
 
 ## Last Updated
 
-2026-07-22 — AUTH-09 implemented by Codex and opened as PR #76: the ADR-23 profile shape, verified-session email, and display-name rules are covered by units and the full Cloud integration suite. Awaiting independent review; queued Sprint 2 work is AUTH-07/14 and CI-07
+2026-07-22 — AUTH-14 completion audit found no implementation gap: wrong-password, existing-email, and invalid/expired-reset states already shipped through AUTH-02/03/06 with 38 focused tests green. Audit awaits review; remaining queued Sprint 2 implementation is AUTH-07 and CI-07
