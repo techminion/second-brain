@@ -21,6 +21,22 @@ Estimated Context Needed:
 
 ---
 
+## 2026-07-23 — Codex (Backend) — NOTE-01 ready for SQL review
+
+**Session Date:** 2026-07-23
+**Agent:** Codex, backend implementation role
+**Objective:** Implement NOTE-01 only: typed note CRUD queries with atomic `knowledge_objects` + `notes` writes.
+**Files Modified:** `docs/04_DATABASE.md`, `tools/ci/replay-supabase-migrations.sh`, `.ai/TASK_QUEUE.md`, `docs/PROJECT_STATE.md`, `docs/AI_HANDOFF.md`.
+**Files Added:** `supabase/migrations/20260722185637_create_note_transaction_functions.sql`, `src/features/notes/types.ts`, `src/features/notes/note-repository.ts`, `src/features/notes/note-repository.test.ts`, `tests/integration/note-repository.integration.test.ts`.
+**Architecture Decisions:** None. Followed the architect's merged PR #86 ruling: `SECURITY INVOKER` RPCs preserve caller RLS; review precedes dev-Cloud application; CI-04 may remain red until the exact reviewed migration is applied.
+**Implementation:** Added authenticated-only `create_note` and `update_note` functions. Create uses one data-modifying CTE; update performs both title writes and all subtype changes in one PL/pgSQL transaction, returning no row when RLS/nonexistence hides the envelope and raising on a missing subtype so the envelope update rolls back. `PUBLIC`, `anon`, and `service_role` cannot execute either function. Added feature-local record/input types and `NoteRepository` methods for create, get, partial update (including explicit null folder clears), soft delete, and restore. Reads and mutations filter by both `owner_id` and object type in addition to RLS. Migration replay now asserts both functions exist, remain `SECURITY INVOKER`, and expose only the intended execute grant.
+**Verification performed:** Current Supabase docs/MCP guidance rechecked; live read-only role inspection confirmed `service_role` does not inherit `authenticated`. Focused repository tests pass (8/8); full unit suite passes (40 files, 153/153); typecheck, lint, Prettier, production build, shell syntax, and `git diff --check` pass. The high-severity dependency-audit gate passes; npm reports the two pre-existing moderate PostCSS advisories through Next.js, with only a breaking forced downgrade offered. Cloud integration coverage is committed for atomic create/update rollback, title dual-write, owner CRUD, forged-owner rejection, and cross-user read/update denial, but intentionally not run because migration `20260722185637` is not yet reviewed/applied.
+**Outstanding Work:** Independent reviewer reads and approves the migration SQL. After approval, apply the exact migration to shared dev Cloud via Supabase MCP, run `npm run test:integration`, verify migration history + function ACL/security + advisors, rerun final gates, mark the PR ready, then merge. Do not edit the migration after Cloud application; corrections become a new forward migration.
+**Known Bugs:** None.
+**Risks:** CI-04's Cloud drift job is expected to remain red until the reviewed migration is applied. Restore currently relies on PostgREST returning the embedded 1:1 subtype after an update; the committed Cloud integration test verifies that real behavior after application.
+**Suggested Next Task:** Review NOTE-01. NOTE-02/03 remain blocked until it merges.
+**Estimated Context Needed:** This entry, PR #86's architect handoff, the new migration, `note-repository.ts`, and `note-repository.integration.test.ts`.
+
 ## 2026-07-23 — Claude (Architect) — NOTE-01 migration-workflow question resolved (no CI change)
 
 **Session Date:** 2026-07-23

@@ -72,7 +72,7 @@ Done: Sprint 0 (governance), Sprint 1 (repo & tooling foundation — 21 tasks), 
 
 ## In Progress
 
-- **NOTE-01 (Claimed, Codex):** Sprint 3's P0 backend task. Design confirmed — atomic `knowledge_objects` + `notes` writes use a `SECURITY INVOKER` Postgres function via `rpc()` (RLS preserved). The perceived migration review-vs-CI deadlock was resolved by the architect (2026-07-23) as **no conflict**: follow the documented [04_DATABASE §11](04_DATABASE.md#11-migration-strategy) order (review SQL → apply the exact reviewed migration to the dev Cloud project → CI-04 drift check green → merge); CI-04 red mid-PR is expected and only gates merge. No CI change. Implementation can proceed.
+- **NOTE-01 (In Review, Codex):** typed `NoteRepository` CRUD is implemented with authenticated-only, `SECURITY INVOKER` `create_note`/`update_note` RPCs for atomic envelope+subtype writes. Eight focused units and the full 153-test unit suite pass; migration replay asserts function presence, invoker security, and least-privilege grants. Migration `20260722185637` remains intentionally unapplied until SQL review.
 
 ## Blocked
 
@@ -80,7 +80,7 @@ Done: Sprint 0 (governance), Sprint 1 (repo & tooling foundation — 21 tasks), 
 
 ## Upcoming
 
-- **Sprint 3 is promoted** (see [.ai/TASK_QUEUE.md](../.ai/TASK_QUEUE.md)): M0 closeout — AUTH-10 (account settings), AUTH-11/12 (delete account, FR-AUTH-6), AUTH-13 (signup→shell E2E), SHELL-04 (command palette); M1 foundation — NOTE-01..03 (note service) and EDIT-01 (Tiptap editor, highest-risk phase). NOTE-01 is claimed and unblocked; the other dependency-ready tasks remain queued.
+- **Sprint 3 is promoted** (see [.ai/TASK_QUEUE.md](../.ai/TASK_QUEUE.md)): M0 closeout — AUTH-10 (account settings), AUTH-11/12 (delete account, FR-AUTH-6), AUTH-13 (signup→shell E2E), SHELL-04 (command palette); M1 foundation — NOTE-01..03 (note service) and EDIT-01 (Tiptap editor, highest-risk phase). NOTE-01 awaits SQL review/Cloud verification; the other dependency-ready tasks remain queued.
 - **Sprint 4 candidates:** the rest of NOTE/EDIT, then FOLD/TAG/ATT/DAILY (all behind the NOTE/EDIT foundation); SHELL-05/06/08/09 shell polish; CI-06 → CI-08. CRED-01 (MCP) tracks to M4; ADR-24/ADR-25 make EMB-01 (with its OpenAI key provisioning and AI gating) the first AI task, in M3.
 - **AI is per-user gated (ADR-25, user decision):** EMB/SEM/AICH/VCH are built but ship off by default, enabled per user via a single `profiles.ai_enabled` flag an operator toggles in SQL — **no admin role/panel in MVP** (deferred to a future phase). Before those tasks are implemented, the spec ripples in ADR-25 must be applied (04_DATABASE `profiles.ai_enabled` + self-grant-proof column `REVOKE`/RLS + GOV-6 self-enable-denial test, 09_SECURITY operator-only gate note, 05_API `updateProfile` exclusion, 07_AI/08_SEARCH runtime gating, 12_TASKS gating criteria).
 
@@ -102,8 +102,8 @@ Done: Sprint 0 (governance), Sprint 1 (repo & tooling foundation — 21 tasks), 
 
 ## Current Branch
 
-`chore/note-01-migration-workflow-clarification` (architect resolution; NOTE-01 implementation continues on `feature/note-01-repository`)
+`feature/note-01-repository`
 
 ## Last Updated
 
-2026-07-23 — Architect resolved the NOTE-01 migration-workflow question: **no CI-04 change**. The review-vs-CI ordering is not a deadlock — the documented §11 flow (review SQL → apply reviewed migration to dev Cloud → drift check green → merge) already covers it; CI-04 red mid-PR is expected. NOTE-01's `SECURITY INVOKER` RPC design confirmed; task unblocked (Claimed, Codex). Added a §11 clarification so this doesn't recur
+2026-07-23 — Codex completed NOTE-01 implementation and all non-Cloud gates; the out-of-sandbox GitHub CLI check confirmed keyring authentication, unblocking the Codex-authored commit and draft SQL-review PR. Migration/application tests correctly wait for SQL approval
