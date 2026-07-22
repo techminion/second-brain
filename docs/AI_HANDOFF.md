@@ -21,6 +21,21 @@ Estimated Context Needed:
 
 ---
 
+## 2026-07-22 — Claude (Architect) — ADR-23: AUTH-09 `Profile` shape + display-name contract
+
+**Session Date:** 2026-07-22
+**Agent:** Claude, architect role (no implementation — spec-gap closure so AUTH-09 can be implemented without inventing product decisions).
+**Objective:** Define the two undefined contracts blocking AUTH-09: the `Profile` DTO shape and the `updateProfile` display-name validation rules.
+**Context:** AUTH-09 was correctly left unstarted (previous session) because 05_API §11 named `Profile` as a return type and `ValidationError` as an `updateProfile` failure without defining either. The `profiles` table (04_DATABASE §4.1: `id`, nullable `display_name`, `created_at`) was fully specified; only the DTO shape and validation rules were missing. Both are product decisions (11_CONTRIBUTING §8.3 — never invent), so escalated to the user.
+**Decisions (ADR-23, user-chosen):** `Profile = { id: string; displayName: string | null; email: string; createdAt: string }` — `email` read-only, sourced from the verified session (`auth.users`) at read time, not stored on `profiles`, not editable via `updateProfile` in MVP. `updateProfile` trims `displayName`; empty/whitespace-only clears it to `null`; non-empty must be 1–80 chars (any Unicode) else `ValidationError`; omitting the key leaves it unchanged.
+**Files Modified:** `docs/05_API.md` (§11 — added the `Profile` field table + validation contract; primary home per GOV-3), `docs/DECISIONS.md` (ADR-23 in full), `.ai/TASK_QUEUE.md` (AUTH-09 row unblocked with the contract inline), `docs/PROJECT_STATE.md`, `docs/AI_HANDOFF.md` (this entry).
+**Verification performed:** Docs-only, no code. Confirmed no `Profile` type previously existed in `docs/` or `src/`; confirmed the `profiles` table and its RLS (`id = auth.uid()`, DB-02/DB-13) already support the contract with no schema change.
+**Outstanding Work:** AUTH-09 is now implementable — first `UserService` method, so it establishes `src/features/user/` (service + repository + types) on the feature-folder + repository pattern. Its `email` field must be read from the verified session, never client input. AUTH-10 (account settings page), AUTH-11 (deleteAccount), and CRED-01 all depend on AUTH-09.
+**Known Bugs:** None.
+**Risks:** The 80-char cap and email-on-`Profile` are product guesses recorded with revisit triggers in ADR-23; the type deliberately mixes a `profiles` column set with a session-derived `email`, flagged so implementers source it correctly.
+**Suggested Next Task:** AUTH-09 (now unblocked, backend), or AUTH-14 / AUTH-07 in parallel on the auth track.
+**Estimated Context Needed:** This entry, ADR-23, 05_API §11, 04_DATABASE §4.1.
+
 ## 2026-07-22 — Claude (Reviewer) — SHELL-10 review + merge
 
 **Session Date:** 2026-07-22
