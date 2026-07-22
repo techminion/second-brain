@@ -67,7 +67,7 @@ Done: Sprint 0 (governance), Sprint 1 (repo & tooling foundation — all 21 task
 
 ## In Progress
 
-- None.
+- AUTH-09: `UserService.getProfile` / `updateProfile` implemented by Codex per ADR-23; PR #76 awaits independent review. Local gates are green (135 units, 29 Cloud integrations, typecheck, lint, format, build, high-severity audit). No schema, UI, dependency, or configuration changes.
 
 ## Blocked
 
@@ -75,7 +75,7 @@ Done: Sprint 0 (governance), Sprint 1 (repo & tooling foundation — all 21 task
 
 ## Upcoming
 
-- Sprint 2 remaining implementation: AUTH-07/09/14 and CI-07.
+- Sprint 2 remaining implementation: AUTH-07/14 and CI-07; AUTH-09 is in review.
 
 ## Known Technical Debt
 
@@ -94,8 +94,8 @@ Done: Sprint 0 (governance), Sprint 1 (repo & tooling foundation — all 21 task
 
 ## Current Branch
 
-`main`
+`feat/auth-09-user-service`
 
 ## Last Updated
 
-2026-07-22 — Architect closed the AUTH-09 `Profile`/display-name spec gap (ADR-23, 05_API §11); AUTH-09 now unblocked. Remaining queued Sprint 2 work is AUTH-07/09/14 and CI-07
+2026-07-22 — AUTH-09 implemented by Codex and opened as PR #76: the ADR-23 profile shape, verified-session email, and display-name rules are covered by units and the full Cloud integration suite. Awaiting independent review; queued Sprint 2 work is AUTH-07/14 and CI-07
