@@ -199,6 +199,17 @@ Unlike the services above, most callers of `EmbeddingService` are the embedding 
 | `listMcpCredentials` | — | `McpCredential[]` (never includes `rawToken` or `tokenHash`) | — |
 | `revokeMcpCredential` | `credentialId` | `void` | `NotFoundError`, `ForbiddenError` |
 
+**`Profile` shape** (ADR-23): the type returned by `getProfile`/`updateProfile`.
+
+| Field | Type | Source | Notes |
+|---|---|---|---|
+| `id` | `string` (uuid) | `profiles.id` | Equals the auth user id |
+| `displayName` | `string \| null` | `profiles.display_name` | Null until the user sets one (null at signup) |
+| `email` | `string` | verified session (`auth.users`) | Read-only here; account email changes are not in MVP scope. Sourced at read time, not stored on `profiles` |
+| `createdAt` | `string` (ISO 8601) | `profiles.created_at` | |
+
+**`updateProfile` validation contract** (ADR-23): `displayName` is trimmed of leading/trailing whitespace; an empty or whitespace-only value **clears** the name (stored as `null`); a non-empty value must be **1–80 characters** after trimming (any Unicode permitted) or the method throws `ValidationError`. Passing no `displayName` key leaves the stored value unchanged.
+
 **Behavioral notes:** `createMcpCredential`'s `rawToken` is returned exactly once, at creation — it is never retrievable again, matching `mcp_credentials.token_hash`-only storage ([04_DATABASE.md §4.12](04_DATABASE.md#412-mcp_credentials)). `deleteAccount` is a service-layer orchestration: soft-delete every owned Knowledge Object, revoke every MCP credential, then — only after the FR-AUTH-6 grace period elapses — hand off to Supabase Auth account deletion, so deletion stays reversible until the grace period ends.
 
 ## 12. Cross-Service Interaction Rules
