@@ -10,11 +10,29 @@
 - **Priorities:** `P0` — on the critical path of the current sprint; `P1` — this sprint, parallelizable; `P2` — next in line, claimable if idle.
 - When the sprint's queue empties, the architect role promotes the next dependency-ready wave from [docs/12_TASKS.md](../docs/12_TASKS.md).
 
-## Current Sprint: Sprint 2 — Schema, Auth Core & App Shell (M0)
+## Current Sprint: Sprint 3 — Account Management & Note Foundation (M0 → M1)
 
-Goal: the full 13-table schema live (with per-table RLS + cross-user tests, GOV-6), a working signup/login/session flow, and the three-zone app shell — everything M1's note features build on.
+Goal: close the remaining M0 deliverables — account management (settings + FR-AUTH-6 deletion), the command palette, and signup→shell verification — and lay the M1 *Collect* foundation: the note service backend (NOTE-01..03) and the Tiptap editor foundation (EDIT-01, the MVP's highest-risk markdown round-trip work, started early to de-risk).
 
-Promoted 2026-07-17 by the architect role after Sprint 1 closed. Within each area the dependency chain serializes work (GOV-5: one agent per prefix at a time); P0 marks the critical path.
+Promoted 2026-07-23 by the architect role after Sprint 2 closed (M0 exit criteria already met; this sprint finishes the open M0 deliverables and opens M1). Within each area the dependency chain serializes work (GOV-5: one agent per prefix at a time); P0 marks the critical path.
+
+**Intra-sprint sequencing (GOV-5):** NOTE-01 → NOTE-02 → NOTE-03 (backend, strict chain). AUTH-11 → AUTH-12 (deleteAccount service before its UI). AUTH-10 (frontend) and AUTH-13 (backend) are independent and can run alongside their prefix-mates once the chain head is claimed. SHELL-04 and EDIT-01 are independent L tasks (frontend). Deferred behind this sprint: NOTE-04..06, the rest of EDIT, and FOLD/TAG/ATT/DAILY (all need the NOTE/EDIT foundation); CRED-01 and the ADR-25 AI-gating ripples belong to later milestones.
+
+| ID | Title | Priority | Cx | Depends on | Owner | Status | Milestone | Acceptance criteria |
+|---|---|---|---|---|---|---|---|---|
+| AUTH-10 | Account settings page (display name) | P1 | S | AUTH-09, SHELL-03 | frontend | Queued | M0 | Edit display name through the ADR-23 `updateProfile` contract; reachable from the SHELL-03 sidebar. AC in [12_TASKS](../docs/12_TASKS.md) |
+| AUTH-11 | `UserService.deleteAccount` orchestration (FR-AUTH-6) | P1 | M | AUTH-09, DB-13 | backend | Queued | M0 | Soft-delete all owned rows → revoke MCP credentials → Auth deletion, per [05_API §11](../docs/05_API.md#11-userservice); grace period. Unblocks AUTH-12 |
+| AUTH-12 | Account deletion UI (grace-period confirmation) | P2 | M | AUTH-11 | frontend | Queued | M0 | Behind AUTH-11 |
+| AUTH-13 | Signup → empty-shell provisioning E2E (FR-AUTH-5) | P2 | S | AUTH-02, SHELL-02 | backend | Queued | M0 | Cloud-gated Playwright; closes AUTH-phase verification |
+| SHELL-04 | Command palette (`⌘K`) + static command registry | P1 | L | SHELL-02 | frontend | Queued | M0 | [10_DESIGN §8](../docs/10_DESIGN.md#8-keyboard-shortcuts); the last unbuilt M0 shell deliverable |
+| NOTE-01 | `NoteRepository`: typed CRUD incl. envelope+subtype transactional writes | P0 | M | DB-04, DB-16 | backend | Queued | M1 | Critical path — unblocks NOTE-02..06 and FOLD/TAG/ATT/DAILY. AC in [12_TASKS](../docs/12_TASKS.md) |
+| NOTE-02 | `NoteService.create` (FR-NOTE-1) | P1 | M | NOTE-01, SETUP-11 | backend | Queued | M1 | Behind NOTE-01; title dual-write invariant ([04_DATABASE §4.3](../docs/04_DATABASE.md#43-notes)) holds from the first commit |
+| NOTE-03 | `NoteService.get` with soft-delete visibility rules | P1 | S | NOTE-01 | backend | Queued | M1 | Behind NOTE-01 |
+| EDIT-01 | Tiptap editor foundation: markdown-backed document model, live-formatting base | P0 | L | SETUP-03 | frontend | Queued | M1 | Highest-risk MVP phase — FR-NOTE-2 markdown round-trip fidelity ([10_DESIGN §5](../docs/10_DESIGN.md#5-editor-ux-tiptap)); started early to de-risk. EDIT-02/03 round-trip work follows next sprint |
+
+## Sprint 2 — Schema, Auth Core & App Shell (M0) — ✅ Complete 2026-07-22
+
+Goal (met): the full 13-table schema live (with per-table RLS + cross-user tests, GOV-6), a working signup/login/session flow, and the three-zone app shell — everything M1's note features build on. Promoted 2026-07-17; all rows below Done. **M0 exit criteria met** (signup → login → shell in production, CI-gated); the open M0 deliverables (AUTH-10..13 account mgmt, SHELL-04 command palette) carry into Sprint 3.
 
 | ID | Title | Priority | Cx | Depends on | Owner | Status | Milestone | Acceptance criteria |
 |---|---|---|---|---|---|---|---|---|
@@ -51,7 +69,7 @@ Promoted 2026-07-17 by the architect role after Sprint 1 closed. Within each are
 | CI-07 | Per-environment env vars (preview vs. production) | P1 | M | CI-02 | Codex (backend) | Done | M0 | Merged via PR #82 (`55f917e`) — isolated production Supabase project (`hqzakxpbxqzxismmgnyn`) + 17-migration parity, environment-scoped Supabase/webhook values, custom SMTP/templates, Google OAuth, canonical `brain.khaire.dev` Auth + retention-purge wiring, Preview Protection. Reviewer verified **no committed secrets** (project refs are public), the `12_TASKS`/`auth-config` scope+config edits, and ADR-24. **User confirmed production `brain.khaire.dev` serving + Google login working end-to-end.** **ADR-24 (explicit user decision):** distinct Preview/Production `OPENAI_API_KEY` moves to EMB-01, before first live OpenAI use. GOV-7/ADR-12 preserved. Residual: SMTP delivery to a real inbox not automated. **Sprint 2 queue complete** |
 | OBS-02 | Request logging across Web API/MCP/webhook boundaries | P1 | M | OBS-01 | backend | Done | M0 | Merged via PR #44 — `withRequestLogging` on both existing routes; route identity in event names (content-free), AUTH-04 resolver slot, MCP-01/EMB-02 adopt the wrapper when built. 31 unit tests green |
 
-Deferred to Sprint 3 (dependencies not yet Done or naturally later): AUTH-10..13 (need SHELL-03 / DB-13 / SHELL-02), SHELL-04..06, SHELL-08..09 (need SHELL-02), CI-06 (E2E against previews), CI-08 (needs CI-06).
+Promoted to Sprint 3 (2026-07-23): AUTH-10..13, SHELL-04, plus the M1 foundation NOTE-01..03 and EDIT-01. Still deferred (naturally later): SHELL-05/06/08/09 (shell polish), CI-06 (E2E against previews) → CI-08 (axe a11y, needs CI-06) — candidates for Sprint 4 alongside the rest of NOTE/EDIT.
 
 ## Sprint 1 — Repo & Tooling Foundation (M0) — ✅ Complete 2026-07-17
 
