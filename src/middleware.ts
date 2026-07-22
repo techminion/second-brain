@@ -6,6 +6,7 @@ import {
 } from "@/shared/lib/supabase-server-client";
 
 const publicPagePaths = new Set([
+  "/auth/oauth/callback",
   "/auth/recovery/callback",
   "/forgot-password",
   "/login",

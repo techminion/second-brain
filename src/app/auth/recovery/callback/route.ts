@@ -1,20 +1,15 @@
-import type { CookieOptions } from "@supabase/ssr";
-import { type NextRequest, NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
 
+import { createAuthCallbackSession } from "@/features/auth/auth-callback-session";
 import { withRequestLogging } from "@/shared/lib/request-logging";
-import {
-  createServerSessionSupabaseClient,
-  hardenSessionCookieOptions,
-} from "@/shared/lib/supabase-server-client";
 
 const successPath = "/reset-password";
 const failurePath = "/forgot-password?error=invalid-link";
 
 /**
  * Exchanges an emailed recovery credential for an ADR-20 session. The Supabase
- * client writes rotated session cookies through the adapter onto `pendingCookies`
- * so they can be applied to the redirect response — cookies mutated via the
- * `next/headers` store are not carried onto a manually built `NextResponse`.
+ * client writes rotated session cookies onto the redirect response through the
+ * shared callback adapter.
  */
 export const GET = withRequestLogging("auth.recovery.callback", async (request) => {
   const nextRequest = request as NextRequest;
@@ -22,26 +17,7 @@ export const GET = withRequestLogging("auth.recovery.callback", async (request) 
   const code = requestUrl.searchParams.get("code");
   const tokenHash = requestUrl.searchParams.get("token_hash");
   const type = requestUrl.searchParams.get("type");
-
-  const pendingCookies: { name: string; options: CookieOptions; value: string }[] = [];
-  const client = createServerSessionSupabaseClient({
-    getAll: () => nextRequest.cookies.getAll(),
-    setAll: (updates) => {
-      for (const update of updates) {
-        pendingCookies.push(update);
-      }
-    },
-  });
-
-  function redirectTo(path: string): NextResponse {
-    const response = NextResponse.redirect(new URL(path, request.url));
-
-    for (const { name, options, value } of pendingCookies) {
-      response.cookies.set(name, value, hardenSessionCookieOptions(options));
-    }
-
-    return response;
-  }
+  const { client, redirectTo } = createAuthCallbackSession(nextRequest);
 
   if (tokenHash) {
     if (type !== "recovery") {

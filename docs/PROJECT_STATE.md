@@ -69,7 +69,7 @@ Done: Sprint 0 (governance), Sprint 1 (repo & tooling foundation — all 21 task
 
 ## In Progress
 
-- None.
+- AUTH-07: Google OAuth implementation is complete on `feat/auth-07-google-oauth` and awaiting independent review. Login/signup entry points use a fixed server-side PKCE flow; the callback exchanges the code into ADR-20-hardened cookies. Static gates, 145 units, 29 Cloud integrations, production build, rendered desktop/mobile QA, live Supabase→Google handoff, Auth-log inspection, and PKCE-cookie hardening checks pass. Google account selection/consent was not automated.
 
 ## Blocked
 
@@ -77,7 +77,7 @@ Done: Sprint 0 (governance), Sprint 1 (repo & tooling foundation — all 21 task
 
 ## Upcoming
 
-- Sprint 2 remaining implementation: AUTH-07 (Google OAuth) and CI-07. AUTH-10 (account settings), AUTH-11 (delete account), and CRED-01 (MCP credentials) are newly dependency-ready behind AUTH-09.
+- Sprint 2 remaining implementation: CI-07. AUTH-07 is in review. AUTH-10 (account settings), AUTH-11 (delete account), and CRED-01 (MCP credentials) are dependency-ready behind AUTH-09.
 
 ## Known Technical Debt
 
@@ -96,8 +96,8 @@ Done: Sprint 0 (governance), Sprint 1 (repo & tooling foundation — all 21 task
 
 ## Current Branch
 
-`main`
+`feat/auth-07-google-oauth`
 
 ## Last Updated
 
-2026-07-22 — Reviewer (Claude, independent) verified and merged AUTH-09 (PR #76, `5c213c0`) and AUTH-14 (PR #77, `dea2d31`), then recorded both as Done. AUTH-09 establishes `src/features/user/` on the ADR-23 contract; AUTH-14 closed audit-only after tracing all three error states to shipped/tested AUTH-02/03/06 code. Remaining queued Sprint 2 implementation is AUTH-07 and CI-07; AUTH-10/11 and CRED-01 unblocked
+2026-07-22 — Codex completed AUTH-07 on `feat/auth-07-google-oauth`: server-only Google PKCE initiation and callback exchange, login/signup entry points, generic error handling, hardened verifier/session cookies, and live Supabase→Google handoff verification. AUTH-07 is in review; CI-07 is the remaining queued Sprint 2 implementation task
