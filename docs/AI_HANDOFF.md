@@ -21,6 +21,22 @@ Estimated Context Needed:
 
 ---
 
+## 2026-07-22 — Codex (Backend) — AUTH-09 user profile service complete
+
+**Session Date:** 2026-07-22
+**Agent:** Codex, backend implementation role
+**Objective:** Implement the now-unblocked AUTH-09 `UserService.getProfile` / `updateProfile` contract from 05_API §11 and ADR-23, without starting AUTH-10/11 or credential work.
+**Files Modified:** `src/shared/lib/errors.ts` (made the abstract taxonomy base constructor public so documented subclasses can be instantiated), `.ai/TASK_QUEUE.md`, `docs/PROJECT_STATE.md`, `docs/CHANGELOG.md`, `docs/AI_HANDOFF.md`.
+**Files Added:** `src/features/user/types.ts`, `src/features/user/user-repository.ts`, `src/features/user/user-repository.test.ts`, `src/features/user/user-service.ts`, `src/features/user/user-service.test.ts`, `tests/integration/user-repository.integration.test.ts`.
+**Architecture Decisions:** None. `UserService` owns normalization/validation and DTO assembly; `UserRepository` is the only profile Data API boundary and also reads verified JWT claims for the read-time email required by ADR-23. Every repository call is scoped by the service's first `userId` parameter, and claim subject must match it. No service-role client is used.
+**Implementation:** `Profile` is exactly `{ id, displayName, email, createdAt }`. `updateProfile` trims names, stores whitespace-only as null, accepts up to 80 Unicode code points, throws the existing `ValidationError` above the cap or for a non-string runtime value, and performs no update when the key is omitted. Mutations use `.update(...).eq(...).select(...).single()` so the full updated resource returns without a second profile read. The existing error taxonomy needed one necessary foundation fix: `ServiceError`'s protected constructor made every constructor-less subclass uninstantiable; it is now public while the base remains abstract.
+**Verification performed:** Focused user units 10/10; full unit suite 36 files / 135 tests; full Cloud integration suite 13 files / 29 tests; typecheck/lint/format/build green; `npm audit --audit-level=high` exits clean (two pre-existing moderate PostCSS findings remain under SEC-07). Cloud verification proved authenticated profile read/update and cross-user read denial under RLS; disposable users were cleaned up. The first scoped Cloud attempt incorrectly called `getClaims()` through the harness's `accessToken`-callback client, which Supabase intentionally disallows; the test was corrected to keep live Data API/RLS verification in Cloud and claims/email verification in focused units, then both scoped and full runs passed.
+**Outstanding Work:** Independent review and merge of PR #76. AUTH-10, AUTH-11, and CRED-01 become dependency-ready only after AUTH-09 is Done. No next task was started.
+**Known Bugs:** None.
+**Risks:** `email` is read from the current verified JWT claim and is intentionally read-only in MVP. If account-email changes enter scope, ADR-23 requires the contract to be revisited.
+**Suggested Next Task:** Review AUTH-09; while it is in review, queued independent work remains AUTH-07, AUTH-14, or CI-07.
+**Estimated Context Needed:** This entry, PR #76, ADR-23, 05_API §11, and `src/features/user/`.
+
 ## 2026-07-22 — Claude (Architect) — ADR-23: AUTH-09 `Profile` shape + display-name contract
 
 **Session Date:** 2026-07-22
