@@ -81,6 +81,7 @@ Done: Sprint 0 (governance), Sprint 1 (repo & tooling foundation — all 21 task
 ## Upcoming
 
 - **Next-wave promotion pending** (architect role): AUTH-10 (account settings), AUTH-11 (delete account), and CRED-01 (MCP credentials) are dependency-ready behind AUTH-09. ADR-24 assigns environment-scoped OpenAI keys to EMB-01 before first live AI use.
+- **AI is per-user gated (ADR-25, user decision):** EMB/SEM/AICH/VCH are built but ship off by default, enabled per user via a single `profiles.ai_enabled` flag an operator toggles in SQL — **no admin role/panel in MVP** (deferred to a future phase). Before those tasks are implemented, the spec ripples in ADR-25 must be applied (04_DATABASE `profiles.ai_enabled` + self-grant-proof column `REVOKE`/RLS + GOV-6 self-enable-denial test, 09_SECURITY operator-only gate note, 05_API `updateProfile` exclusion, 07_AI/08_SEARCH runtime gating, 12_TASKS gating criteria).
 
 ## Known Technical Debt
 
@@ -96,6 +97,7 @@ Done: Sprint 0 (governance), Sprint 1 (repo & tooling foundation — all 21 task
 | Concrete embedding/chat model identifiers (tiers are decided; IDs are config) | [07_AI.md §2](07_AI.md#2-model-selection-strategy) | EMB-01 / AICH-04 implementation |
 | MCP protocol version pin | [06_MCP.md §3](06_MCP.md#3-transport--connection) | MCP-01 implementation |
 | "Vault" vs. "graph" user-facing terminology (see consistency report, [AI_HANDOFF.md](AI_HANDOFF.md) 2026-07-16 entry) | Proposed for [DECISIONS.md](DECISIONS.md) | Before M4 UI copy is written |
+| AI-gating spec ripples: apply ADR-25 to 04_DATABASE/09_SECURITY/05_API/07_AI/08_SEARCH/12_TASKS (per-user `ai_enabled`, operator SQL toggle, self-grant-proof column privileges) | [ADR-25](DECISIONS.md) | Before EMB-01 / the first AI task is claimed |
 
 ## Current Branch
 
@@ -103,4 +105,4 @@ Done: Sprint 0 (governance), Sprint 1 (repo & tooling foundation — all 21 task
 
 ## Last Updated
 
-2026-07-22 — Reviewer (Claude, independent) verified and merged CI-07 (PR #82, `55f917e`): production environment configuration with no committed secrets, ADR-24-anchored scope edits, and user-confirmed `brain.khaire.dev` + production Google login. **Sprint 2 queue is now complete**; next-wave promotion (AUTH-10/11, CRED-01, EMB-01) is pending the architect role
+2026-07-22 — Architect recorded ADR-25 (explicit user decision): AI features are built but **per-user gated**, off by default, via a single `profiles.ai_enabled` flag an operator toggles in SQL — no admin role/panel in MVP (deferred). Self-grant-proof column privileges required; spec ripples flagged for before the first AI task. Sprint 2 queue remains complete; next-wave promotion (AUTH-10/11, CRED-01, EMB-01) still pending the architect role
