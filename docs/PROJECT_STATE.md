@@ -68,10 +68,11 @@ Done: Sprint 0 (governance), Sprint 1 (repo & tooling foundation — all 21 task
 - AUTH-14: auth error states complete as an audit-only closure — reviewer independently traced all three acceptance criteria to shipped, tested code: wrong-password `invalid_credentials` → neutral alert with no navigation (AUTH-03); existing-email `user_already_exists` → specific alert with no navigation (AUTH-02); expired/rejected recovery credentials → fixed `/forgot-password?error=invalid-link` redirect + `role="alert"` guidance, plus completion-time `session_not_found`/`bad_jwt` → `invalid-session` (AUTH-06). Covered at action/route/page/component boundaries (38 focused tests). No executable code added — new mappers/components would be dead/duplicate. Implemented (audit) by Codex. **Merged 2026-07-22** via PR #77 (`dea2d31`).
 
 - AUTH-07: Google OAuth live (FR-AUTH-2) — login/signup entry points start a fixed **server-side** Google PKCE flow; `/auth/oauth/callback` exchanges the code into ADR-20 HttpOnly cookies. No browser Supabase client; `redirectTo` derives from validated same-origin only; fixed redirects (`/` success, `/login?error=oauth` failure) with a generic `role="alert"`. Reviewer (Claude, independent) confirmed the extraction refactor is behavior-preserving — origin validation → `request-origin.ts`, callback cookie-plumbing → `auth-callback-session.ts` (byte-identical to AUTH-06, deferred to the 2nd consumer); recovery/reset paths delegate unchanged. 145 units + 29 Cloud integrations green; verifier proven HttpOnly/SameSite=Lax and not JS-readable; live handshake reached Google with the exact hosted callback URI. **Merged 2026-07-22** via PR #79 (`0bb18bb`). **Manual QA closed 2026-07-22 (user):** real Google consent round-trip verified working end-to-end — provider credentials confirmed wired; AUTH-07 fully verified.
+- CI-07: per-environment configuration live — isolated production Supabase project (`hqzakxpbxqzxismmgnyn`, `ap-south-1`) with 17-migration parity; distinct Vercel Preview/Production Supabase + webhook values; Standard Preview Protection; canonical `brain.khaire.dev`; production Auth with custom SMTP/templates + Google OAuth; retention worker (Vault → pg_net → Vercel) returning HTTP 200. Reviewer (Claude, independent) verified **no committed secrets** (production project ref is public, like the dev ref), the ADR-24-anchored `12_TASKS`/`auth-config` edits, and CHANGELOG/DECISIONS consistency; no app code, deps, or migrations changed. **User confirmed `brain.khaire.dev` serving + production Google login working end-to-end.** ADR-24 (explicit user decision) moves distinct Preview/Production `OPENAI_API_KEY` provisioning to EMB-01, before first live OpenAI use. **Merged 2026-07-22** via PR #82 (`55f917e`). Residual: provider-side SMTP delivery to a real inbox not automated.
 
 ## In Progress
 
-- CI-07 is ready for review: production Supabase `hqzakxpbxqzxismmgnyn` is provisioned in `ap-south-1`; all 17 reviewed migrations match; Vercel Preview and Production have distinct Supabase + webhook values; Standard Preview Protection is active; `brain.khaire.dev` is canonical; production Auth has custom SMTP/templates and Google OAuth; and the custom-domain retention worker returns HTTP 200. ADR-24 moves OpenAI key provisioning to EMB-01 by explicit user decision.
+- None. **Sprint 2 queue is complete** — all promoted Schema, Auth Core, and App Shell tasks are Done. The architect role promotes the next dependency-ready wave from [12_TASKS.md](12_TASKS.md) when work resumes.
 
 ## Blocked
 
@@ -79,7 +80,7 @@ Done: Sprint 0 (governance), Sprint 1 (repo & tooling foundation — all 21 task
 
 ## Upcoming
 
-- Review CI-07. AUTH-10 (account settings), AUTH-11 (delete account), and CRED-01 (MCP credentials) are dependency-ready behind AUTH-09; ADR-24 assigns environment-scoped OpenAI keys to EMB-01 before first live AI use.
+- **Next-wave promotion pending** (architect role): AUTH-10 (account settings), AUTH-11 (delete account), and CRED-01 (MCP credentials) are dependency-ready behind AUTH-09. ADR-24 assigns environment-scoped OpenAI keys to EMB-01 before first live AI use.
 
 ## Known Technical Debt
 
@@ -98,8 +99,8 @@ Done: Sprint 0 (governance), Sprint 1 (repo & tooling foundation — all 21 task
 
 ## Current Branch
 
-`chore/ci-07-environment-configuration`
+`main`
 
 ## Last Updated
 
-2026-07-22 — CI-07 moved to review after the user accepted ADR-24, deferring distinct OpenAI credentials to EMB-01. `brain.khaire.dev`, production Supabase/Auth/SMTP/Google, migration parity, Preview Protection, environment separation, and the HTTP 200 retention-worker path are verified
+2026-07-22 — Reviewer (Claude, independent) verified and merged CI-07 (PR #82, `55f917e`): production environment configuration with no committed secrets, ADR-24-anchored scope edits, and user-confirmed `brain.khaire.dev` + production Google login. **Sprint 2 queue is now complete**; next-wave promotion (AUTH-10/11, CRED-01, EMB-01) is pending the architect role
