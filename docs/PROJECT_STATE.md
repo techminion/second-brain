@@ -64,11 +64,12 @@ Done: Sprint 0 (governance), Sprint 1 (repo & tooling foundation — all 21 task
 - SEC-07 (partial): pinned `sharp` to `^0.35.3` via an npm `overrides` entry, clearing the high-severity libvips advisories (CVE-2026-33327/33328/35590/35591) that Next.js 15 pulled in transitively through `sharp@0.34.x` — a Next patch can't reach the fix (15.5.x pins `sharp@^0.34.3`) and Next 16 would change the documented stack. `npm audit --audit-level=high` clean (two pre-existing moderate PostCSS findings remain). **Merged 2026-07-22** via PR #71 (`714a3b3`) to unblock the AUTH-06 audit gate; the broader SEC-07 pinning/audit review remains.
 - SHELL-10: motion foundation live — two documented duration tokens (150ms micro / 250ms structural, no raw values), ease-out entrances / ease-in exits, and a `prefers-reduced-motion` collapse to 0ms; shell panels animate width (with `overflow-hidden`), shared buttons keep their hover micro transition (10_DESIGN §9). Implemented by Codex; reviewer (Claude, independent) checked out the branch, re-ran 125 units + typecheck/lint/format/build, and confirmed the utilities + reduced-motion output compile into the built CSS. **Merged 2026-07-22** via PR #73 (`d6d882c`).
 - AUTH-09 contract (architect, ADR-23): closed the spec gap that correctly kept AUTH-09 unstarted — 05_API §11 named `Profile`/`ValidationError` without defining them. Recorded the `Profile` shape (`{ id, displayName: string \| null, email, createdAt }`, email read-only from the verified session) and the `updateProfile` display-name rules (trim; empty/whitespace clears to null; else 1–80 chars) in 05_API §11 + ADR-23; AUTH-09 queue row unblocked. Docs-only, no code.
+- AUTH-09: `UserService` profile read/update live (ADR-23) — establishes feature-first `src/features/user/` (service + repository + types). Email is read from the verified JWT claims at read time (never input/table); `getVerifiedIdentity` fails closed when `claims.sub !== userId`; all `profiles` access stays in `UserRepository` under existing RLS (no service-role client). `updateProfile` trims, clears whitespace-only to null, caps at 80 Unicode code points (else `ValidationError`), and no-ops on an omitted field — validated before any data access. Necessary+safe `errors.ts` fix (`ServiceError` base ctor now `public`; class stays `abstract`). Implemented by Codex; reviewer (Claude, independent) traced the contract and confirmed 135 units + 29 Cloud integrations green. **Merged 2026-07-22** via PR #76 (`5c213c0`). AUTH-10/AUTH-11/CRED-01 now dependency-ready.
+- AUTH-14: auth error states complete as an audit-only closure — reviewer independently traced all three acceptance criteria to shipped, tested code: wrong-password `invalid_credentials` → neutral alert with no navigation (AUTH-03); existing-email `user_already_exists` → specific alert with no navigation (AUTH-02); expired/rejected recovery credentials → fixed `/forgot-password?error=invalid-link` redirect + `role="alert"` guidance, plus completion-time `session_not_found`/`bad_jwt` → `invalid-session` (AUTH-06). Covered at action/route/page/component boundaries (38 focused tests). No executable code added — new mappers/components would be dead/duplicate. Implemented (audit) by Codex. **Merged 2026-07-22** via PR #77 (`dea2d31`).
 
 ## In Progress
 
-- AUTH-09: `UserService.getProfile` / `updateProfile` implemented by Codex per ADR-23; PR #76 awaits independent review. Local gates are green (135 units, 29 Cloud integrations, typecheck, lint, format, build, high-severity audit). No schema, UI, dependency, or configuration changes.
-- AUTH-14: completion audit confirms the three required auth error states already shipped with AUTH-02/03/06 and are covered at action, route, page, and accessible component boundaries. No executable changes were warranted; PR #77 awaits independent review.
+- None.
 
 ## Blocked
 
@@ -76,7 +77,7 @@ Done: Sprint 0 (governance), Sprint 1 (repo & tooling foundation — all 21 task
 
 ## Upcoming
 
-- Sprint 2 remaining implementation: AUTH-07 and CI-07; AUTH-09 and the AUTH-14 completion audit await review records.
+- Sprint 2 remaining implementation: AUTH-07 (Google OAuth) and CI-07. AUTH-10 (account settings), AUTH-11 (delete account), and CRED-01 (MCP credentials) are newly dependency-ready behind AUTH-09.
 
 ## Known Technical Debt
 
@@ -95,8 +96,8 @@ Done: Sprint 0 (governance), Sprint 1 (repo & tooling foundation — all 21 task
 
 ## Current Branch
 
-`chore/auth-14-error-states-audit`
+`main`
 
 ## Last Updated
 
-2026-07-22 — AUTH-14 completion audit found no implementation gap: wrong-password, existing-email, and invalid/expired-reset states already shipped through AUTH-02/03/06 with 38 focused tests green. PR #77 awaits review; remaining queued Sprint 2 implementation is AUTH-07 and CI-07
+2026-07-22 — Reviewer (Claude, independent) verified and merged AUTH-09 (PR #76, `5c213c0`) and AUTH-14 (PR #77, `dea2d31`), then recorded both as Done. AUTH-09 establishes `src/features/user/` on the ADR-23 contract; AUTH-14 closed audit-only after tracing all three error states to shipped/tested AUTH-02/03/06 code. Remaining queued Sprint 2 implementation is AUTH-07 and CI-07; AUTH-10/11 and CRED-01 unblocked
