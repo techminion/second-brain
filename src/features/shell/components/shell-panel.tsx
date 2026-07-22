@@ -45,9 +45,10 @@ function ShellPanel({ children, label, side }: Readonly<ShellPanelProps>) {
     <aside
       aria-label={label}
       className={cn(
-        "bg-muted/30 flex h-svh shrink-0 flex-col",
+        "duration-structural transition-width bg-muted/30 flex h-svh shrink-0 flex-col overflow-hidden",
         side === "left" ? "border-r" : "border-l",
         isExpanded ? (side === "left" ? "w-64" : "w-72") : "w-12",
+        isExpanded ? "ease-out" : "ease-in",
       )}
       data-state={isExpanded ? "expanded" : "collapsed"}
     >

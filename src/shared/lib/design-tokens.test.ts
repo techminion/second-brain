@@ -77,3 +77,26 @@ describe("semantic color tokens", () => {
     }
   });
 });
+
+describe("motion tokens", () => {
+  it("defines only the documented micro and structural durations", async () => {
+    const css = await readFile(cssPath, "utf8");
+    const rootBlock = css.split(".dark {")[0];
+
+    expect(getToken(rootBlock, "motion-duration-micro")).toBe("150ms");
+    expect(getToken(rootBlock, "motion-duration-structural")).toBe("250ms");
+    expect(css).toContain("transition-duration: var(--motion-duration-micro)");
+    expect(css).toContain("transition-duration: var(--motion-duration-structural)");
+  });
+
+  it("collapses both duration tokens when reduced motion is requested", async () => {
+    const css = await readFile(cssPath, "utf8");
+    const reducedMotionBlock = css.match(
+      /@media \(prefers-reduced-motion: reduce\) \{([\s\S]*?)\n\}/,
+    )?.[1];
+
+    expect(reducedMotionBlock).toBeDefined();
+    expect(getToken(reducedMotionBlock ?? "", "motion-duration-micro")).toBe("0ms");
+    expect(getToken(reducedMotionBlock ?? "", "motion-duration-structural")).toBe("0ms");
+  });
+});

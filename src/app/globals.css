@@ -2,6 +2,18 @@
 
 @custom-variant dark (&:where(.dark, .dark *));
 
+@utility duration-micro {
+  transition-duration: var(--motion-duration-micro);
+}
+
+@utility duration-structural {
+  transition-duration: var(--motion-duration-structural);
+}
+
+@utility transition-width {
+  transition-property: width;
+}
+
 @theme inline {
   --color-background: hsl(var(--background));
   --color-foreground: hsl(var(--foreground));
@@ -42,6 +54,8 @@
   --ring: 221.2 83.2% 53.3%;
   --radius-md: 0.375rem;
   --radius-lg: 0.5rem;
+  --motion-duration-micro: 150ms;
+  --motion-duration-structural: 250ms;
 }
 
 .dark {
@@ -60,6 +74,13 @@
   --border: 240 3.7% 15.9%;
   --input: 240 3.7% 15.9%;
   --ring: 217.2 91.2% 59.8%;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --motion-duration-micro: 0ms;
+    --motion-duration-structural: 0ms;
+  }
 }
 
 @layer base {

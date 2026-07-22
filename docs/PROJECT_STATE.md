@@ -65,7 +65,7 @@ Done: Sprint 0 (governance), Sprint 1 (repo & tooling foundation — all 21 task
 
 ## In Progress
 
-- None.
+- SHELL-10: motion-duration tokens and reduced-motion behavior implemented by Codex; PR #73 awaits independent review. Local gates are green (125 units, typecheck, lint, format, build, high-severity audit), and rendered QA verified computed timing/easing plus 0ms reduced-motion durations.
 
 ## Blocked
 
@@ -73,7 +73,7 @@ Done: Sprint 0 (governance), Sprint 1 (repo & tooling foundation — all 21 task
 
 ## Upcoming
 
-- Sprint 2 remaining implementation: AUTH-07/09/14, SHELL-10, and CI-07.
+- Sprint 2 remaining implementation: AUTH-07/09/14 and CI-07; SHELL-10 is in review.
 
 ## Known Technical Debt
 
@@ -92,8 +92,8 @@ Done: Sprint 0 (governance), Sprint 1 (repo & tooling foundation — all 21 task
 
 ## Current Branch
 
-`main`
+`feat/shell-10-motion-tokens`
 
 ## Last Updated
 
-2026-07-22 — AUTH-06 merged (PR #70) after review; SEC-07 sharp override merged first (PR #71) to clear the failing audit gate. AUTH-14 now dependency-ready. Sprint 2 remainder: AUTH-07/09/14, SHELL-10, CI-07
+2026-07-22 — SHELL-10 implemented by Codex and opened as PR #73: documented micro/structural motion tokens, entrance/exit easing, and reduced-motion collapse are locally verified. Awaiting independent review; remaining queued Sprint 2 work is AUTH-07/09/14 and CI-07

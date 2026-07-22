@@ -11,10 +11,12 @@ describe("AppShell", () => {
       </AppShell>,
     );
 
-    expect(screen.getByRole("complementary", { name: "Application sidebar" })).toHaveAttribute(
-      "data-state",
-      "expanded",
-    );
+    const sidebar = screen.getByRole("complementary", { name: "Application sidebar" });
+    expect(sidebar).toHaveAttribute("data-state", "expanded");
+    expect(sidebar).toHaveClass("duration-structural", "transition-width", "ease-out");
+    expect(
+      within(sidebar).getByRole("button", { name: "Collapse application sidebar" }),
+    ).toHaveClass("duration-micro");
     expect(screen.getByRole("main")).toHaveTextContent("Workspace content");
     expect(screen.getByRole("complementary", { name: "Context panel" })).toHaveAttribute(
       "data-state",
@@ -31,6 +33,7 @@ describe("AppShell", () => {
     fireEvent.click(within(sidebar).getByRole("button", { name: "Collapse application sidebar" }));
 
     expect(sidebar).toHaveAttribute("data-state", "collapsed");
+    expect(sidebar).toHaveClass("ease-in");
     expect(
       within(sidebar).getByRole("button", { name: "Expand application sidebar" }),
     ).toHaveAttribute("aria-expanded", "false");
@@ -39,6 +42,7 @@ describe("AppShell", () => {
     fireEvent.click(within(sidebar).getByRole("button", { name: "Expand application sidebar" }));
 
     expect(sidebar).toHaveAttribute("data-state", "expanded");
+    expect(sidebar).toHaveClass("ease-out");
   });
 
   it("collapses and expands the context panel independently", () => {
