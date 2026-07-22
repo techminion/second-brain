@@ -21,6 +21,21 @@ Estimated Context Needed:
 
 ---
 
+## 2026-07-22 — Codex (Frontend) — SHELL-10 motion tokens complete
+
+**Session Date:** 2026-07-22
+**Agent:** Codex, frontend implementation role
+**Objective:** Implement SHELL-10 exactly as defined by 10_DESIGN §9: two duration tokens, direction-appropriate easing, and a reduced-motion override.
+**Files Modified:** `src/app/globals.css`, `src/shared/ui/button.tsx`, `src/features/shell/components/shell-panel.tsx`, `src/features/shell/components/app-shell.test.tsx`, `.ai/TASK_QUEUE.md`, `docs/PROJECT_STATE.md`, `docs/CHANGELOG.md`, `docs/AI_HANDOFF.md`.
+**Files Added:** `src/shared/lib/design-tokens.test.ts`.
+**Architecture Decisions:** None. The implementation uses the documented 150ms micro and 250ms structural durations only. Existing shared buttons receive micro color transitions; existing shell panels receive structural width transitions. Entrances use ease-out, exits use ease-in, and `prefers-reduced-motion: reduce` collapses both duration variables to 0ms.
+**Verification performed:** Focused tests green (6/6), full unit suite green (34 files / 125 tests), typecheck/lint/format/build green, and `npm audit --audit-level=high` exits clean (two pre-existing moderate PostCSS findings remain under SEC-07). Rendered Playwright QA at 1440×900 verified button `0.15s`, panel `0.25s`, width-only transition, expanded ease-out, collapsed ease-in, and `0s` for both tokens under reduced motion; no console issues or framework overlay. The in-app browser runtime was unavailable, so Playwright was the documented fallback. Temporary Cloud auth data was deleted immediately after QA.
+**Outstanding Work:** Independent review and merge of PR #73. No next task was started.
+**Known Bugs:** None.
+**Risks:** Motion is currently applied only to the existing button and shell-panel interactions, by design; future components must deliberately choose one of the two documented tokens rather than introduce new durations.
+**Suggested Next Task:** Review SHELL-10; queued implementation options remain AUTH-07, AUTH-14, and CI-07. AUTH-09 still needs the architect to define the `Profile` shape and display-name validation contract before implementation.
+**Estimated Context Needed:** This entry, PR #73, 10_DESIGN §9, and the SHELL-10 queue row.
+
 ## 2026-07-22 — Claude (Reviewer) — AUTH-06 review + merge; SEC-07 sharp advisory unblock
 
 **Session Date:** 2026-07-22
