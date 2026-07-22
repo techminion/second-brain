@@ -5,7 +5,12 @@ import {
   hardenSessionCookieOptions,
 } from "@/shared/lib/supabase-server-client";
 
-const publicPagePaths = new Set(["/login", "/signup"]);
+const publicPagePaths = new Set([
+  "/auth/recovery/callback",
+  "/forgot-password",
+  "/login",
+  "/signup",
+]);
 
 function isProtectedPageRequest(request: NextRequest): boolean {
   const { pathname } = request.nextUrl;

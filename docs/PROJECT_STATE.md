@@ -60,9 +60,11 @@ Done: Sprint 0 (governance), Sprint 1 (repo & tooling foundation — all 21 task
 - SHELL-02: three-zone app shell live — 10_DESIGN §3.2 layout (collapsible sidebar · server-rendered main · collapsible context panel), server-composed with one client island per rail, accessible collapse controls, ephemeral per-rail state. Implemented by Codex (L-split recorded: SHELL-03/05/06/10 scoped out); reviewer re-verified 84/84 units + live Playwright in an isolated worktree. **Reviewed and merged 2026-07-19** via PR #64 (`282e594`). SHELL-03 claimable.
 - AUTH-08: current-session logout action live — ADR-22 overrides Supabase JS's global default with `scope: "local"`, revoking only the acting session's refresh token, clearing ADR-20 HttpOnly cookies, and redirecting to `/login`. Two units; full suite 86/86; temporary live Playwright probe proved real signup → logout → no `sb-*` cookies → `/login` and was removed before commit. **Merged 2026-07-21** via PR #66 (`40b3b81`). SHELL-03 owns the visible trigger.
 - SHELL-03: sidebar navigation frame live — semantic Daily note/Folders/Tags landmarks ready for owning features without invented routes; AUTH-08 visible logout trigger bound server-side; collapsed rail removes child content. 3 units, suite 89/89, six required checks green. **Merged 2026-07-21** via PR #68 (`17b116a`). AUTH-10 and sidebar feature tasks unblocked.
+- AUTH-06: password reset live end-to-end (FR-AUTH-3) — `/forgot-password` server action calls `resetPasswordForEmail` with a fixed same-origin `/auth/recovery/callback` redirect (never caller-supplied); the callback exchanges either a PKCE `code` (dev default template) or a `type=recovery` `token_hash` (staged production template) into an ADR-20 HttpOnly session, then routes to the gated `/reset-password` page where a verified-claims server action calls `updateUser`. Middleware allowlists the request/callback routes; `/reset-password` stays protected. The callback binds session cookies to its redirect response (same chokepoint as AUTH-04 middleware). Shared 8–72 password policy extracted to `password-schema.ts`. 34 new units/component/route tests (suite 123/123), typecheck/lint/format/build green; **live recovery e2e green against the dev project** (`auth-session.spec.ts` 2/2 — admin-generated recovery token → callback → HttpOnly session → `updateUser` → re-login with the new password). **In Review** (implemented by Claude 2026-07-22) — awaiting independent review.
 
 ## In Progress
 
+- AUTH-06: password reset request + completion flow — implemented, In Review (Claude, 2026-07-22).
 
 ## Blocked
 
@@ -70,7 +72,7 @@ Done: Sprint 0 (governance), Sprint 1 (repo & tooling foundation — all 21 task
 
 ## Upcoming
 
-- Sprint 2 remaining implementation: AUTH-06/07/09/14, SHELL-03/10, and CI-07.
+- Sprint 2 remaining implementation: AUTH-06/07/09/14, SHELL-10, and CI-07.
 
 ## Known Technical Debt
 
@@ -93,4 +95,4 @@ Done: Sprint 0 (governance), Sprint 1 (repo & tooling foundation — all 21 task
 
 ## Last Updated
 
-2026-07-21 — SHELL-03 merged (PR #68); sidebar frame + AUTH-08 trigger complete. Sprint 2 remainder: AUTH-06/07/09/14, SHELL-10, CI-07 (Claude, implementer+reviewer role)
+2026-07-22 — AUTH-06 implemented, In Review (Claude, implementer role) — password reset request→callback→completion; AUTH-14 now dependency-ready. Sprint 2 remainder: AUTH-07/09/14, SHELL-10, CI-07

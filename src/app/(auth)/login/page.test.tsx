@@ -17,12 +17,16 @@ describe("LoginPage", () => {
     expect(screen.getByRole("button", { name: "Log in" })).toBeInTheDocument();
   });
 
-  it("links to the signup page", () => {
+  it("links to signup and password recovery", () => {
     render(<LoginPage />);
 
     expect(screen.getByRole("link", { name: "Create an account" })).toHaveAttribute(
       "href",
       "/signup",
+    );
+    expect(screen.getByRole("link", { name: "Forgot password?" })).toHaveAttribute(
+      "href",
+      "/forgot-password",
     );
   });
 });
