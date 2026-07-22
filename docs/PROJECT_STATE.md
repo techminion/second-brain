@@ -62,10 +62,11 @@ Done: Sprint 0 (governance), Sprint 1 (repo & tooling foundation — all 21 task
 - SHELL-03: sidebar navigation frame live — semantic Daily note/Folders/Tags landmarks ready for owning features without invented routes; AUTH-08 visible logout trigger bound server-side; collapsed rail removes child content. 3 units, suite 89/89, six required checks green. **Merged 2026-07-21** via PR #68 (`17b116a`). AUTH-10 and sidebar feature tasks unblocked.
 - AUTH-06: password reset live end-to-end (FR-AUTH-3) — `/forgot-password` server action calls `resetPasswordForEmail` with a fixed same-origin `/auth/recovery/callback` redirect (never caller-supplied); the callback exchanges either a PKCE `code` (dev default template) or a `type=recovery` `token_hash` (staged production template) into an ADR-20 HttpOnly session, then routes to the gated `/reset-password` page where a verified-claims server action calls `updateUser`. Middleware allowlists the request/callback routes; `/reset-password` stays protected. The callback binds session cookies to its redirect response (same chokepoint as AUTH-04 middleware). Shared 8–72 password policy extracted to `password-schema.ts`. 34 new units/component/route tests (suite 123/123), typecheck/lint/format/build green; **live recovery e2e green against the dev project** (`auth-session.spec.ts` 2/2 — admin-generated recovery token → callback → HttpOnly session → `updateUser` → re-login with the new password). **Merged 2026-07-22** via PR #70 (`602710c`). AUTH-14 now dependency-ready.
 - SEC-07 (partial): pinned `sharp` to `^0.35.3` via an npm `overrides` entry, clearing the high-severity libvips advisories (CVE-2026-33327/33328/35590/35591) that Next.js 15 pulled in transitively through `sharp@0.34.x` — a Next patch can't reach the fix (15.5.x pins `sharp@^0.34.3`) and Next 16 would change the documented stack. `npm audit --audit-level=high` clean (two pre-existing moderate PostCSS findings remain). **Merged 2026-07-22** via PR #71 (`714a3b3`) to unblock the AUTH-06 audit gate; the broader SEC-07 pinning/audit review remains.
+- SHELL-10: motion foundation live — two documented duration tokens (150ms micro / 250ms structural, no raw values), ease-out entrances / ease-in exits, and a `prefers-reduced-motion` collapse to 0ms; shell panels animate width (with `overflow-hidden`), shared buttons keep their hover micro transition (10_DESIGN §9). Implemented by Codex; reviewer (Claude, independent) checked out the branch, re-ran 125 units + typecheck/lint/format/build, and confirmed the utilities + reduced-motion output compile into the built CSS. **Merged 2026-07-22** via PR #73 (`d6d882c`).
 
 ## In Progress
 
-- SHELL-10: motion-duration tokens and reduced-motion behavior implemented by Codex; PR #73 awaits independent review. Local gates are green (125 units, typecheck, lint, format, build, high-severity audit), and rendered QA verified computed timing/easing plus 0ms reduced-motion durations.
+- None.
 
 ## Blocked
 
@@ -73,7 +74,7 @@ Done: Sprint 0 (governance), Sprint 1 (repo & tooling foundation — all 21 task
 
 ## Upcoming
 
-- Sprint 2 remaining implementation: AUTH-07/09/14 and CI-07; SHELL-10 is in review.
+- Sprint 2 remaining implementation: AUTH-07/09/14 and CI-07.
 
 ## Known Technical Debt
 
@@ -92,8 +93,8 @@ Done: Sprint 0 (governance), Sprint 1 (repo & tooling foundation — all 21 task
 
 ## Current Branch
 
-`feat/shell-10-motion-tokens`
+`main`
 
 ## Last Updated
 
-2026-07-22 — SHELL-10 implemented by Codex and opened as PR #73: documented micro/structural motion tokens, entrance/exit easing, and reduced-motion collapse are locally verified. Awaiting independent review; remaining queued Sprint 2 work is AUTH-07/09/14 and CI-07
+2026-07-22 — SHELL-10 merged (PR #73) after independent review — documented micro/structural motion tokens, entrance/exit easing, reduced-motion collapse. Remaining queued Sprint 2 work is AUTH-07/09/14 and CI-07
