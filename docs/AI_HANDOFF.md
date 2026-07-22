@@ -21,6 +21,54 @@ Estimated Context Needed:
 
 ---
 
+## 2026-07-22 — Codex (Backend) — CI-07 finalized under ADR-24
+
+**Session Date:** 2026-07-22
+**Agent:** Codex, backend implementation role
+**Objective:** Record the user's decision to defer OpenAI credentials, finalize CI-07's canonical scope, validate the repository, and submit the implementation for independent review.
+**Files Modified:** `.env.example`, `supabase/auth-config.md`, `docs/12_TASKS.md`, `docs/DECISIONS.md` (ADR-24), `.ai/TASK_QUEUE.md`, `docs/PROJECT_STATE.md`, `docs/CHANGELOG.md`, `docs/AI_HANDOFF.md`.
+**Files Added:** None.
+**Architecture Decisions:** ADR-24 — CI-07 closes without idle OpenAI credentials; distinct Preview and Production `OPENAI_API_KEY` values move to EMB-01 and remain mandatory before first live OpenAI-backed deployment/call. The server-only, per-environment security contract is unchanged.
+**Implementation:** Finalized the earlier CI-07 environment work and updated the canonical backlog so the deferred credential has one explicit owner rather than disappearing from scope. No application code, dependency, schema, policy, or migration changed.
+**Verification performed:** Live verification from the preceding CI-07 entry remains current: production migration history 17/17; schema/RLS/storage/cron/advisors checked; Vercel environment isolation and Preview Protection checked; `brain.khaire.dev` verified and serving; Supabase Auth URL/allow-list, custom SMTP, byte-identical templates, and Google handoff checked; retention invocation HTTP 200; fresh Preview deployment READY. Repository gates pass: typecheck, lint, Prettier, 145/145 unit tests, production build, and the high-severity dependency-audit threshold. npm reports two moderate PostCSS advisories through Next.js; its offered forced remediation is a breaking downgrade and was not applied.
+**Outstanding Work:** Independent review and merge. EMB-01 must add and verify distinct OpenAI keys before any live OpenAI consumer ships.
+**Known Bugs:** None.
+**Risks:** AI-backed behavior remains intentionally unavailable until EMB-01. SMTP configuration was verified, but provider-side delivery to a real inbox was not automated; production Google consent was verified only through the provider handoff, not with a test identity.
+**Suggested Next Task:** Review CI-07; do not start another CI task from this branch.
+**Estimated Context Needed:** ADR-24, the CI-07 diff/PR, `supabase/auth-config.md`, and the two preceding CI-07 handoff entries.
+
+## 2026-07-22 — Codex (Backend) — CI-07 external configuration resumed
+
+**Session Date:** 2026-07-22
+**Agent:** Codex, backend implementation role
+**Objective:** Resume CI-07 after the user configured the production domain, custom SMTP/templates, and Google OAuth; finish every available verification while OpenAI keys remain intentionally deferred.
+**Files Modified:** `.ai/TASK_QUEUE.md`, `supabase/auth-config.md`, `docs/PROJECT_STATE.md`, `docs/AI_HANDOFF.md`; prior CI-07 edits to `.env.example` remain uncommitted on the same branch.
+**Files Added:** None.
+**Architecture Decisions:** None. `https://brain.khaire.dev` is the user-selected canonical production URL. The temporary Vercel alias was removed from the production Supabase Auth allow-list and retention Vault URL rather than retained as an unnecessary alternate callback. CI-07 remains Claimed because 12_TASKS explicitly includes OpenAI secrets and the user deferred those values.
+**Implementation:** Verified `brain.khaire.dev` is attached to the correct Vercel project and HTTPS-ready, then changed production Auth's Site URL to `https://brain.khaire.dev` and sole redirect allow-list entry to `https://brain.khaire.dev/**`. Verified custom Gmail SMTP is enabled with `brain@khaire.dev`, Google OAuth is enabled with both credential fields populated, and both hosted email templates exactly match the committed files. Updated the existing `retention_purge_url` Vault secret to `https://brain.khaire.dev/api/internal/retention-purge` without reading or replacing the purge secret. Created a fresh Preview deployment (`dpl_218bYk9m4FPL4LXguYgJgwF4vbnM`) so Preview-scoped values were exercised by a real build.
+**Verification performed:** Vercel reports the custom domain verified; `https://brain.khaire.dev` returns `307 /login`. Management API readback confirms the canonical Site URL/allow-list, custom SMTP, templates, and Google provider. Template SHA-256 values match local files byte-for-byte. Public Auth settings report email + Google enabled, signup enabled, autoconfirm true. A non-authenticating production OAuth probe reaches `accounts.google.com/o/oauth2/v2/auth` with `https://hqzakxpbxqzxismmgnyn.supabase.co/auth/v1/callback`. Vault readback validates the new URL and existing secret without exposing either; a fresh worker invocation returned pg_net HTTP 200 with no timeout/error. The Preview deployment built successfully and is READY; anonymous access returns Vercel SSO `302`, while Production remains public. Vercel environment listing confirms the five Supabase/webhook names exist independently in Preview and Production and `OPENAI_API_KEY` is absent from both.
+**Outstanding Work:** Obtain distinct Preview and Production OpenAI API keys, add each to the matching Vercel scope, redeploy/verify both environments, run repository gates, finish the CI-07 record, commit, push, and open the PR. CI-07 must not be marked Done before this. Provider-side SMTP delivery to a real inbox and full production Google consent were not automated; configuration and pre-consent handoff were verified.
+**Known Bugs:** None.
+**Risks:** The production application cannot execute OpenAI-backed functionality until the deferred keys are added. Gmail SMTP credentials are configured, but inbox delivery/reputation remains provider-side operational state.
+**Suggested Next Task:** Resume CI-07 when the two OpenAI keys are available; do not claim another CI task in parallel.
+**Estimated Context Needed:** This entry, CI-07 queue row, Vercel environment settings, and `supabase/auth-config.md`.
+
+## 2026-07-22 — Codex (Backend) — CI-07 production environment partially configured
+
+**Session Date:** 2026-07-22
+**Agent:** Codex, backend implementation role
+**Objective:** Implement CI-07's Preview/Production environment split, including production Supabase provisioning and reviewed migration deployment.
+**Files Modified:** `.ai/TASK_QUEUE.md` (CI-07 claimed), `.env.example`, `supabase/auth-config.md`, `docs/PROJECT_STATE.md`, `docs/AI_HANDOFF.md` (this entry).
+**Files Added:** None.
+**Architecture Decisions:** None. Followed 03_ARCHITECTURE §8, 09_SECURITY §6, ADR-10/12/19/21, and GOV-7. Preview continues to use the shared Cloud development project; Production uses a separate Cloud project. The production elevated Supabase API key is stored under the existing server-only `SUPABASE_SERVICE_ROLE_KEY` environment name and never enters Preview/tests.
+**Implementation:** Created Supabase project `second-brain-production` (`hqzakxpbxqzxismmgnyn`) in AppAlley, `ap-south-1`, at the confirmed $0/month project cost. Set a transient random database password and used Supabase CLI 2.109.1 to dry-run and apply all 17 repository migrations with their original versions. Configured production Auth base settings: stable Vercel Site URL/redirect allow-list, 3600-second JWT expiry, email confirmation off, minimum password length 8, and no composition requirement. Added five Vercel values to each of Preview and Production: Supabase URL, publishable key, elevated server key, embedding webhook secret, and purge webhook secret; webhook secrets are generated independently per environment. Stored the production purge URL/secret in Vault and redeployed the latest reviewed `main` production artifact. Existing Vercel Standard Protection was retained and anonymously verified: Preview redirects to Vercel SSO while the production domain remains public.
+**Verification performed:** Production migration history exactly matches all 17 repository versions. Production has 13/13 public tables with RLS, 48 policies, the private `attachments` bucket, `vector`/`pg_cron`/`pg_net`, and the daily retention cron + worker. Security advisors return no findings; performance advisor output is the previously accepted ADR-17 INFO-only set plus expected unused-index notices on the empty database. Production Vault contains both purge values without exposing them. A real `invoke_retention_purge_worker()` call completed through Vault → pg_net → Vercel with HTTP 200 and no transport error. Latest production artifact was rebuilt and aliased to `https://second-brain-six-phi.vercel.app`.
+**Outstanding Work:** CI-07 is still Claimed, not complete. Required external inputs are missing: (1) distinct Preview and Production OpenAI API keys; neither Vercel environment has `OPENAI_API_KEY`; (2) production custom-SMTP host/port/user/password/sender details so the committed templates can be applied; (3) production Google OAuth client configuration, including adding `https://hqzakxpbxqzxismmgnyn.supabase.co/auth/v1/callback` to the Google client and configuring the provider in Supabase. After those arrive: apply/verify them, run production auth probes, validate a Preview build against dev and Production against prod, finish docs, run repository gates, commit, push, and open the PR.
+**Known Bugs:** None.
+**Risks:** Production account signup currently uses Supabase's default SMTP and Google OAuth is disabled, so production Auth is not launch-ready. The production purge path is live; it currently purges no rows because the new production project is empty. The CLI's post-push catalog-cache step warned that local Docker was unavailable; Cloud migration application completed and was independently verified via MCP, and no Docker resources were started.
+**Suggested Next Task:** Resume CI-07 after the three credential sets are provided; do not start another task.
+**Estimated Context Needed:** This entry, CI-07 queue row, 09_SECURITY §6, 03_ARCHITECTURE §8, `supabase/auth-config.md`, and Vercel/Supabase dashboards.
+
 ## 2026-07-22 — Codex (Backend) — AUTH-07 Google OAuth complete
 
 **Session Date:** 2026-07-22

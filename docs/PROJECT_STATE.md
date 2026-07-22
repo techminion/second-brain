@@ -71,7 +71,7 @@ Done: Sprint 0 (governance), Sprint 1 (repo & tooling foundation — all 21 task
 
 ## In Progress
 
-- None.
+- CI-07 is ready for review: production Supabase `hqzakxpbxqzxismmgnyn` is provisioned in `ap-south-1`; all 17 reviewed migrations match; Vercel Preview and Production have distinct Supabase + webhook values; Standard Preview Protection is active; `brain.khaire.dev` is canonical; production Auth has custom SMTP/templates and Google OAuth; and the custom-domain retention worker returns HTTP 200. ADR-24 moves OpenAI key provisioning to EMB-01 by explicit user decision.
 
 ## Blocked
 
@@ -79,7 +79,7 @@ Done: Sprint 0 (governance), Sprint 1 (repo & tooling foundation — all 21 task
 
 ## Upcoming
 
-- Sprint 2 remaining implementation: CI-07. AUTH-10 (account settings), AUTH-11 (delete account), and CRED-01 (MCP credentials) are dependency-ready behind AUTH-09.
+- Review CI-07. AUTH-10 (account settings), AUTH-11 (delete account), and CRED-01 (MCP credentials) are dependency-ready behind AUTH-09; ADR-24 assigns environment-scoped OpenAI keys to EMB-01 before first live AI use.
 
 ## Known Technical Debt
 
@@ -98,8 +98,8 @@ Done: Sprint 0 (governance), Sprint 1 (repo & tooling foundation — all 21 task
 
 ## Current Branch
 
-`main`
+`chore/ci-07-environment-configuration`
 
 ## Last Updated
 
-2026-07-22 — AUTH-07 Google OAuth fully verified: the user completed the real Google consent round-trip end-to-end (working; provider credentials confirmed wired), closing the last residual QA on PR #79 (`0bb18bb`). CI-07 is the remaining queued Sprint 2 implementation task
+2026-07-22 — CI-07 moved to review after the user accepted ADR-24, deferring distinct OpenAI credentials to EMB-01. `brain.khaire.dev`, production Supabase/Auth/SMTP/Google, migration parity, Preview Protection, environment separation, and the HTTP 200 retention-worker path are verified
