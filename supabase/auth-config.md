@@ -12,23 +12,25 @@
 
 Dashboard paths are relative to the project's **Authentication** section.
 
-| Setting                      | Dashboard location          | Dev (`zkzyfwclvquiargnwgtw`)  | Production (CI-07)               | Why                                                                                                                                                                                                                                           |
-| ---------------------------- | --------------------------- | ----------------------------- | -------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Email provider               | Sign In / Providers → Email | Enabled (default)             | Enabled                          | FR-AUTH-1                                                                                                                                                                                                                                     |
-| Confirm email                | Sign In / Providers → Email | **Off**                       | Off — revisit at launch (ADR-19) | FR-AUTH-1 acceptance requires a session at signup; Supabase returns none while confirmation is pending                                                                                                                                        |
-| Minimum password length      | Sign In / Providers → Email | **8**                         | 8                                | ADR-19: raised from default 6; length over composition rules                                                                                                                                                                                  |
-| Required password characters | Sign In / Providers → Email | None (default)                | None                             | ADR-19: composition rules add friction, not entropy                                                                                                                                                                                           |
-| Site URL                     | URL Configuration           | `http://localhost:3000`       | Production domain                | Base for email links                                                                                                                                                                                                                          |
-| Redirect URLs                | URL Configuration           | `http://localhost:3000/**`    | Production domain + `/**`        | Allow-list for AUTH-06's `/auth/recovery/callback` and AUTH-07's `/auth/oauth/callback` redirects                                                                                                                                             |
-| JWT expiry                   | Sessions                    | 3600 s (default)              | 3600 s                           | [09_SECURITY §3](../docs/09_SECURITY.md#3-authentication): short-lived access token, refresh-token rotation                                                                                                                                   |
-| SMTP                         | Emails → SMTP Settings      | Supabase default (unchanged)  | **Custom SMTP — required**       | Default SMTP delivers only to project team addresses, at heavy rate limits; unusable for real users                                                                                                                                           |
-| Email templates              | Emails → Templates          | Supabase defaults (unchanged) | Apply [templates/](templates/)   | Free-tier projects created after 2026-06-03 cannot customize templates on default SMTP ([changelog 46599](https://supabase.com/changelog/46599-changes-to-email-template-customisation-on-free-tier)); customization unlocks with custom SMTP |
-| OAuth providers              | Sign In / Providers         | **Google enabled**            | Google                           | FR-AUTH-2; enabled for the development project by AUTH-07                                                                                                                                                                                     |
+| Setting                      | Dashboard location          | Dev (`zkzyfwclvquiargnwgtw`)  | Production (`hqzakxpbxqzxismmgnyn`)             | Why                                                                                                                                                                                                                                           |
+| ---------------------------- | --------------------------- | ----------------------------- | ----------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Email provider               | Sign In / Providers → Email | Enabled (default)             | Enabled                                         | FR-AUTH-1                                                                                                                                                                                                                                     |
+| Confirm email                | Sign In / Providers → Email | **Off**                       | Off — revisit at launch (ADR-19)                | FR-AUTH-1 acceptance requires a session at signup; Supabase returns none while confirmation is pending                                                                                                                                        |
+| Minimum password length      | Sign In / Providers → Email | **8**                         | 8                                               | ADR-19: raised from default 6; length over composition rules                                                                                                                                                                                  |
+| Required password characters | Sign In / Providers → Email | None (default)                | None                                            | ADR-19: composition rules add friction, not entropy                                                                                                                                                                                           |
+| Site URL                     | URL Configuration           | `http://localhost:3000`       | `https://brain.khaire.dev`                      | Base for email links                                                                                                                                                                                                                          |
+| Redirect URLs                | URL Configuration           | `http://localhost:3000/**`    | `https://brain.khaire.dev/**`                   | Allow-list for AUTH-06's `/auth/recovery/callback` and AUTH-07's `/auth/oauth/callback` redirects                                                                                                                                             |
+| JWT expiry                   | Sessions                    | 3600 s (default)              | 3600 s                                          | [09_SECURITY §3](../docs/09_SECURITY.md#3-authentication): short-lived access token, refresh-token rotation                                                                                                                                   |
+| SMTP                         | Emails → SMTP Settings      | Supabase default (unchanged)  | **Custom SMTP enabled** (`brain@khaire.dev`)    | Default SMTP delivers only to project team addresses, at heavy rate limits; unusable for real users                                                                                                                                           |
+| Email templates              | Emails → Templates          | Supabase defaults (unchanged) | [Confirmation and recovery](templates/) applied | Free-tier projects created after 2026-06-03 cannot customize templates on default SMTP ([changelog 46599](https://supabase.com/changelog/46599-changes-to-email-template-customisation-on-free-tier)); customization unlocks with custom SMTP |
+| OAuth providers              | Sign In / Providers         | **Google enabled**            | **Google enabled**                              | FR-AUTH-2                                                                                                                                                                                                                                     |
 
 ## Google OAuth flow (AUTH-07)
 
-- The Google Cloud Web OAuth client redirects to Supabase's hosted callback:
-  `https://zkzyfwclvquiargnwgtw.supabase.co/auth/v1/callback`.
+- Each Google Cloud Web OAuth client redirects to its environment's hosted Supabase
+  callback:
+  - Dev: `https://zkzyfwclvquiargnwgtw.supabase.co/auth/v1/callback`.
+  - Production: `https://hqzakxpbxqzxismmgnyn.supabase.co/auth/v1/callback`.
 - Login and signup submit the fixed Google provider to a server action. The action derives
   the request origin with the same fail-closed validation as password recovery and sets
   `redirectTo` to the fixed `/auth/oauth/callback` route; neither value comes from input.
@@ -82,3 +84,14 @@ AUTH-07 was live-verified on 2026-07-22:
    `document.cookie`.
 4. Google account selection/consent was not automated; callback success and hardened
    session-cookie propagation are covered by focused route tests.
+
+CI-07 production configuration was live-verified on 2026-07-22:
+
+1. `https://brain.khaire.dev` is a verified Vercel project domain and serves the
+   production application over HTTPS.
+2. The hosted Auth configuration uses `https://brain.khaire.dev` as its Site URL and
+   `https://brain.khaire.dev/**` as its sole production redirect allow-list entry.
+3. Google is enabled with both credential fields populated; the hosted `/authorize`
+   endpoint redirects to Google with the exact production Supabase callback above.
+4. Custom SMTP is enabled and both hosted email templates are byte-for-byte identical
+   to the committed files. Provider-side delivery to a real inbox was not automated.

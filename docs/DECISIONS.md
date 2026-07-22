@@ -244,6 +244,16 @@ Future Revisit:
 **Tradeoffs:** Putting `email` on `Profile` means the type mixes a `profiles` column set with a session-derived field; documented explicitly so implementers source it from the verified session, never from client input (09_SECURITY §4). The 80-char cap is a product guess, tunable later.
 **Future Revisit:** If account email change (or additional profile fields: avatar, timezone) enters scope, extend `Profile` and add the corresponding `updateProfile` inputs + validation here.
 
+## ADR-24 — OpenAI credentials are deferred from CI-07 to EMB-01
+
+**Decision:** CI-07 closes after the Preview/Production Supabase, webhook-secret, deployment-protection, production-project, Auth, and retention-worker configuration is complete and verified. Distinct Preview and Production `OPENAI_API_KEY` values are deliberately deferred to EMB-01, which must configure and verify both Vercel scopes before any live OpenAI-backed deployment or call. The environment contract and [09_SECURITY §6](09_SECURITY.md#6-secrets-management) inventory remain unchanged: the key stays server-only, per-environment, and never committed.
+**Status:** Accepted (2026-07-22) — explicit user decision
+**Context:** CI-07's original backlog row bundled OpenAI credentials with the M0 deployment foundation even though no OpenAI client or live AI consumer exists yet. The user chose to provision billing-bearing OpenAI credentials later. All other CI-07 environment work is live and verified, so keeping the task open would make unrelated M0 completion depend on a credential that cannot be exercised until EMB-01.
+**Options Considered:** (a) keep CI-07 open until both OpenAI keys exist; (b) close CI-07 and defer scoped key provisioning to EMB-01 (chosen); (c) use one shared key across Preview and Production (rejected — violates the per-environment separation required by 09_SECURITY §6).
+**Chosen Solution:** (b). EMB-01 is the first task that introduces the typed OpenAI client boundary and can validate the credentials against a real, mockable consumer. It now owns adding distinct keys to Vercel Preview and Production, redeploying, and verifying scope isolation before completion.
+**Tradeoffs:** M0 deployments cannot execute future OpenAI-backed behavior until EMB-01 supplies the keys; currently there is no such behavior to break. Moving the credential gate closer to first use avoids idle secret exposure and premature spend configuration, but EMB-01 gains a small operational step.
+**Future Revisit:** None. If a live OpenAI consumer is scheduled before EMB-01, that task is blocked until EMB-01 (including its credential setup) is complete.
+
 ## GOV-7 — Repository is public
 
 **Decision:** `techminion/second-brain` is a public GitHub repository. Consequences are binding: no secret may ever appear in the repository or its history (already policy — now with public blast radius); GitHub Actions workflows must assume fork PRs run them without secrets and with a read-only token; any future CI job that needs credentials (e.g., Cloud integration tests) must be gated so it cannot be triggered by a fork PR.

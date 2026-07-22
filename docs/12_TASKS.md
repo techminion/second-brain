@@ -113,7 +113,7 @@ Two areas span phases deliberately: OBS-01 (structured logging) lives in Phase 0
 | CI-04 | Supabase migration check in CI — full-history replay against an ephemeral version-pinned `supabase/postgres` container, plus a token-gated history consistency check skipped on fork PRs (ADR-13, [DECISIONS.md](DECISIONS.md)) | M | DB-01, CI-01 |
 | CI-05 | `npm audit` gate for high-severity findings ([11_CONTRIBUTING.md §6](11_CONTRIBUTING.md#6-commit--pr-conventions)) | S | CI-01 |
 | CI-06 | Playwright E2E job against preview deployments | M | SETUP-10, CI-02 |
-| CI-07 | Per-environment env var setup: preview vs. production Supabase/OpenAI secrets ([09_SECURITY.md §6](09_SECURITY.md#6-secrets-management)). Includes provisioning the production Supabase project ([03_ARCHITECTURE.md §8](03_ARCHITECTURE.md#8-deployment-architecture)) and applying the reviewed migration history to it — no earlier task creates it (DB-01 provisioned development only) | M | CI-02 |
+| CI-07 | Per-environment env var setup: preview vs. production Supabase + webhook secrets ([09_SECURITY.md §6](09_SECURITY.md#6-secrets-management)); OpenAI credentials are deferred to EMB-01 (ADR-24, [DECISIONS.md](DECISIONS.md)). Includes provisioning the production Supabase project ([03_ARCHITECTURE.md §8](03_ARCHITECTURE.md#8-deployment-architecture)) and applying the reviewed migration history to it — no earlier task creates it (DB-01 provisioned development only) | M | CI-02 |
 | CI-08 | axe accessibility check job on core routes | M | CI-06 |
 
 ### Observability foundation (OBS)
@@ -320,7 +320,7 @@ Two areas span phases deliberately: OBS-01 (structured logging) lives in Phase 0
 
 | ID | Task | Cx | Depends on |
 |---|---|---|---|
-| EMB-01 | OpenAI client wrapper in `shared/lib` (typed, mockable, no direct SDK use in features) | S | SETUP-14 |
+| EMB-01 | OpenAI client wrapper in `shared/lib` (typed, mockable, no direct SDK use in features) + distinct Preview/Production Vercel `OPENAI_API_KEY` configuration and scope verification (ADR-24) | S | SETUP-14 |
 | EMB-02 | Chunking module per [07_AI.md §4](07_AI.md#4-chunking): markdown-aware splits, overlap, floor merging (pure, exhaustively tested) | L | SETUP-06 |
 | EMB-03 | `EmbeddingService.embedObject`: chunk → embed → upsert rows ([05_API.md §8](05_API.md#8-embeddingservice)) | M | EMB-01, EMB-02, DB-08 |
 | EMB-04 | `EmbeddingService.deleteEmbeddings` / `reembed` / `getStatus` | S | EMB-03 |
