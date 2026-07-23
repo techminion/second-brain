@@ -66,6 +66,60 @@ begin
     raise exception 'Supabase Storage operation helpers are missing';
   end if;
 
+  if to_regprocedure('public.create_note(uuid,text,text,uuid,date)') is null
+    or to_regprocedure(
+      'public.update_note(uuid,uuid,text,text,uuid,boolean,boolean,boolean)'
+    ) is null then
+    raise exception 'Transactional note functions are missing';
+  end if;
+
+  if exists (
+    select 1
+    from pg_proc
+    where oid in (
+      to_regprocedure('public.create_note(uuid,text,text,uuid,date)'),
+      to_regprocedure(
+        'public.update_note(uuid,uuid,text,text,uuid,boolean,boolean,boolean)'
+      )
+    )
+      and prosecdef
+  ) then
+    raise exception 'Transactional note functions must be SECURITY INVOKER';
+  end if;
+
+  if not has_function_privilege(
+    'authenticated',
+    'public.create_note(uuid,text,text,uuid,date)',
+    'EXECUTE'
+  )
+    or not has_function_privilege(
+      'authenticated',
+      'public.update_note(uuid,uuid,text,text,uuid,boolean,boolean,boolean)',
+      'EXECUTE'
+    )
+    or has_function_privilege(
+      'anon',
+      'public.create_note(uuid,text,text,uuid,date)',
+      'EXECUTE'
+    )
+    or has_function_privilege(
+      'anon',
+      'public.update_note(uuid,uuid,text,text,uuid,boolean,boolean,boolean)',
+      'EXECUTE'
+    )
+    or has_function_privilege(
+      'service_role',
+      'public.create_note(uuid,text,text,uuid,date)',
+      'EXECUTE'
+    )
+    or has_function_privilege(
+      'service_role',
+      'public.update_note(uuid,uuid,text,text,uuid,boolean,boolean,boolean)',
+      'EXECUTE'
+    ) then
+    raise exception 'Transactional note function grants violate least privilege';
+  end if;
+
   if not exists (
     select 1
     from storage.buckets

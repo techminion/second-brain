@@ -105,7 +105,7 @@ The supertype table — the common envelope for every object in the graph ([01_P
 
 **Indexes:** `(owner_id, folder_id)` — folder listing; GIN on `search_vector` — FR-SEARCH-1.
 
-**Write rule:** `NoteService` is the only writer of this table, and it always writes `notes.title` and `knowledge_objects.title` in the same transaction. No other code path may update either independently.
+**Write rule:** `NoteService` is the only writer of this table, and it always writes `notes.title` and `knowledge_objects.title` in the same transaction. `NoteRepository` performs those envelope+subtype writes through the `SECURITY INVOKER` `create_note` / `update_note` Postgres functions, so the caller's RLS context remains the authorization floor. No other code path may update either title independently.
 
 ### 4.4 `attachments`
 

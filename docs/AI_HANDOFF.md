@@ -21,6 +21,70 @@ Estimated Context Needed:
 
 ---
 
+## 2026-07-23 — Codex (Backend) — NOTE-01 Cloud application validated
+
+**Session Date:** 2026-07-23
+**Agent:** Codex, backend implementation role
+**Objective:** Apply Claude's approved NOTE-01 migration to development Cloud, validate it end-to-end, and prepare PR #87 for final review.
+**Files Modified:** `tests/integration/note-repository.integration.test.ts`, `.ai/TASK_QUEUE.md`, `docs/PROJECT_STATE.md`, `docs/AI_HANDOFF.md`.
+**Files Added:** None.
+**Architecture Decisions:** None. The official MCP migration endpoint cannot accept a fixed migration version, so the exact reviewed timestamped file was deployed with remote `supabase db push`; Supabase MCP remained the inspection/advisor path. No Docker or local database was used.
+**Implementation:** Verified Claude's approval comment was posted after branch head `859bbfa`, dry-ran the linked Cloud push (exactly one pending file), then applied migration `20260722185637_create_note_transaction_functions.sql` unchanged. Cloud validation exposed one test-only timestamp spelling assumption (`Z` versus equivalent `+00:00`); the integration assertion now compares timestamp instants.
+**Verification performed:** Cloud history is 18/18 and includes version `20260722185637`. Catalog readback confirms both RPCs are volatile `SECURITY INVOKER`, pin an empty `search_path`, grant `EXECUTE` only to `authenticated`, and deny `anon`/`service_role`. The full Cloud suite passes (14 files, 31 tests), including atomic rollback, title dual-write, forged-owner rejection, cross-user denial, soft delete, and restore. One later full-suite run hit the previously documented unrelated `PGRST303: JWT issued at future` tags flake; the immediate full rerun passed 31/31. Typecheck, lint, format, 153 unit tests, production build, high-severity dependency audit, and `git diff --check` pass. Security advisors report the pre-existing leaked-password-protection warning; performance advisors report only pre-existing informational FK/index notices already dispositioned by ADR-17—no NOTE-01 function finding.
+**Outstanding Work:** Push this final test adjustment, wait for every required PR check to pass, then mark PR #87 ready. Claude performs the final review/merge and review-record PR. NOTE-02/03 remain blocked until NOTE-01 merges.
+**Known Bugs:** None.
+**Risks:** The existing intermittent Cloud JWT clock-skew flake remains outside NOTE-01; it was disclosed rather than hidden. The two moderate transitive PostCSS audit notices remain, with only an invalid breaking automated downgrade offered; the high-severity gate passes.
+**Suggested Next Task:** Final reviewer merges NOTE-01 after green CI; then NOTE-02 or NOTE-03 becomes claimable.
+**Estimated Context Needed:** This entry, PR #87, Claude's approval comment, and the NOTE-01 integration test.
+
+## 2026-07-23 — Codex (Backend) — NOTE-01 dependency gate repair
+
+**Session Date:** 2026-07-23
+**Agent:** Codex, backend implementation role
+**Objective:** Clear PR #87's newly failing dependency-audit gate and re-evaluate the remaining migration failure.
+**Files Modified:** `package.json`, `package-lock.json`, `.ai/TASK_QUEUE.md`, `docs/PROJECT_STATE.md`, `docs/AI_HANDOFF.md`.
+**Files Added:** None.
+**Architecture Decisions:** None. Next.js remains on the documented 15.x stack.
+**Implementation:** Upgraded Next.js from 15.5.20 to the patched 15.5.21 release after GitHub published high-severity Server Action advisories affecting earlier 15.x versions. The lockfile updates only the matching Next.js packages. The migration replay itself now passes; its remaining failure is the expected CI-04 repo↔Cloud drift because migration `20260722185637` is still unapplied.
+**Verification performed:** `npm audit --audit-level=high`, typecheck, lint, format, all 153 unit tests, production build, and `git diff --check` pass. Audit retains two moderate PostCSS findings whose automated fix proposes an invalid breaking downgrade; no high findings remain. The initial sandboxed build could not reach Google Fonts, then passed outside the network sandbox.
+**Outstanding Work:** Independent reviewer approval of the exact NOTE-01 migration is still required by the merged PR #86 workflow. After approval, apply that exact file to dev Cloud, run Cloud integrations/advisors/catalog checks, confirm all PR checks green, and only then mark PR #87 ready for review.
+**Known Bugs:** None.
+**Risks:** The draft PR cannot have a green migration check before reviewer-approved Cloud application; applying first would violate the documented review-before-apply ordering.
+**Suggested Next Task:** Review and approve the NOTE-01 SQL, then complete its Cloud verification. NOTE-02/03 remain blocked.
+**Estimated Context Needed:** This entry, PR #87, PR #86's workflow ruling, and migration `20260722185637`.
+
+## 2026-07-23 — Codex (Backend) — NOTE-01 CI grant fix
+
+**Session Date:** 2026-07-23
+**Agent:** Codex, backend implementation role
+**Objective:** Diagnose and fix PR #87's failed migration-replay check without applying the unreviewed NOTE-01 migration to Cloud.
+**Files Modified:** `supabase/migrations/20260722185637_create_note_transaction_functions.sql`, `.ai/TASK_QUEUE.md`, `docs/PROJECT_STATE.md`, `docs/AI_HANDOFF.md`.
+**Files Added:** None.
+**Architecture Decisions:** None.
+**Implementation:** GitHub Actions showed that all migrations replayed, then the function least-privilege assertion failed. Live read-only catalog inspection confirmed Supabase's `postgres` default routine ACL grants `EXECUTE` to `anon`, `authenticated`, and `service_role`. The migration already revoked `PUBLIC` and `anon`; it now explicitly revokes `service_role` from both transactional note functions before granting only `authenticated`.
+**Verification performed:** The failed Actions job and exact failing step were inspected. Live Cloud role/default-ACL state was read without schema changes. `git diff --check` passes; the existing migration-replay assertion remains the regression check. No local database or Docker resources were used.
+**Outstanding Work:** Push the fix and let PR #87 rerun CI. Independent SQL review, exact dev-Cloud migration application, Cloud integration tests, advisors, and drift verification remain required before the draft PR becomes ready.
+**Known Bugs:** None in the fix. PR checks have not yet rerun at the time of this entry.
+**Risks:** The migration is intentionally unapplied pending review, so Cloud drift is expected until the reviewed file is applied.
+**Suggested Next Task:** Complete NOTE-01 review/application/verification; do not start NOTE-02 or NOTE-03 before NOTE-01 merges.
+**Estimated Context Needed:** This entry, PR #87, the NOTE-01 migration, and the migration-replay function ACL assertion.
+
+## 2026-07-23 — Codex (Backend) — NOTE-01 ready for SQL review
+
+**Session Date:** 2026-07-23
+**Agent:** Codex, backend implementation role
+**Objective:** Implement NOTE-01 only: typed note CRUD queries with atomic `knowledge_objects` + `notes` writes.
+**Files Modified:** `docs/04_DATABASE.md`, `tools/ci/replay-supabase-migrations.sh`, `.ai/TASK_QUEUE.md`, `docs/PROJECT_STATE.md`, `docs/AI_HANDOFF.md`.
+**Files Added:** `supabase/migrations/20260722185637_create_note_transaction_functions.sql`, `src/features/notes/types.ts`, `src/features/notes/note-repository.ts`, `src/features/notes/note-repository.test.ts`, `tests/integration/note-repository.integration.test.ts`.
+**Architecture Decisions:** None. Followed the architect's merged PR #86 ruling: `SECURITY INVOKER` RPCs preserve caller RLS; review precedes dev-Cloud application; CI-04 may remain red until the exact reviewed migration is applied.
+**Implementation:** Added authenticated-only `create_note` and `update_note` functions. Create uses one data-modifying CTE; update performs both title writes and all subtype changes in one PL/pgSQL transaction, returning no row when RLS/nonexistence hides the envelope and raising on a missing subtype so the envelope update rolls back. `PUBLIC`, `anon`, and `service_role` cannot execute either function. Added feature-local record/input types and `NoteRepository` methods for create, get, partial update (including explicit null folder clears), soft delete, and restore. Reads and mutations filter by both `owner_id` and object type in addition to RLS. Migration replay now asserts both functions exist, remain `SECURITY INVOKER`, and expose only the intended execute grant.
+**Verification performed:** Current Supabase docs/MCP guidance rechecked; live read-only role inspection confirmed `service_role` does not inherit `authenticated`. Focused repository tests pass (8/8); full unit suite passes (40 files, 153/153); typecheck, lint, Prettier, production build, shell syntax, and `git diff --check` pass. The high-severity dependency-audit gate passes; npm reports the two pre-existing moderate PostCSS advisories through Next.js, with only a breaking forced downgrade offered. Cloud integration coverage is committed for atomic create/update rollback, title dual-write, owner CRUD, forged-owner rejection, and cross-user read/update denial, but intentionally not run because migration `20260722185637` is not yet reviewed/applied.
+**Outstanding Work:** Independent reviewer reads and approves the migration SQL. After approval, apply the exact migration to shared dev Cloud via Supabase MCP, run `npm run test:integration`, verify migration history + function ACL/security + advisors, rerun final gates, mark the PR ready, then merge. Do not edit the migration after Cloud application; corrections become a new forward migration.
+**Known Bugs:** None.
+**Risks:** CI-04's Cloud drift job is expected to remain red until the reviewed migration is applied. Restore currently relies on PostgREST returning the embedded 1:1 subtype after an update; the committed Cloud integration test verifies that real behavior after application.
+**Suggested Next Task:** Review NOTE-01. NOTE-02/03 remain blocked until it merges.
+**Estimated Context Needed:** This entry, PR #86's architect handoff, the new migration, `note-repository.ts`, and `note-repository.integration.test.ts`.
+
 ## 2026-07-23 — Claude (Architect) — NOTE-01 migration-workflow question resolved (no CI change)
 
 **Session Date:** 2026-07-23
