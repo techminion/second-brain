@@ -20,8 +20,8 @@ Promoted 2026-07-24 by the architect role after Sprint 3 closed (all rows Done);
 
 | ID | Title | Priority | Cx | Depends on | Owner | Status | Milestone | Acceptance criteria |
 |---|---|---|---|---|---|---|---|---|
-| NOTE-04 | `NoteService.update` — title dual-write invariant | P0 | M | NOTE-02 | Claude | Claimed (Claude) | M1 | [05_API §4](../docs/05_API.md#4-noteservice) update contract; link reconciliation + rename propagation deferred to LINK-04 per [12_TASKS](../docs/12_TASKS.md) |
-| NOTE-05 | `NoteService.delete` (soft) + `restore` | P1 | S | NOTE-02 | backend | Queued | M1 | FR-NOTE-4, FR-KO-3; delete → `void`, restore → `Note`, `NotFoundError` outside retention window |
+| NOTE-04 | `NoteService.update` — title dual-write invariant | P0 | M | NOTE-02 | Claude | Done | M1 | Merged via PR #103 (`514d491`) — 05_API §4 update contract over the NOTE-01 `update_note` RPC; 20th migration adds `deleted_at is null` predicate so trash is refused atomically (mutate-then-reject race eliminated); `folderId: null` moves to root; ValidationError before data access; NotFoundError uniform per ADR-26. Link reconciliation + rename propagation deferred to LINK-04 (disclosed). 213 units + 31 Cloud integrations green incl. live trash-edit refusal. Also fixed the drifted `accountsDeleted` assertion in the Cloud-gated purge suite |
+| NOTE-05 | `NoteService.delete` (soft) + `restore` | P1 | S | NOTE-02 | Claude | In Review | M1 | FR-NOTE-4, FR-KO-3; delete → `void`, restore → `Note`, `NotFoundError` outside retention window |
 | NOTE-06 | `NoteService.list` with cursor pagination + folder filter | P1 | M | NOTE-01 | backend | Queued | M1 | [05_API §4](../docs/05_API.md#4-noteservice) `Paginated<Note>` contract |
 | EDIT-02 | Markdown serialization round-trip, loss-free (FR-NOTE-2) | P0 | L | EDIT-01 | frontend | Queued | M1 | EDIT-01 reviewer flag: validate the beta `@tiptap/markdown` against a real corpus; keep a fallback if lossy |
 | EDIT-03 | Round-trip property test suite (markdown corpus) | P1 | M | EDIT-02 | frontend | Queued | M1 | representative corpus survives edit-save-reload |

@@ -88,9 +88,63 @@ describe("NoteRepository Cloud integration", () => {
     const trashedNote = await repositoryA.getNote(userA.id, note.id);
     expect(trashedNote?.title).toBe("Updated title");
 
+    // NOTE-05: a repeat delete must not refresh deleted_at (would restart the
+    // ADR-18 purge clock).
     await expect(
-      repositoryA.restoreNote(userA.id, note.id, new Date().toISOString()),
+      repositoryA.softDeleteNote(userA.id, note.id, new Date().toISOString()),
+    ).resolves.toBe(false);
+    const unchangedTrash = await repositoryA.getNote(userA.id, note.id);
+    expect(Date.parse(unchangedTrash?.deletedAt ?? "")).toBe(Date.parse(deletedAt));
+
+    const windowStart = new Date();
+    windowStart.setUTCDate(windowStart.getUTCDate() - 30);
+
+    await expect(
+      repositoryA.restoreNote(
+        userA.id,
+        note.id,
+        new Date().toISOString(),
+        windowStart.toISOString(),
+      ),
     ).resolves.toMatchObject({ deletedAt: null, id: note.id });
+
+    // NOTE-05: restoring an active note is a NotFound-shaped null, not a no-op write.
+    await expect(
+      repositoryA.restoreNote(
+        userA.id,
+        note.id,
+        new Date().toISOString(),
+        windowStart.toISOString(),
+      ),
+    ).resolves.toBeNull();
+
+    // NOTE-05: trash older than the retention window is not restorable.
+    const expiredDeletedAt = new Date();
+    expiredDeletedAt.setUTCDate(expiredDeletedAt.getUTCDate() - 31);
+    const { error: backdateError } = await userA.client
+      .from("knowledge_objects")
+      .update({ deleted_at: expiredDeletedAt.toISOString() })
+      .eq("id", note.id)
+      .eq("owner_id", userA.id);
+    expect(backdateError).toBeNull();
+
+    await expect(
+      repositoryA.restoreNote(
+        userA.id,
+        note.id,
+        new Date().toISOString(),
+        windowStart.toISOString(),
+      ),
+    ).resolves.toBeNull();
+
+    // Cleanup: the backdated row is expired trash for the shared harness user;
+    // remove it so the retention-purge suite's counts are not polluted.
+    const { error: cleanupError } = await userA.client
+      .from("knowledge_objects")
+      .delete()
+      .eq("id", note.id)
+      .eq("owner_id", userA.id);
+    expect(cleanupError).toBeNull();
   });
 
   it("rolls back the envelope when a subtype create or update fails", async () => {

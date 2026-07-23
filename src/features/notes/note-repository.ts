@@ -155,12 +155,15 @@ export class NoteRepository {
   }
 
   async softDeleteNote(userId: string, noteId: string, deletedAt: string): Promise<boolean> {
+    // The deleted_at guard keeps a repeat delete from refreshing the timestamp,
+    // which would silently restart the retention-purge clock (ADR-18).
     const { data, error } = await this.client
       .from("knowledge_objects")
       .update({ deleted_at: deletedAt, updated_at: deletedAt })
       .eq("id", noteId)
       .eq("owner_id", userId)
       .eq("type", "note")
+      .is("deleted_at", null)
       .select("id")
       .maybeSingle();
 
@@ -175,13 +178,18 @@ export class NoteRepository {
     userId: string,
     noteId: string,
     restoredAt: string,
+    windowStart: string,
   ): Promise<NoteRecord | null> {
+    // Only rows soft-deleted within the retention window are restorable;
+    // active notes and expired trash both fall through to null.
     const { data, error } = await this.client
       .from("knowledge_objects")
       .update({ deleted_at: null, updated_at: restoredAt })
       .eq("id", noteId)
       .eq("owner_id", userId)
       .eq("type", "note")
+      .not("deleted_at", "is", null)
+      .gte("deleted_at", windowStart)
       .select(noteSelect)
       .maybeSingle();
 

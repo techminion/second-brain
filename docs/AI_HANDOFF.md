@@ -21,6 +21,21 @@ Estimated Context Needed:
 
 ---
 
+## 2026-07-24 — Claude — NOTE-05 (`NoteService.delete` + `restore`) ready for review
+
+**Session Date:** 2026-07-24
+**Agent:** Claude, implementer (auto mode; Sprint 4 scope user-ratified this session)
+**Objective:** Implement NOTE-05 over the NOTE-01 repository: soft delete + retention-window-guarded restore.
+**Files Modified:** `src/features/notes/note-repository.ts` (softDeleteNote gains `is("deleted_at", null)`; restoreNote gains `not null` + `gte(windowStart)` filters and a `windowStart` parameter), `src/features/notes/note-service.ts` (+`delete`/`restore`; `retentionWindowStart` helper importing the shared `retentionWindowDays`), `src/features/notes/note-service.test.ts` (+4 tests, fake timers pin the window math), `src/features/notes/note-repository.test.ts` (builder mock + guard assertions), `tests/integration/note-repository.integration.test.ts` (live: repeat-delete refusal with unchanged `deleted_at`; restore-active refusal; expired-trash refusal via backdated row; cleanup so the shared-user purge suite isn't polluted), `.ai/TASK_QUEUE.md`, `docs/PROJECT_STATE.md`, `docs/CHANGELOG.md`, `docs/AI_HANDOFF.md`.
+**Files Added:** None (no migration — both guards are query predicates under existing RLS).
+**Architecture Decisions:** None new. The repeat-delete guard exists because refreshing `deleted_at` would silently restart the ADR-18 purge clock. Restore's window check reuses `retentionWindowDays` from `@/features/retention/constants` (cross-feature constant import — legal under the boundary rule, which restricts only components/hooks/repositories). Restoring an active note maps to `NotFoundError` (not in trash), consistent with ADR-26's uniform 404.
+**Verification performed:** Full unit suite green (4 new service + 2 hardened repository tests); 31 Cloud integrations green twice consecutively (one Cloud timeout flake observed on the purge suite before the cleanup landed — residue from a pre-cleanup run's backdated row; cleanup added); typecheck/lint/format clean.
+**Outstanding Work:** PR → CI → merge; then NOTE-06 (`NoteService.list`, cursor pagination + folder filter — needs the 05_API §2 `PaginationOptions`/`Paginated` shapes).
+**Known Bugs:** None.
+**Risks:** Restore semantics for a note whose folder was purged during its trash stay rely on the DB-05 `SET NULL` FK (note reappears in root) — untested here, worth a case when FOLD work starts.
+**Suggested Next Task:** NOTE-06.
+**Estimated Context Needed:** This entry, 05_API §2+§4, `note-repository.ts`, `note-service.ts`.
+
 ## 2026-07-24 — Claude — Sprint 4 promotion + NOTE-04 (`NoteService.update`)
 
 **Session Date:** 2026-07-24

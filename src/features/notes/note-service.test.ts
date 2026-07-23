@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, type Mock, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, type Mock, vi } from "vitest";
 
 import { NoteService } from "@/features/notes/note-service";
 import type {
@@ -13,6 +13,15 @@ import { NotFoundError, ValidationError } from "@/shared/lib/errors";
 interface MockNoteRepository {
   createNote: Mock<(userId: string, input: CreateNoteRecordInput) => Promise<NoteRecord>>;
   getNote: Mock<(userId: string, noteId: string) => Promise<NoteRecord | null>>;
+  restoreNote: Mock<
+    (
+      userId: string,
+      noteId: string,
+      restoredAt: string,
+      windowStart: string,
+    ) => Promise<NoteRecord | null>
+  >;
+  softDeleteNote: Mock<(userId: string, noteId: string, deletedAt: string) => Promise<boolean>>;
   updateNote: Mock<
     (userId: string, noteId: string, input: UpdateNoteRecordInput) => Promise<NoteRecord | null>
   >;
@@ -34,6 +43,8 @@ function createRepositoryMock(): MockNoteRepository {
   return {
     createNote: vi.fn(),
     getNote: vi.fn(),
+    restoreNote: vi.fn(),
+    softDeleteNote: vi.fn(),
     updateNote: vi.fn(),
   };
 }
@@ -270,6 +281,97 @@ describe("NoteService.update", () => {
 
     await expect(service.update("user-id", "note-id", { title: "New" })).rejects.toBeInstanceOf(
       NotFoundError,
+    );
+  });
+});
+
+describe("NoteService.delete", () => {
+  let repository: MockNoteRepository;
+  let service: NoteService;
+
+  beforeEach(() => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-07-24T12:00:00.000Z"));
+    repository = createRepositoryMock();
+    service = new NoteService(repository);
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it("soft-deletes through the repository with the current timestamp", async () => {
+    repository.softDeleteNote.mockResolvedValue(true);
+
+    await expect(service.delete("user-id", "note-id")).resolves.toBeUndefined();
+
+    expect(repository.softDeleteNote).toHaveBeenCalledWith(
+      "user-id",
+      "note-id",
+      "2026-07-24T12:00:00.000Z",
+    );
+  });
+
+  it("returns NotFoundError when the target is nonexistent, foreign-owned, or already deleted", async () => {
+    repository.softDeleteNote.mockResolvedValue(false);
+
+    await expect(service.delete("user-id", "note-id")).rejects.toEqual(
+      expect.objectContaining({
+        code: "NOT_FOUND",
+        message: "Note not found",
+        statusCode: 404,
+      }),
+    );
+  });
+});
+
+describe("NoteService.restore", () => {
+  let repository: MockNoteRepository;
+  let service: NoteService;
+
+  beforeEach(() => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-07-24T12:00:00.000Z"));
+    repository = createRepositoryMock();
+    service = new NoteService(repository);
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it("restores a trashed note within the 30-day retention window", async () => {
+    repository.restoreNote.mockResolvedValue(noteRecord);
+
+    await expect(service.restore("user-id", "note-id")).resolves.toEqual({
+      body: "Service body",
+      createdAt: noteRecord.createdAt,
+      dailyNoteDate: null,
+      folderId: "folder-id",
+      id: "note-id",
+      tags: [],
+      title: "Service note",
+      type: "note",
+      updatedAt: noteRecord.updatedAt,
+    });
+
+    expect(repository.restoreNote).toHaveBeenCalledWith(
+      "user-id",
+      "note-id",
+      "2026-07-24T12:00:00.000Z",
+      "2026-06-24T12:00:00.000Z",
+    );
+  });
+
+  it("returns NotFoundError for active notes and trash outside the retention window", async () => {
+    repository.restoreNote.mockResolvedValue(null);
+
+    await expect(service.restore("user-id", "note-id")).rejects.toEqual(
+      expect.objectContaining({
+        code: "NOT_FOUND",
+        message: "Note not found",
+        statusCode: 404,
+      }),
     );
   });
 });
