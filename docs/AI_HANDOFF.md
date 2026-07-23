@@ -21,6 +21,21 @@ Estimated Context Needed:
 
 ---
 
+## 2026-07-24 — Claude — NOTE-06 (`NoteService.list`) ready for review
+
+**Session Date:** 2026-07-24
+**Agent:** Claude, implementer (auto mode)
+**Objective:** Implement NOTE-06: cursor-paginated, folder-filterable note listing completing the Sprint 4 NOTE chain.
+**Files Modified:** `src/features/notes/types.ts` (+`ListNotesOptions`/`ListNotesKeyset`/`ListNotesRecordOptions`), `src/features/notes/note-repository.ts` (+`listNotes`: keyset `(updated_at, id) <` via quoted PostgREST `or()`, folder filter on the `notes!inner` embed incl. `is null` root filter, `deleted_at is null` always), `src/features/notes/note-service.ts` (+`list`: opaque base64url cursor codec — decoded values are shape-validated against UUID/ISO patterns before entering the `or()` string, so a forged cursor cannot inject filter syntax; limit clamped 1–100 default 50; limit+1 fetch detects the next page), unit tests (+10: paging, cursor round-trip, forged/malformed cursor rejection, clamping, folder passthrough, builder assertions), `tests/integration/note-repository.integration.test.ts` (+1 live test in an isolated folder: 2-page keyset walk, cross-user RLS empty result, soft-delete drop-out, cleanup in `finally`), queue/state/changelog/handoff docs.
+**Files Added:** None (no migration).
+**Architecture Decisions (disclosed, not invented):** the 05_API §4 list contract declares no errors, so out-of-range limits clamp and malformed cursors restart from page one instead of throwing; default 50 / max 100 page size is undocumented anywhere — recorded here as the implementation default pending a spec ripple; ordering is `updated_at desc, id desc` (newest-edited first, per FR-NOTE-6's last-edited emphasis).
+**Verification performed:** 225 units green (12 new); 32 Cloud integrations green; typecheck/lint/format clean.
+**Outstanding Work:** PR → CI → merge. NOTE-04..06 then complete the NoteService write/read surface; NOTE-07 (thin API routes) becomes dependency-ready (needs NOTE-02..06 all Done).
+**Known Bugs:** None.
+**Risks:** Cursor stability depends on the exact `updated_at` string round-tripping through the cursor; if PostgREST ever changes timestamp serialization precision, page boundaries could skip/duplicate one row (cosmetic, not data loss).
+**Suggested Next Task:** EDIT-02 (the flagged highest-risk round-trip) or SHELL-05, per the ratified Sprint 4 scope.
+**Estimated Context Needed:** This entry, 05_API §2+§4, `note-service.ts`, `note-repository.ts`.
+
 ## 2026-07-24 — Claude — NOTE-05 (`NoteService.delete` + `restore`) ready for review
 
 **Session Date:** 2026-07-24

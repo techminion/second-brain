@@ -31,6 +31,23 @@ export interface NoteRecord {
   updatedAt: string;
 }
 
+export interface ListNotesOptions {
+  folderId?: string | null;
+  cursor?: string;
+  limit?: number;
+}
+
+export interface ListNotesKeyset {
+  idBefore: string;
+  updatedAtBefore: string;
+}
+
+export interface ListNotesRecordOptions {
+  folderId?: string | null;
+  keysetBefore?: ListNotesKeyset;
+  limit: number;
+}
+
 export interface UpdateNoteInput {
   body?: string;
   folderId?: string | null;

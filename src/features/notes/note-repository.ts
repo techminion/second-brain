@@ -2,6 +2,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 
 import type {
   CreateNoteRecordInput,
+  ListNotesRecordOptions,
   NoteRecord,
   UpdateNoteRecordInput,
 } from "@/features/notes/types";
@@ -152,6 +153,40 @@ export class NoteRepository {
     }
 
     return data ? mapNoteRpcRow(data as NoteRpcRow) : null;
+  }
+
+  async listNotes(userId: string, options: ListNotesRecordOptions): Promise<NoteRecord[]> {
+    let query = this.client
+      .from("knowledge_objects")
+      .select(noteSelect)
+      .eq("owner_id", userId)
+      .eq("type", "note")
+      .is("deleted_at", null);
+
+    if (options.folderId !== undefined) {
+      query =
+        options.folderId === null
+          ? query.is("notes.folder_id", null)
+          : query.eq("notes.folder_id", options.folderId);
+    }
+
+    if (options.keysetBefore) {
+      const { idBefore, updatedAtBefore } = options.keysetBefore;
+      query = query.or(
+        `updated_at.lt."${updatedAtBefore}",and(updated_at.eq."${updatedAtBefore}",id.lt."${idBefore}")`,
+      );
+    }
+
+    const { data, error } = await query
+      .order("updated_at", { ascending: false })
+      .order("id", { ascending: false })
+      .limit(options.limit);
+
+    if (error) {
+      throw new Error("Unable to list notes", { cause: error });
+    }
+
+    return (data as NoteQueryRow[]).map(mapNoteQueryRow);
   }
 
   async softDeleteNote(userId: string, noteId: string, deletedAt: string): Promise<boolean> {

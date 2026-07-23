@@ -147,6 +147,55 @@ describe("NoteRepository Cloud integration", () => {
     expect(cleanupError).toBeNull();
   });
 
+  it("pages active notes newest-first with keyset cursors and folder filtering", async () => {
+    const { data: folder, error: folderError } = await userA.client
+      .from("folders")
+      .insert({ name: `List integration ${randomUUID()}`, owner_id: userA.id })
+      .select("id")
+      .single();
+    expect(folderError).toBeNull();
+    const folderId = (folder as { id: string }).id;
+
+    const created: string[] = [];
+    try {
+      for (const label of ["first", "second", "third"]) {
+        const note = await repositoryA.createNote(userA.id, {
+          body: `List body ${label}`,
+          dailyNoteDate: null,
+          folderId,
+          title: `List ${label}`,
+        });
+        created.push(note.id);
+      }
+
+      const pageOne = await repositoryA.listNotes(userA.id, { folderId, limit: 2 });
+      expect(pageOne.map((record) => record.title)).toEqual(["List third", "List second"]);
+
+      const keyset = pageOne[1];
+      const pageTwo = await repositoryA.listNotes(userA.id, {
+        folderId,
+        keysetBefore: { idBefore: keyset.id, updatedAtBefore: keyset.updatedAt },
+        limit: 2,
+      });
+      expect(pageTwo.map((record) => record.title)).toEqual(["List first"]);
+
+      // RLS: the other user sees none of this folder's notes.
+      await expect(repositoryB.listNotes(userB.id, { folderId, limit: 10 })).resolves.toEqual([]);
+
+      // Soft-deleted notes drop out of listings (FR-KO-3).
+      await expect(
+        repositoryA.softDeleteNote(userA.id, created[2] ?? "", new Date().toISOString()),
+      ).resolves.toBe(true);
+      const afterDelete = await repositoryA.listNotes(userA.id, { folderId, limit: 10 });
+      expect(afterDelete.map((record) => record.title)).toEqual(["List second", "List first"]);
+    } finally {
+      if (created.length > 0) {
+        await userA.client.from("knowledge_objects").delete().in("id", created);
+      }
+      await userA.client.from("folders").delete().eq("id", folderId);
+    }
+  });
+
   it("rolls back the envelope when a subtype create or update fails", async () => {
     const invalidFolderId = randomUUID();
     const rejectedTitle = `Rejected create ${randomUUID()}`;
