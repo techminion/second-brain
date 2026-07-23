@@ -76,7 +76,10 @@ describe("NoteRepository Cloud integration", () => {
 
     const deletedAt = new Date().toISOString();
     await expect(repositoryA.softDeleteNote(userA.id, note.id, deletedAt)).resolves.toBe(true);
-    await expect(repositoryA.getNote(userA.id, note.id)).resolves.toMatchObject({ deletedAt });
+    const softDeletedNote = await repositoryA.getNote(userA.id, note.id);
+
+    expect(softDeletedNote?.deletedAt).not.toBeNull();
+    expect(Date.parse(softDeletedNote?.deletedAt ?? "")).toBe(Date.parse(deletedAt));
     await expect(
       repositoryA.restoreNote(userA.id, note.id, new Date().toISOString()),
     ).resolves.toMatchObject({ deletedAt: null, id: note.id });

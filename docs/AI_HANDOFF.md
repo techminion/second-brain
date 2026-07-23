@@ -21,6 +21,22 @@ Estimated Context Needed:
 
 ---
 
+## 2026-07-23 — Codex (Backend) — NOTE-01 Cloud application validated
+
+**Session Date:** 2026-07-23
+**Agent:** Codex, backend implementation role
+**Objective:** Apply Claude's approved NOTE-01 migration to development Cloud, validate it end-to-end, and prepare PR #87 for final review.
+**Files Modified:** `tests/integration/note-repository.integration.test.ts`, `.ai/TASK_QUEUE.md`, `docs/PROJECT_STATE.md`, `docs/AI_HANDOFF.md`.
+**Files Added:** None.
+**Architecture Decisions:** None. The official MCP migration endpoint cannot accept a fixed migration version, so the exact reviewed timestamped file was deployed with remote `supabase db push`; Supabase MCP remained the inspection/advisor path. No Docker or local database was used.
+**Implementation:** Verified Claude's approval comment was posted after branch head `859bbfa`, dry-ran the linked Cloud push (exactly one pending file), then applied migration `20260722185637_create_note_transaction_functions.sql` unchanged. Cloud validation exposed one test-only timestamp spelling assumption (`Z` versus equivalent `+00:00`); the integration assertion now compares timestamp instants.
+**Verification performed:** Cloud history is 18/18 and includes version `20260722185637`. Catalog readback confirms both RPCs are volatile `SECURITY INVOKER`, pin an empty `search_path`, grant `EXECUTE` only to `authenticated`, and deny `anon`/`service_role`. The full Cloud suite passes (14 files, 31 tests), including atomic rollback, title dual-write, forged-owner rejection, cross-user denial, soft delete, and restore. One later full-suite run hit the previously documented unrelated `PGRST303: JWT issued at future` tags flake; the immediate full rerun passed 31/31. Typecheck, lint, format, 153 unit tests, production build, high-severity dependency audit, and `git diff --check` pass. Security advisors report the pre-existing leaked-password-protection warning; performance advisors report only pre-existing informational FK/index notices already dispositioned by ADR-17—no NOTE-01 function finding.
+**Outstanding Work:** Push this final test adjustment, wait for every required PR check to pass, then mark PR #87 ready. Claude performs the final review/merge and review-record PR. NOTE-02/03 remain blocked until NOTE-01 merges.
+**Known Bugs:** None.
+**Risks:** The existing intermittent Cloud JWT clock-skew flake remains outside NOTE-01; it was disclosed rather than hidden. The two moderate transitive PostCSS audit notices remain, with only an invalid breaking automated downgrade offered; the high-severity gate passes.
+**Suggested Next Task:** Final reviewer merges NOTE-01 after green CI; then NOTE-02 or NOTE-03 becomes claimable.
+**Estimated Context Needed:** This entry, PR #87, Claude's approval comment, and the NOTE-01 integration test.
+
 ## 2026-07-23 — Codex (Backend) — NOTE-01 dependency gate repair
 
 **Session Date:** 2026-07-23

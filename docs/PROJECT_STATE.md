@@ -72,7 +72,7 @@ Done: Sprint 0 (governance), Sprint 1 (repo & tooling foundation — 21 tasks), 
 
 ## In Progress
 
-- **NOTE-01 (In Review, Codex):** typed `NoteRepository` CRUD is implemented with authenticated-only, `SECURITY INVOKER` `create_note`/`update_note` RPCs for atomic envelope+subtype writes. Eight focused units and the full 153-test unit suite pass; migration replay asserts function presence, invoker security, and least-privilege grants. PR #87's replay identified Supabase's default `service_role` routine grant, now explicitly revoked from both RPCs. The newly failing dependency gate is repaired by Next.js 15.5.21, with no high-severity audit findings remaining. Migration `20260722185637` remains intentionally unapplied until SQL review.
+- **NOTE-01 (In Review, Codex):** typed `NoteRepository` CRUD is implemented with authenticated-only, `SECURITY INVOKER` `create_note`/`update_note` RPCs for atomic envelope+subtype writes. Claude approved the exact SQL; migration `20260722185637` is live on dev Cloud with 18/18 history parity, verified function ACL/security, and a green 14-file / 31-test Cloud suite. Eight focused units and all 153 unit tests pass; replay guards function presence, invoker security, and least privilege. Next.js is patched to 15.5.21 with no high-severity audit findings.
 
 ## Blocked
 
