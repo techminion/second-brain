@@ -76,10 +76,10 @@ export function CommandPalette() {
   return (
     <Dialog.Root onOpenChange={setOpen} open={open}>
       <Dialog.Portal>
-        <Dialog.Overlay className="fixed inset-0 z-50 bg-foreground/20" />
+        <Dialog.Overlay className="bg-foreground/20 fixed inset-0 z-50" />
         <Dialog.Content
           aria-describedby={undefined}
-          className="fixed left-1/2 top-1/4 z-50 w-full max-w-lg -translate-x-1/2 rounded-lg border bg-background shadow-lg"
+          className="bg-background fixed top-1/4 left-1/2 z-50 w-full max-w-lg -translate-x-1/2 rounded-lg border shadow-lg"
         >
           <Dialog.Title className="sr-only">Command palette</Dialog.Title>
           <div className="border-b p-3">
@@ -91,7 +91,7 @@ export function CommandPalette() {
               aria-haspopup="listbox"
               aria-label="Search commands"
               autoFocus
-              className="w-full bg-transparent text-sm outline-none placeholder:text-muted-foreground"
+              className="placeholder:text-muted-foreground w-full bg-transparent text-sm outline-none"
               onChange={(e) => setQuery(e.target.value)}
               onKeyDown={handleInputKeyDown}
               placeholder="Search commands…"
@@ -122,13 +122,13 @@ export function CommandPalette() {
                 >
                   <span>{cmd.label}</span>
                   {cmd.shortcut && (
-                    <span className="ml-auto text-xs text-muted-foreground">{cmd.shortcut}</span>
+                    <span className="text-muted-foreground ml-auto text-xs">{cmd.shortcut}</span>
                   )}
                 </li>
               ))}
             </ul>
           ) : (
-            <p className="p-4 text-center text-sm text-muted-foreground">No commands found.</p>
+            <p className="text-muted-foreground p-4 text-center text-sm">No commands found.</p>
           )}
         </Dialog.Content>
       </Dialog.Portal>
