@@ -1,12 +1,21 @@
 import { beforeEach, describe, expect, it, type Mock, vi } from "vitest";
 
 import { NoteService } from "@/features/notes/note-service";
-import type { CreateNoteInput, CreateNoteRecordInput, NoteRecord } from "@/features/notes/types";
+import type {
+  CreateNoteInput,
+  CreateNoteRecordInput,
+  NoteRecord,
+  UpdateNoteInput,
+  UpdateNoteRecordInput,
+} from "@/features/notes/types";
 import { NotFoundError, ValidationError } from "@/shared/lib/errors";
 
 interface MockNoteRepository {
   createNote: Mock<(userId: string, input: CreateNoteRecordInput) => Promise<NoteRecord>>;
   getNote: Mock<(userId: string, noteId: string) => Promise<NoteRecord | null>>;
+  updateNote: Mock<
+    (userId: string, noteId: string, input: UpdateNoteRecordInput) => Promise<NoteRecord | null>
+  >;
 }
 
 const noteRecord: NoteRecord = {
@@ -25,6 +34,7 @@ function createRepositoryMock(): MockNoteRepository {
   return {
     createNote: vi.fn(),
     getNote: vi.fn(),
+    updateNote: vi.fn(),
   };
 }
 
@@ -153,5 +163,113 @@ describe("NoteService.get", () => {
     });
 
     await expect(service.get("user-id", "note-id")).rejects.toBeInstanceOf(NotFoundError);
+  });
+});
+
+describe("NoteService.update", () => {
+  let repository: MockNoteRepository;
+  let service: NoteService;
+
+  beforeEach(() => {
+    repository = createRepositoryMock();
+    repository.updateNote.mockResolvedValue(noteRecord);
+    service = new NoteService(repository);
+  });
+
+  it("updates a note through the transactional repository contract", async () => {
+    repository.updateNote.mockResolvedValue({
+      ...noteRecord,
+      body: "Updated body",
+      title: "Updated title",
+    });
+
+    await expect(
+      service.update("user-id", "note-id", { body: "Updated body", title: "Updated title" }),
+    ).resolves.toEqual({
+      body: "Updated body",
+      createdAt: noteRecord.createdAt,
+      dailyNoteDate: null,
+      folderId: "folder-id",
+      id: "note-id",
+      tags: [],
+      title: "Updated title",
+      type: "note",
+      updatedAt: noteRecord.updatedAt,
+    });
+
+    expect(repository.updateNote).toHaveBeenCalledWith("user-id", "note-id", {
+      body: "Updated body",
+      folderId: undefined,
+      title: "Updated title",
+    });
+  });
+
+  it("passes an explicit null folder through to move the note to root", async () => {
+    repository.updateNote.mockResolvedValue({ ...noteRecord, folderId: null });
+
+    await service.update("user-id", "note-id", { folderId: null });
+
+    expect(repository.updateNote).toHaveBeenCalledWith("user-id", "note-id", {
+      body: undefined,
+      folderId: null,
+      title: undefined,
+    });
+  });
+
+  it("leaves omitted fields undefined so the repository does not touch them", async () => {
+    await service.update("user-id", "note-id", { title: "Only the title" });
+
+    expect(repository.updateNote).toHaveBeenCalledWith("user-id", "note-id", {
+      body: undefined,
+      folderId: undefined,
+      title: "Only the title",
+    });
+  });
+
+  it("rejects an empty title before data access", async () => {
+    await expect(service.update("user-id", "note-id", { title: "" })).rejects.toEqual(
+      expect.objectContaining({
+        code: "VALIDATION_ERROR",
+        message: "Title must not be empty",
+        statusCode: 400,
+      }),
+    );
+
+    expect(repository.updateNote).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    ["title", { title: 7 }],
+    ["body", { body: 7 }],
+    ["folder id", { folderId: 7 }],
+  ])("rejects a non-string %s before data access", async (_field, invalidInput) => {
+    await expect(
+      service.update("user-id", "note-id", invalidInput as unknown as UpdateNoteInput),
+    ).rejects.toBeInstanceOf(ValidationError);
+
+    expect(repository.updateNote).not.toHaveBeenCalled();
+  });
+
+  it("returns NotFoundError when the target is nonexistent, foreign-owned, or soft-deleted", async () => {
+    repository.updateNote.mockResolvedValue(null);
+
+    await expect(service.update("user-id", "note-id", { title: "New" })).rejects.toEqual(
+      expect.objectContaining({
+        code: "NOT_FOUND",
+        message: "Note not found",
+        statusCode: 404,
+      }),
+    );
+  });
+
+  it("defensively rejects a record that still carries deletedAt", async () => {
+    repository.updateNote.mockResolvedValue({
+      ...noteRecord,
+      deletedAt: "2026-07-23T06:00:00.000Z",
+    });
+
+    await expect(service.update("user-id", "note-id", { title: "New" })).rejects.toBeInstanceOf(
+      NotFoundError,
+    );
   });
 });

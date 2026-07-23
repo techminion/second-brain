@@ -21,6 +21,22 @@ Estimated Context Needed:
 
 ---
 
+## 2026-07-24 — Claude — Sprint 4 promotion + NOTE-04 (`NoteService.update`)
+
+**Session Date:** 2026-07-24
+**Agent:** Claude, architect + implementer (auto mode, user-directed review round first)
+**Objective:** Review the Sprint 3 auto-mode merges, promote Sprint 4, implement NOTE-04.
+**Review findings (SHELL-04, recorded in the queue for SHELL-05):** unused `inputRef`; `e.key === "k"` misses Caps-Lock `"K"`; no `scrollIntoView` past the listbox fold; palette enter/exit animation owed to 10_DESIGN §9 (lint rule blocks Radix `data-[state]` variants). PostCSS pin re-verified clean.
+**Files Modified:** `.ai/TASK_QUEUE.md` (Sprint 4 promoted: NOTE-04..06, EDIT-02/03, SHELL-05, CI-06/08, SHELL-06/08/09 P2), `src/features/notes/note-service.ts` (+`update`), `src/features/notes/types.ts` (+`UpdateNoteInput`), `src/features/notes/note-service.test.ts` (+8 update tests), `tests/integration/note-repository.integration.test.ts` (trash-edit refusal case), `tests/integration/retention-purge.integration.test.ts` (AUTH-11 `accountsDeleted` assertion fix — the Cloud-gated suite had drifted; it does not run in CI), `docs/PROJECT_STATE.md`, `docs/AI_HANDOFF.md`, `docs/CHANGELOG.md`.
+**Files Added:** `supabase/migrations/20260723195523_update_note_reject_soft_deleted.sql` (20th migration, applied to dev Cloud via MCP; timestamps parity-matched).
+**Architecture Decisions:** None new. The `deleted_at is null` predicate belongs in the RPC (atomic check-and-mutate) — a service-side pre-check would be a TOCTOU race that still mutates trash before rejecting. `create or replace` preserves the NOTE-01 grants. Link reconciliation + rename propagation (05_API §4 behavioral notes) are explicitly deferred to LINK-04 per the 12_TASKS NOTE-04 row.
+**Verification performed:** 213 units green (8 new); 31 Cloud integrations green including the new live trash-edit refusal; typecheck/lint/format clean.
+**Outstanding Work:** NOTE-04 PR through CI → review → merge; then NOTE-05 (delete/restore — note `softDeleteNote` currently refreshes `deleted_at` on an already-deleted row, which would reset the 30-day purge clock; NOTE-05 must guard that), then NOTE-06 (list).
+**Known Bugs:** None.
+**Risks:** The Cloud-gated integration suite is not in CI, so contract drift there is silent until someone runs it locally (as happened with `accountsDeleted`). CI-06 partially mitigates; consider a required cloud-integration job later.
+**Suggested Next Task:** NOTE-05.
+**Estimated Context Needed:** This entry, 05_API §4, `note-service.ts`, `note-repository.ts`.
+
 ## 2026-07-23 — Claude (auto mode) — Sprint 3 M0 closeout: AUTH-10/11/12/13 + SHELL-04
 
 **Session Date:** 2026-07-23

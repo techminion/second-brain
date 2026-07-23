@@ -75,9 +75,13 @@ Done: Sprint 0 (governance), Sprint 1 (repo & tooling foundation — 21 tasks), 
 - AUTH-13: signup → empty-shell provisioning E2E (FR-AUTH-5) — Cloud-gated Playwright: signup → assert sidebar nav + logout visible, assert no `role="alert"`. **Merged 2026-07-23** via PR #99 (`864fc81`).
 - SHELL-04: command palette (⌘K) live — `command-registry.ts` with all nine §8 shortcuts; `CommandPalette` client component: Radix Dialog, combobox + listbox ARIA, ↑↓ navigation, Enter executes, contenteditable focus guard; wired into AppShell. 15 unit tests; 204/204 green. **Merged 2026-07-23** via PR #100 (`4fcf64a`). All M0 *exit-criteria* deliverables done. 6 M0-tagged polish/test-infra tasks (SHELL-05/06/08/09, CI-06/08) deferred to Sprint 4.
 
+## Current Sprint (updated)
+
+**Sprint 4 — Note Service Completion & Editor Round-Trip** (promoted 2026-07-24; scope in [.ai/TASK_QUEUE.md](../.ai/TASK_QUEUE.md)): NOTE-04..06 (NoteService update/delete+restore/list), EDIT-02/03 (loss-free markdown round-trip — flagged highest-risk), SHELL-05 (shortcut manager, absorbs the SHELL-04 review findings), CI-06 → CI-08, with SHELL-06/08/09 as P2 fillers.
+
 ## In Progress
 
-- None. **Sprint 3 M0 exit-criteria deliverables complete** — AUTH-10/11/12/13 (account management) and SHELL-04 (command palette) all merged. The NOTE-01→02→03 backbone (repository, create, get) is live. Remaining Sprint 3: NOTE-04+ (update/delete/etc.), EDIT-01/02+. Note: 6 M0-tagged polish/test-infra tasks (SHELL-05/06/08/09, CI-06/08) are deferred to Sprint 4 — not blocking M0 functional exit criteria.
+- NOTE-04 (`NoteService.update`) in review — service update over the NOTE-01 `update_note` RPC, hardened with a `deleted_at is null` guard (20th migration) so trash rows are never mutated; link reconciliation and rename propagation stay deferred to LINK-04 per 12_TASKS. Next in chain: NOTE-05 (delete/restore), NOTE-06 (list).
 
 ## Blocked
 
@@ -111,4 +115,4 @@ Done: Sprint 0 (governance), Sprint 1 (repo & tooling foundation — 21 tasks), 
 
 ## Last Updated
 
-2026-07-23 — Claude (auto mode) completed Sprint 3's M0 exit-criteria deliverables: AUTH-10 (settings page), AUTH-11 (deleteAccount service), AUTH-12 (deletion UI), AUTH-13 (signup E2E), SHELL-04 (command palette ⌘K). All five merged green (PRs #96–#100). 204/204 unit tests pass. **M0 exit-criteria met** — account management, shell UI, and provisioning E2E verified. Remaining M0-tagged tasks (SHELL-05/06/08/09, CI-06/08 — polish and test-infra) are deferred to Sprint 4.
+2026-07-24 — Claude promoted Sprint 4 (queue: NOTE-04..06, EDIT-02/03, SHELL-05, CI-06/08 + P2 fillers), recorded the SHELL-04 review findings against SHELL-05, and opened NOTE-04 (`NoteService.update` + soft-delete guard migration). Previous update: 2026-07-23 — Claude (auto mode) completed Sprint 3's M0 exit-criteria deliverables: AUTH-10 (settings page), AUTH-11 (deleteAccount service), AUTH-12 (deletion UI), AUTH-13 (signup E2E), SHELL-04 (command palette ⌘K). All five merged green (PRs #96–#100). 204/204 unit tests pass. **M0 exit-criteria met** — account management, shell UI, and provisioning E2E verified. Remaining M0-tagged tasks (SHELL-05/06/08/09, CI-06/08 — polish and test-infra) are deferred to Sprint 4.

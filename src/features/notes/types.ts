@@ -31,6 +31,12 @@ export interface NoteRecord {
   updatedAt: string;
 }
 
+export interface UpdateNoteInput {
+  body?: string;
+  folderId?: string | null;
+  title?: string;
+}
+
 export interface UpdateNoteRecordInput {
   body?: string;
   folderId?: string | null;
