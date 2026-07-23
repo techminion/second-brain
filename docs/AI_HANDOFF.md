@@ -21,6 +21,22 @@ Estimated Context Needed:
 
 ---
 
+## 2026-07-23 — Codex (Frontend) — EDIT-01 ready for review
+
+**Session Date:** 2026-07-23
+**Agent:** Codex, frontend implementation role
+**Objective:** Implement EDIT-01 only: a Tiptap editor component with a Markdown-backed document model and live-formatting foundation.
+**Files Modified:** `package.json`, `package-lock.json`, `.ai/TASK_QUEUE.md`, `docs/PROJECT_STATE.md`, `docs/AI_HANDOFF.md`.
+**Files Added:** `src/features/editor/markdown-editor-extensions.ts`, `src/features/editor/markdown-editor-extensions.test.ts`, `src/features/editor/components/markdown-editor.tsx`, `src/features/editor/components/markdown-editor.module.css`, `src/features/editor/components/markdown-editor.test.tsx`.
+**Architecture Decisions:** None. The documented Tiptap stack and live-formatted Markdown UX govern the implementation.
+**Implementation:** Added the four official, version-aligned Tiptap 3.28 packages: React bindings, ProseMirror runtime, StarterKit, and Markdown. Added a feature-local extension set and controlled `MarkdownEditor` client component that initializes Markdown without SSR hydration rendering, emits Markdown on document updates, accepts external Markdown without feedback loops, updates editability/accessibility props, and keeps business/data access out of the UI. Feature-local CSS uses existing semantic tokens and makes the StarterKit document structure visibly live-formatted. No route, toolbar, slash menu, autosave, persistence, or unrelated abstraction was added.
+**Verification performed:** Focused editor suite passes (2 files, 5 tests): Markdown parses into Tiptap heading/bold/italic nodes, edited state serializes to Markdown, controlled prop updates do not emit changes, and editable/read-only accessibility states render correctly. Full suite passes (42 files, 158 tests); typecheck, lint, Prettier, production build, `git diff --check`, and the high-severity dependency-audit gate pass. The audit retains only the two pre-existing moderate Next.js/PostCSS findings whose automated fix is a breaking downgrade. The in-app Browser runtime was listed but not callable after tool discovery, so the existing Playwright/Chromium setup was used: at 1440×900 and 390×844, typed `# ` live-transformed into an `h1`, the controlled Markdown output became `# Live heading`, focus styling was visible, mobile had no horizontal overflow, and console/page errors were empty. The temporary QA route/script were removed.
+**Outstanding Work:** Commit, push, open the draft PR, wait for every required check to pass, mark it ready, then obtain independent Claude review/merge. EDIT-02/03/04 and later editor behaviors remain separate tasks.
+**Known Bugs:** None.
+**Risks:** Tiptap's official Markdown extension is currently beta. EDIT-02/03 explicitly own loss-free round-trip hardening and the representative corpus; this task proves the supported baseline only. The editor is intentionally not yet routed into the app (NOTE-10 owns that integration).
+**Suggested Next Task:** Independently review EDIT-01. After merge, the architect may choose among the newly unblocked EDIT tasks or the existing Sprint 3 queue.
+**Estimated Context Needed:** This entry, the EDIT-01 diff, docs/12_TASKS EDIT section, 10_DESIGN §5, and the Tiptap Markdown beta boundary.
+
 ## 2026-07-23 — Codex (Backend) — NOTE-01 Cloud application validated
 
 **Session Date:** 2026-07-23

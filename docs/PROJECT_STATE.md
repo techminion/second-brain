@@ -72,7 +72,7 @@ Done: Sprint 0 (governance), Sprint 1 (repo & tooling foundation — 21 tasks), 
 
 ## In Progress
 
-- None. NOTE-01 merged (PR #87); NOTE-02 (`NoteService.create`) and NOTE-03 (`NoteService.get`) are now unblocked and Queued.
+- EDIT-01 — Tiptap editor foundation (Codex, frontend) is in review: Tiptap 3.28 powers a controlled, SSR-safe, accessible `MarkdownEditor` with Markdown input/output and baseline semantic live formatting. Five focused tests plus real Chromium desktop/mobile interaction validation pass. EDIT-02 retains exhaustive loss-free Markdown round-trip guarantees; EDIT-04+ retain formatting polish and menus.
 
 ## Blocked
 
@@ -102,8 +102,8 @@ Done: Sprint 0 (governance), Sprint 1 (repo & tooling foundation — 21 tasks), 
 
 ## Current Branch
 
-`main`
+`feature/edit-01-tiptap-editor`
 
 ## Last Updated
 
-2026-07-23 — Reviewer (Claude) approved and merged NOTE-01 (PR #87, `7d4f44f`): the `SECURITY INVOKER` `create_note`/`update_note` RPCs were reviewed (incl. the `service_role`-revoke hardening) and the **live dev-Cloud catalog independently verified** (INVOKER, `authenticated`-only EXECUTE, 18/18 parity, advisors clean). Atomic rollback, title dual-write, and forged-owner/cross-user denial proven by the Cloud suite. NOTE-02/03 unblocked; first M1 Collect code is live
+2026-07-23 — Codex completed EDIT-01 for review: four official Tiptap 3.28 packages, a feature-local Markdown schema, and a controlled SSR-safe editor component with semantic styling and accessible read-only support. Five focused tests, 158 full units, typecheck, lint, format, build, high-severity audit, and real Chromium desktop/mobile live-formatting QA pass.
