@@ -81,7 +81,7 @@ Done: Sprint 0 (governance), Sprint 1 (repo & tooling foundation — 21 tasks), 
 
 ## In Progress
 
-- NOTE-04 (`NoteService.update`) in review — service update over the NOTE-01 `update_note` RPC, hardened with a `deleted_at is null` guard (20th migration) so trash rows are never mutated; link reconciliation and rename propagation stay deferred to LINK-04 per 12_TASKS. Next in chain: NOTE-05 (delete/restore), NOTE-06 (list).
+- NOTE-05 (`NoteService.delete` + `restore`) in review — soft delete guarded against repeat-delete refreshing `deleted_at` (would restart the ADR-18 purge clock); restore constrained to trash within the 30-day retention window (shared `retentionWindowDays` constant), refusing active notes and expired trash alike with `NotFoundError`. NOTE-04 merged (PR #103, `514d491`). Next in chain: NOTE-06 (list).
 
 ## Blocked
 
@@ -115,4 +115,4 @@ Done: Sprint 0 (governance), Sprint 1 (repo & tooling foundation — 21 tasks), 
 
 ## Last Updated
 
-2026-07-24 — Claude promoted Sprint 4 (queue: NOTE-04..06, EDIT-02/03, SHELL-05, CI-06/08 + P2 fillers), recorded the SHELL-04 review findings against SHELL-05, and opened NOTE-04 (`NoteService.update` + soft-delete guard migration). Previous update: 2026-07-23 — Claude (auto mode) completed Sprint 3's M0 exit-criteria deliverables: AUTH-10 (settings page), AUTH-11 (deleteAccount service), AUTH-12 (deletion UI), AUTH-13 (signup E2E), SHELL-04 (command palette ⌘K). All five merged green (PRs #96–#100). 204/204 unit tests pass. **M0 exit-criteria met** — account management, shell UI, and provisioning E2E verified. Remaining M0-tagged tasks (SHELL-05/06/08/09, CI-06/08 — polish and test-infra) are deferred to Sprint 4.
+2026-07-24 — NOTE-04 merged (PR #103): `NoteService.update` + the `update_note` soft-delete guard (20th migration, Cloud-applied). NOTE-05 (delete/restore with purge-clock and retention-window guards) opened for review. Sprint 4 scope user-ratified. Previous update: 2026-07-23 — Claude (auto mode) completed Sprint 3's M0 exit-criteria deliverables: AUTH-10 (settings page), AUTH-11 (deleteAccount service), AUTH-12 (deletion UI), AUTH-13 (signup E2E), SHELL-04 (command palette ⌘K). All five merged green (PRs #96–#100). 204/204 unit tests pass. **M0 exit-criteria met** — account management, shell UI, and provisioning E2E verified. Remaining M0-tagged tasks (SHELL-05/06/08/09, CI-06/08 — polish and test-infra) are deferred to Sprint 4.

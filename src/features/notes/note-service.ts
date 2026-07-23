@@ -1,8 +1,18 @@
 import { NoteRepository } from "@/features/notes/note-repository";
 import type { CreateNoteInput, Note, NoteRecord, UpdateNoteInput } from "@/features/notes/types";
+import { retentionWindowDays } from "@/features/retention/constants";
 import { NotFoundError, ValidationError } from "@/shared/lib/errors";
 
-type NoteRepositoryContract = Pick<NoteRepository, "createNote" | "getNote" | "updateNote">;
+type NoteRepositoryContract = Pick<
+  NoteRepository,
+  "createNote" | "getNote" | "restoreNote" | "softDeleteNote" | "updateNote"
+>;
+
+function retentionWindowStart(reference: Date): string {
+  const windowStart = new Date(reference);
+  windowStart.setUTCDate(windowStart.getUTCDate() - retentionWindowDays);
+  return windowStart.toISOString();
+}
 
 function validateCreateInput(input: CreateNoteInput): void {
   if (typeof input.title !== "string") {
@@ -98,6 +108,30 @@ export class NoteService {
     // The update_note RPC refuses nonexistent, foreign-owned, and soft-deleted
     // targets alike (ADR-26); deletedAt is re-checked defensively.
     if (!record || record.deletedAt !== null) {
+      throw new NotFoundError("Note not found");
+    }
+
+    return mapNote(record);
+  }
+
+  async delete(userId: string, noteId: string): Promise<void> {
+    const deleted = await this.repository.softDeleteNote(userId, noteId, new Date().toISOString());
+
+    if (!deleted) {
+      throw new NotFoundError("Note not found");
+    }
+  }
+
+  async restore(userId: string, noteId: string): Promise<Note> {
+    const now = new Date();
+    const record = await this.repository.restoreNote(
+      userId,
+      noteId,
+      now.toISOString(),
+      retentionWindowStart(now),
+    );
+
+    if (!record) {
       throw new NotFoundError("Note not found");
     }
 

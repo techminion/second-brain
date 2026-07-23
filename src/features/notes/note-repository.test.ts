@@ -30,13 +30,19 @@ const expectedRecord = {
 function createFluentBuilder(result: { data: unknown; error: unknown }) {
   const builder = {
     eq: vi.fn(),
+    gte: vi.fn(),
+    is: vi.fn(),
     maybeSingle: vi.fn().mockResolvedValue(result),
+    not: vi.fn(),
     select: vi.fn(),
     single: vi.fn().mockResolvedValue(result),
     update: vi.fn(),
   };
 
   builder.eq.mockReturnValue(builder);
+  builder.gte.mockReturnValue(builder);
+  builder.is.mockReturnValue(builder);
+  builder.not.mockReturnValue(builder);
   builder.select.mockReturnValue(builder);
   builder.update.mockReturnValue(builder);
 
@@ -183,6 +189,7 @@ describe("NoteRepository", () => {
     expect(builder.eq).toHaveBeenNthCalledWith(1, "id", "note-id");
     expect(builder.eq).toHaveBeenNthCalledWith(2, "owner_id", "user-id");
     expect(builder.eq).toHaveBeenNthCalledWith(3, "type", "note");
+    expect(builder.is).toHaveBeenCalledWith("deleted_at", null);
   });
 
   it("restores and returns the complete note record", async () => {
@@ -206,7 +213,11 @@ describe("NoteRepository", () => {
       error: null,
     });
 
-    await expect(repository.restoreNote("user-id", "note-id", restoredAt)).resolves.toEqual({
+    const windowStart = "2026-06-23T03:00:00.000Z";
+
+    await expect(
+      repository.restoreNote("user-id", "note-id", restoredAt, windowStart),
+    ).resolves.toEqual({
       ...expectedRecord,
       updatedAt: restoredAt,
     });
@@ -214,5 +225,7 @@ describe("NoteRepository", () => {
       deleted_at: null,
       updated_at: restoredAt,
     });
+    expect(builder.not).toHaveBeenCalledWith("deleted_at", "is", null);
+    expect(builder.gte).toHaveBeenCalledWith("deleted_at", windowStart);
   });
 });
