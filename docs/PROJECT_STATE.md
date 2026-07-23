@@ -72,7 +72,7 @@ Done: Sprint 0 (governance), Sprint 1 (repo & tooling foundation — 21 tasks), 
 
 ## In Progress
 
-- EDIT-01 — Tiptap editor foundation (Codex, frontend) is in review: Tiptap 3.28 powers a controlled, SSR-safe, accessible `MarkdownEditor` with Markdown input/output and baseline semantic live formatting. Five focused tests plus real Chromium desktop/mobile interaction validation pass. EDIT-02 retains exhaustive loss-free Markdown round-trip guarantees; EDIT-04+ retain formatting polish and menus.
+- None. NOTE-01 and EDIT-01 are merged; the M1 foundation (note repository + editor foundation) is in place. NOTE-02/03 and EDIT-02+ are unblocked and Queued; AUTH-10, AUTH-13, SHELL-04 remain independently claimable.
 
 ## Blocked
 
@@ -102,8 +102,8 @@ Done: Sprint 0 (governance), Sprint 1 (repo & tooling foundation — 21 tasks), 
 
 ## Current Branch
 
-`feature/edit-01-tiptap-editor`
+`main`
 
 ## Last Updated
 
-2026-07-23 — Codex completed EDIT-01 for review: four official Tiptap 3.28 packages, a feature-local Markdown schema, and a controlled SSR-safe editor component with semantic styling and accessible read-only support. Five focused tests, 158 full units, typecheck, lint, format, build, high-severity audit, and real Chromium desktop/mobile live-formatting QA pass.
+2026-07-23 — Reviewer (Claude) approved and merged EDIT-01 (PR #89, `bfa1e6c`): SSR-safe controlled Tiptap `MarkdownEditor`, token-only CSS, accessible, no business logic; verified the controlled-value guard and scope boundary. Flagged for EDIT-02/03: FR-NOTE-2 round-trip rests on the beta `@tiptap/markdown` — needs corpus validation + a fallback. Both M1-foundation tasks (NOTE-01 repo, EDIT-01 editor) are now live; NOTE-02/03 and EDIT-02+ unblocked.
