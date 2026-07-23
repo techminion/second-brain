@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 
 import { signOut } from "@/features/auth/sign-out";
 
+import { CommandPalette } from "./command-palette";
 import { ShellPanel } from "./shell-panel";
 import { SidebarNavigation } from "./sidebar-navigation";
 
@@ -12,6 +13,7 @@ interface AppShellProps {
 function AppShell({ children }: Readonly<AppShellProps>) {
   return (
     <div className="bg-background flex min-h-svh w-full overflow-hidden">
+      <CommandPalette />
       <ShellPanel label="Application sidebar" side="left">
         <SidebarNavigation signOutAction={signOut} />
       </ShellPanel>
