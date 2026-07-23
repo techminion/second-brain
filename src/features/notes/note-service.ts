@@ -1,12 +1,68 @@
 import { NoteRepository } from "@/features/notes/note-repository";
-import type { CreateNoteInput, Note, NoteRecord, UpdateNoteInput } from "@/features/notes/types";
+import type {
+  CreateNoteInput,
+  ListNotesKeyset,
+  ListNotesOptions,
+  Note,
+  NoteRecord,
+  UpdateNoteInput,
+} from "@/features/notes/types";
 import { retentionWindowDays } from "@/features/retention/constants";
 import { NotFoundError, ValidationError } from "@/shared/lib/errors";
+import type { Paginated } from "@/shared/types";
 
 type NoteRepositoryContract = Pick<
   NoteRepository,
-  "createNote" | "getNote" | "restoreNote" | "softDeleteNote" | "updateNote"
+  "createNote" | "getNote" | "listNotes" | "restoreNote" | "softDeleteNote" | "updateNote"
 >;
+
+const defaultListLimit = 50;
+const maxListLimit = 100;
+
+const isoTimestampPattern = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2})$/;
+const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+// The list contract declares no errors (05_API §4), so limit and cursor are
+// normalized defensively instead of thrown on: out-of-range limits clamp,
+// malformed cursors restart from the first page.
+function clampListLimit(limit: number | undefined): number {
+  if (typeof limit !== "number" || !Number.isFinite(limit)) {
+    return defaultListLimit;
+  }
+
+  return Math.min(Math.max(Math.floor(limit), 1), maxListLimit);
+}
+
+function encodeListCursor(record: NoteRecord): string {
+  return Buffer.from(JSON.stringify({ i: record.id, u: record.updatedAt })).toString("base64url");
+}
+
+function decodeListCursor(cursor: string | undefined): ListNotesKeyset | undefined {
+  if (!cursor) {
+    return undefined;
+  }
+
+  try {
+    const parsed: unknown = JSON.parse(Buffer.from(cursor, "base64url").toString("utf8"));
+
+    if (
+      typeof parsed === "object" &&
+      parsed !== null &&
+      "i" in parsed &&
+      "u" in parsed &&
+      typeof parsed.i === "string" &&
+      typeof parsed.u === "string" &&
+      uuidPattern.test(parsed.i) &&
+      isoTimestampPattern.test(parsed.u)
+    ) {
+      return { idBefore: parsed.i, updatedAtBefore: parsed.u };
+    }
+  } catch {
+    // Fall through — a cursor that does not decode is treated as absent.
+  }
+
+  return undefined;
+}
 
 function retentionWindowStart(reference: Date): string {
   const windowStart = new Date(reference);
@@ -120,6 +176,23 @@ export class NoteService {
     if (!deleted) {
       throw new NotFoundError("Note not found");
     }
+  }
+
+  async list(userId: string, options: ListNotesOptions = {}): Promise<Paginated<Note>> {
+    const limit = clampListLimit(options.limit);
+    const records = await this.repository.listNotes(userId, {
+      folderId: options.folderId,
+      keysetBefore: decodeListCursor(options.cursor),
+      limit: limit + 1,
+    });
+
+    const pageRecords = records.slice(0, limit);
+    const items = pageRecords.map(mapNote);
+    const lastRecord = pageRecords[pageRecords.length - 1];
+
+    return records.length > limit && lastRecord
+      ? { items, nextCursor: encodeListCursor(lastRecord) }
+      : { items };
   }
 
   async restore(userId: string, noteId: string): Promise<Note> {

@@ -4,6 +4,7 @@ import { NoteService } from "@/features/notes/note-service";
 import type {
   CreateNoteInput,
   CreateNoteRecordInput,
+  ListNotesRecordOptions,
   NoteRecord,
   UpdateNoteInput,
   UpdateNoteRecordInput,
@@ -13,6 +14,7 @@ import { NotFoundError, ValidationError } from "@/shared/lib/errors";
 interface MockNoteRepository {
   createNote: Mock<(userId: string, input: CreateNoteRecordInput) => Promise<NoteRecord>>;
   getNote: Mock<(userId: string, noteId: string) => Promise<NoteRecord | null>>;
+  listNotes: Mock<(userId: string, options: ListNotesRecordOptions) => Promise<NoteRecord[]>>;
   restoreNote: Mock<
     (
       userId: string,
@@ -43,6 +45,7 @@ function createRepositoryMock(): MockNoteRepository {
   return {
     createNote: vi.fn(),
     getNote: vi.fn(),
+    listNotes: vi.fn(),
     restoreNote: vi.fn(),
     softDeleteNote: vi.fn(),
     updateNote: vi.fn(),
@@ -372,6 +375,136 @@ describe("NoteService.restore", () => {
         message: "Note not found",
         statusCode: 404,
       }),
+    );
+  });
+});
+
+describe("NoteService.list", () => {
+  const recordId = "3f9f9a68-0000-4000-8000-000000000001";
+  const listRecord: NoteRecord = {
+    ...noteRecord,
+    id: recordId,
+    updatedAt: "2026-07-24T08:00:00.000Z",
+  };
+
+  let repository: MockNoteRepository;
+  let service: NoteService;
+
+  beforeEach(() => {
+    repository = createRepositoryMock();
+    repository.listNotes.mockResolvedValue([]);
+    service = new NoteService(repository);
+  });
+
+  it("lists notes with the default page size, requesting one extra row to detect a next page", async () => {
+    repository.listNotes.mockResolvedValue([listRecord]);
+
+    await expect(service.list("user-id")).resolves.toEqual({
+      items: [
+        {
+          body: "Service body",
+          createdAt: listRecord.createdAt,
+          dailyNoteDate: null,
+          folderId: "folder-id",
+          id: recordId,
+          tags: [],
+          title: "Service note",
+          type: "note",
+          updatedAt: listRecord.updatedAt,
+        },
+      ],
+    });
+
+    expect(repository.listNotes).toHaveBeenCalledWith("user-id", {
+      folderId: undefined,
+      keysetBefore: undefined,
+      limit: 51,
+    });
+  });
+
+  it("returns a nextCursor encoding the last returned row when an extra row comes back", async () => {
+    const second: NoteRecord = {
+      ...listRecord,
+      id: "3f9f9a68-0000-4000-8000-000000000002",
+      updatedAt: "2026-07-24T07:00:00.000Z",
+    };
+    const third: NoteRecord = {
+      ...listRecord,
+      id: "3f9f9a68-0000-4000-8000-000000000003",
+      updatedAt: "2026-07-24T06:00:00.000Z",
+    };
+    repository.listNotes.mockResolvedValue([listRecord, second, third]);
+
+    const page = await service.list("user-id", { limit: 2 });
+
+    expect(page.items.map((note) => note.id)).toEqual([listRecord.id, second.id]);
+    expect(page.nextCursor).toBeDefined();
+
+    const decoded = JSON.parse(Buffer.from(page.nextCursor ?? "", "base64url").toString("utf8"));
+    expect(decoded).toEqual({ i: second.id, u: second.updatedAt });
+  });
+
+  it("resumes from a cursor by passing the decoded keyset to the repository", async () => {
+    const cursor = Buffer.from(
+      JSON.stringify({ i: recordId, u: "2026-07-24T08:00:00.000Z" }),
+    ).toString("base64url");
+
+    await service.list("user-id", { cursor, limit: 10 });
+
+    expect(repository.listNotes).toHaveBeenCalledWith("user-id", {
+      folderId: undefined,
+      keysetBefore: { idBefore: recordId, updatedAtBefore: "2026-07-24T08:00:00.000Z" },
+      limit: 11,
+    });
+  });
+
+  it("ignores malformed and non-conforming cursors instead of throwing", async () => {
+    const forged = Buffer.from(
+      JSON.stringify({ i: "not-a-uuid", u: 'evil",or(id.not.is.null' }),
+    ).toString("base64url");
+
+    for (const cursor of ["%%%not-base64", forged]) {
+      await service.list("user-id", { cursor });
+
+      expect(repository.listNotes).toHaveBeenLastCalledWith("user-id", {
+        folderId: undefined,
+        keysetBefore: undefined,
+        limit: 51,
+      });
+    }
+  });
+
+  it("clamps out-of-range limits into the documented 1–100 window", async () => {
+    await service.list("user-id", { limit: 1000 });
+    expect(repository.listNotes).toHaveBeenLastCalledWith(
+      "user-id",
+      expect.objectContaining({ limit: 101 }),
+    );
+
+    await service.list("user-id", { limit: -5 });
+    expect(repository.listNotes).toHaveBeenLastCalledWith(
+      "user-id",
+      expect.objectContaining({ limit: 2 }),
+    );
+
+    await service.list("user-id", { limit: Number.NaN });
+    expect(repository.listNotes).toHaveBeenLastCalledWith(
+      "user-id",
+      expect.objectContaining({ limit: 51 }),
+    );
+  });
+
+  it("passes the folder filter through, including the explicit-null root filter", async () => {
+    await service.list("user-id", { folderId: "folder-id" });
+    expect(repository.listNotes).toHaveBeenLastCalledWith(
+      "user-id",
+      expect.objectContaining({ folderId: "folder-id" }),
+    );
+
+    await service.list("user-id", { folderId: null });
+    expect(repository.listNotes).toHaveBeenLastCalledWith(
+      "user-id",
+      expect.objectContaining({ folderId: null }),
     );
   });
 });

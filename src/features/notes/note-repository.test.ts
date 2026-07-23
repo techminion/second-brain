@@ -32,17 +32,26 @@ function createFluentBuilder(result: { data: unknown; error: unknown }) {
     eq: vi.fn(),
     gte: vi.fn(),
     is: vi.fn(),
+    limit: vi.fn(),
     maybeSingle: vi.fn().mockResolvedValue(result),
     not: vi.fn(),
+    or: vi.fn(),
+    order: vi.fn(),
     select: vi.fn(),
     single: vi.fn().mockResolvedValue(result),
+    // Awaiting the raw builder (the list terminal) resolves like PostgREST does.
+    then: (resolve: (value: { data: unknown; error: unknown }) => unknown) =>
+      Promise.resolve(result).then(resolve),
     update: vi.fn(),
   };
 
   builder.eq.mockReturnValue(builder);
   builder.gte.mockReturnValue(builder);
   builder.is.mockReturnValue(builder);
+  builder.limit.mockReturnValue(builder);
   builder.not.mockReturnValue(builder);
+  builder.or.mockReturnValue(builder);
+  builder.order.mockReturnValue(builder);
   builder.select.mockReturnValue(builder);
   builder.update.mockReturnValue(builder);
 
@@ -172,6 +181,56 @@ describe("NoteRepository", () => {
     await expect(
       repository.updateNote("user-id", "foreign-note-id", { title: "No access" }),
     ).resolves.toBeNull();
+  });
+
+  it("lists active owned notes newest-edited first with keyset and folder filters", async () => {
+    const { builder, repository } = createTableRepository({
+      data: [
+        {
+          created_at: rpcRow.created_at,
+          deleted_at: null,
+          id: "note-id",
+          notes: [{ body: "Repository body", daily_note_date: null, folder_id: "folder-id" }],
+          owner_id: "user-id",
+          title: "Repository note",
+          updated_at: rpcRow.updated_at,
+        },
+      ],
+      error: null,
+    });
+
+    await expect(
+      repository.listNotes("user-id", {
+        folderId: "folder-id",
+        keysetBefore: {
+          idBefore: "cursor-note-id",
+          updatedAtBefore: "2026-07-24T05:00:00.000Z",
+        },
+        limit: 51,
+      }),
+    ).resolves.toEqual([expectedRecord]);
+
+    expect(builder.eq).toHaveBeenCalledWith("owner_id", "user-id");
+    expect(builder.eq).toHaveBeenCalledWith("type", "note");
+    expect(builder.is).toHaveBeenCalledWith("deleted_at", null);
+    expect(builder.eq).toHaveBeenCalledWith("notes.folder_id", "folder-id");
+    expect(builder.or).toHaveBeenCalledWith(
+      'updated_at.lt."2026-07-24T05:00:00.000Z",and(updated_at.eq."2026-07-24T05:00:00.000Z",id.lt."cursor-note-id")',
+    );
+    expect(builder.order).toHaveBeenNthCalledWith(1, "updated_at", { ascending: false });
+    expect(builder.order).toHaveBeenNthCalledWith(2, "id", { ascending: false });
+    expect(builder.limit).toHaveBeenCalledWith(51);
+  });
+
+  it("filters to root notes when folderId is explicitly null", async () => {
+    const { builder, repository } = createTableRepository({ data: [], error: null });
+
+    await expect(repository.listNotes("user-id", { folderId: null, limit: 51 })).resolves.toEqual(
+      [],
+    );
+
+    expect(builder.is).toHaveBeenCalledWith("notes.folder_id", null);
+    expect(builder.or).not.toHaveBeenCalled();
   });
 
   it("soft-deletes only the requested owned note envelope", async () => {
