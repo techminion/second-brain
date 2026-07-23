@@ -21,6 +21,21 @@ Estimated Context Needed:
 
 ---
 
+## 2026-07-24 — Claude — EDIT-03 (round-trip corpus property suite) ready for review
+
+**Session Date:** 2026-07-24
+**Agent:** Claude, implementer (auto mode)
+**Objective:** EDIT-03 — prove FR-NOTE-2 durability over a representative corpus (the EDIT-01 reviewer's "validate against a real corpus" mandate; EDIT-02 built the machinery).
+**Files Added:** `src/features/editor/round-trip-corpus.ts` (10 documents: meeting/technical/reading/daily notes, 4-level nesting with quote-in-list, CJK+RTL+combining-mark+emoji unicode, markdown-lookalikes inside code fences, escaped tricky punctuation, single paragraph, image with caption — all detector-clean by construction), `round-trip-corpus.test.ts` (4 properties × 10 docs + 2 targeted: **(1)** detector-clean, **(2)** `normalizeMarkdown` fixed point, **(3)** document-model preservation — `parse(normalize(d)).getJSON()` deep-equals `parse(d).getJSON()`, **(4)** edit→save→reload survival — programmatic paragraph append, serialize, reload is byte-stable and retains both edit and original prefix; plus byte-exact multilingual fragments and corpus-wide wiki-link integrity).
+**Files Modified:** queue/handoff docs only.
+**Architecture Decisions:** None — test-only task.
+**Verification performed:** 42 new tests green on first run (the beta serializer held with the EDIT-02 fixes in place); full suite 303 units; typecheck/lint/format clean.
+**Outstanding Work:** PR → CI → merge; then SHELL-05 per the ratified scope.
+**Known Bugs:** None.
+**Risks:** The corpus is representative, not exhaustive — fuzz-style generation was considered and deferred (a property-based generator over the node schema would be the EDIT-16/hardening-era upgrade). Reference-style links/footnotes are absent from the corpus (canonicalized or unsupported; revisit if authoring paths produce them, e.g. paste — EDIT-11).
+**Suggested Next Task:** SHELL-05.
+**Estimated Context Needed:** This entry, `round-trip-corpus.ts`.
+
 ## 2026-07-24 — Claude — EDIT-02 (loss-free markdown round-trip) ready for review
 
 **Session Date:** 2026-07-24
