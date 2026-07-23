@@ -43,6 +43,30 @@ async function deleteUserByEmail(email: string): Promise<void> {
   }
 }
 
+test("signup provisions an empty authenticated shell (FR-AUTH-5)", async ({ page }) => {
+  test.skip(!supabaseUrl || !serviceRoleKey, "requires .env with dev-project credentials");
+
+  const email = `ameybro11+provision${Date.now()}@gmail.com`;
+  const password = "Correct-Horse-42-Battery";
+
+  try {
+    await page.goto("/signup");
+    await page.getByLabel("Email").fill(email);
+    await page.getByLabel("Password").fill(password);
+    await page.getByRole("button", { name: "Create account" }).click();
+    await page.waitForURL("/");
+
+    // Authenticated shell rendered — sidebar nav and logout control are visible.
+    await expect(page.getByRole("navigation", { name: "Knowledge navigation" })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Log out" })).toBeVisible();
+
+    // No error state: no role="alert" on the landing page.
+    await expect(page.getByRole("alert")).not.toBeAttached();
+  } finally {
+    await deleteUserByEmail(email);
+  }
+});
+
 test("password recovery creates an HttpOnly session and updates the password", async ({
   context,
   page,
