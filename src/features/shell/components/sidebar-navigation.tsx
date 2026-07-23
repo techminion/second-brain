@@ -1,4 +1,5 @@
-import { CalendarDays, Folder, LogOut, type LucideIcon, Tags } from "lucide-react";
+import { CalendarDays, Folder, LogOut, type LucideIcon, Settings, Tags } from "lucide-react";
+import Link from "next/link";
 
 import { Button } from "@/shared/ui/button";
 
@@ -38,12 +39,20 @@ export function SidebarNavigation({ signOutAction }: Readonly<SidebarNavigationP
         <NavigationSection Icon={Folder} label="Folders" />
         <NavigationSection Icon={Tags} label="Tags" />
       </nav>
-      <form action={signOutAction} className="border-t p-2">
-        <Button className="w-full justify-start" type="submit" variant="ghost">
-          <LogOut aria-hidden="true" className="size-4" />
-          Log out
+      <div className="flex flex-col gap-1 border-t p-2">
+        <Button asChild className="w-full justify-start" variant="ghost">
+          <Link href="/settings">
+            <Settings aria-hidden="true" className="size-4" />
+            Settings
+          </Link>
         </Button>
-      </form>
+        <form action={signOutAction}>
+          <Button className="w-full justify-start" type="submit" variant="ghost">
+            <LogOut aria-hidden="true" className="size-4" />
+            Log out
+          </Button>
+        </form>
+      </div>
     </div>
   );
 }
