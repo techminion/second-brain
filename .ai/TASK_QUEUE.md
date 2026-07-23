@@ -14,7 +14,7 @@
 
 Goal: finish the `NoteService` write/read surface (NOTE-04..06 — update with the title dual-write invariant, soft delete + restore, cursor-paginated list), prove the FR-NOTE-2 loss-free markdown round-trip on the beta `@tiptap/markdown` (EDIT-02/03 — the flagged highest-risk item), and land the global shortcut manager (SHELL-05, which also absorbs the SHELL-04 review findings). CI-06 opens the preview-E2E lane; the remaining M0 polish rides as P2.
 
-Promoted 2026-07-24 by the architect role after Sprint 3 closed (all rows Done). GOV-5 sequencing: NOTE-04 → NOTE-05 → NOTE-06 (one backend chain); EDIT-02 → EDIT-03 (frontend); SHELL-05 independent (frontend); CI-06 → CI-08 (infra). SHELL-06/08/09 are parallelizable P2 fillers.
+Promoted 2026-07-24 by the architect role after Sprint 3 closed (all rows Done); scope reviewed and ratified by the user 2026-07-24 (first task NOTE-04 chosen from the promotion candidates). GOV-5 sequencing: NOTE-04 → NOTE-05 → NOTE-06 (one backend chain); EDIT-02 → EDIT-03 (frontend); SHELL-05 independent (frontend); CI-06 → CI-08 (infra). SHELL-06/08/09 are parallelizable P2 fillers.
 
 **SHELL-04 review findings (fold into SHELL-05):** unused `inputRef` in `command-palette.tsx`; `e.key === "k"` misses Caps-Lock `"K"`; no `scrollIntoView` on arrow navigation past the listbox fold (`max-h-72` < 9 items); palette enter/exit animation owed to 10_DESIGN §9 (blocked by the arbitrary-value lint rule on Radix `data-[state]` variants — needs a token-conformant approach).
 
