@@ -120,4 +120,30 @@ export class RetentionPurgeRepository {
       throw new Error("Unable to delete expired folder during retention purge", { cause: error });
     }
   }
+
+  async listExpiredAccountIds(): Promise<string[]> {
+    const { data, error } = await this.client
+      .from("profiles")
+      .select("id")
+      .not("delete_requested_at", "is", null)
+      .lt("delete_requested_at", getRetentionCutoffIso())
+      .order("delete_requested_at", { ascending: true })
+      .limit(retentionPurgeBatchSize);
+
+    if (error) {
+      throw new Error("Unable to list expired account deletion requests", { cause: error });
+    }
+
+    return data.map((row) => row.id);
+  }
+
+  async deleteAuthUser(userId: string): Promise<void> {
+    const { error } = await this.client.auth.admin.deleteUser(userId);
+
+    if (error) {
+      throw new Error("Unable to delete auth user during account deletion purge", {
+        cause: error,
+      });
+    }
+  }
 }
