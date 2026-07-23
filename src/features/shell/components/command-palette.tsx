@@ -2,11 +2,14 @@
 
 import * as Dialog from "@radix-ui/react-dialog";
 import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 import { cn } from "@/shared/lib/utils";
 
 import { type Command, COMMANDS } from "../commands/command-registry";
+import { useShortcut } from "../shortcuts/shortcut-manager";
+import styles from "./command-palette.module.css";
+import { useShellPanels } from "./shell-panels-context";
 
 function matchesQuery(command: Command, query: string): boolean {
   if (!query) return true;
@@ -17,8 +20,8 @@ export function CommandPalette() {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [activeIndex, setActiveIndex] = useState(0);
-  const inputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
+  const { toggleLeft, toggleRight } = useShellPanels();
 
   const filtered = COMMANDS.filter((cmd) => matchesQuery(cmd, query));
 
@@ -28,23 +31,19 @@ export function CommandPalette() {
       setOpen(false);
       if (command.href) {
         router.push(command.href);
+      } else if (command.action === "toggle-sidebar") {
+        toggleLeft();
+      } else if (command.action === "toggle-right-panel") {
+        toggleRight();
       }
     },
-    [router],
+    [router, toggleLeft, toggleRight],
   );
 
-  useEffect(() => {
-    function handleKeyDown(e: KeyboardEvent) {
-      if ((e.metaKey || e.ctrlKey) && e.key === "k") {
-        // Skip when focus is inside a rich-text area (e.g. editor with ⌘K = insert link).
-        if (e.target instanceof Element && e.target.closest("[contenteditable]")) return;
-        e.preventDefault();
-        setOpen((prev) => !prev);
-      }
-    }
-    document.addEventListener("keydown", handleKeyDown);
-    return () => document.removeEventListener("keydown", handleKeyDown);
-  }, []);
+  // ⌘K opens from anywhere except a rich-text editor, which binds ⌘K itself.
+  useShortcut({ inputPolicy: "block-editable", key: "k" }, () => {
+    setOpen((prev) => !prev);
+  });
 
   useEffect(() => {
     if (open) {
@@ -56,6 +55,15 @@ export function CommandPalette() {
   useEffect(() => {
     setActiveIndex(0);
   }, [query]);
+
+  const activeId = filtered[activeIndex] ? `cmd-${filtered[activeIndex].id}` : undefined;
+
+  // Keep the active option visible while arrowing past the listbox fold.
+  useEffect(() => {
+    if (open && activeId) {
+      document.getElementById(activeId)?.scrollIntoView({ block: "nearest" });
+    }
+  }, [activeId, open]);
 
   function handleInputKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
     if (e.key === "ArrowDown") {
@@ -71,20 +79,20 @@ export function CommandPalette() {
     }
   }
 
-  const activeId = filtered[activeIndex] ? `cmd-${filtered[activeIndex].id}` : undefined;
-
   return (
     <Dialog.Root onOpenChange={setOpen} open={open}>
       <Dialog.Portal>
-        <Dialog.Overlay className="bg-foreground/20 fixed inset-0 z-50" />
+        <Dialog.Overlay className={cn("bg-foreground/20 fixed inset-0 z-50", styles.overlay)} />
         <Dialog.Content
           aria-describedby={undefined}
-          className="bg-background fixed top-1/4 left-1/2 z-50 w-full max-w-lg -translate-x-1/2 rounded-lg border shadow-lg"
+          className={cn(
+            "bg-background fixed top-1/4 left-1/2 z-50 w-full max-w-lg -translate-x-1/2 rounded-lg border shadow-lg",
+            styles.content,
+          )}
         >
           <Dialog.Title className="sr-only">Command palette</Dialog.Title>
           <div className="border-b p-3">
             <input
-              ref={inputRef}
               aria-activedescendant={activeId}
               aria-controls="command-palette-list"
               aria-expanded={filtered.length > 0}

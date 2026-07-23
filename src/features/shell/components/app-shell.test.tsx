@@ -49,6 +49,23 @@ describe("AppShell", () => {
     expect(sidebar).toHaveClass("ease-out");
   });
 
+  it("toggles the sidebar with ⌘\\ and the context panel with ⌘E (SHELL-05)", () => {
+    render(<AppShell>Workspace content</AppShell>);
+
+    const sidebar = screen.getByRole("complementary", { name: "Application sidebar" });
+    const contextPanel = screen.getByRole("complementary", { name: "Context panel" });
+
+    fireEvent.keyDown(document, { key: "\\", metaKey: true });
+    expect(sidebar).toHaveAttribute("data-state", "collapsed");
+    expect(contextPanel).toHaveAttribute("data-state", "expanded");
+
+    fireEvent.keyDown(document, { ctrlKey: true, key: "e" });
+    expect(contextPanel).toHaveAttribute("data-state", "collapsed");
+
+    fireEvent.keyDown(document, { key: "\\", metaKey: true });
+    expect(sidebar).toHaveAttribute("data-state", "expanded");
+  });
+
   it("collapses and expands the context panel independently", () => {
     render(<AppShell>Workspace content</AppShell>);
 

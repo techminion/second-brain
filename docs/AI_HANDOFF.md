@@ -21,6 +21,21 @@ Estimated Context Needed:
 
 ---
 
+## 2026-07-24 — Claude — SHELL-05 (global shortcut manager) ready for review
+
+**Session Date:** 2026-07-24
+**Agent:** Claude, implementer (auto mode)
+**Objective:** SHELL-05 — global shortcut registration with ⌘/Ctrl mapping and input-focus guards; absorb the four SHELL-04 review findings recorded in the queue.
+**Files Added:** `src/features/shell/shortcuts/shortcut-manager.tsx` (`ShortcutProvider` + `useShortcut`: single document keydown listener; ⌘/Ctrl both accepted; `e.key` matched case-insensitively — Caps Lock cannot disable a shortcut; shift matched exactly so ⌘F and ⇧⌘F are distinct bindings; three input policies: `block-all-inputs` default suppresses in input/textarea/select/contenteditable, `block-editable` suppresses only contenteditable, `allow` never suppresses; handlers ref-stable, unregistered on unmount, `preventDefault` on match), `shortcut-manager.test.tsx` (11 tests), `shell-panels-context.tsx` (`ShellPanelsProvider`/`useShellPanels` — per-rail expand state lifted from `ShellPanel` local state, still ephemeral per SHELL-02), `shell-shortcuts.tsx` (binds ⌘\ → sidebar, ⌘E → right panel), `command-palette.module.css` (enter/exit keyframes on `var(--motion-duration-structural)` — reduced-motion collapses to 0ms via the SHELL-10 token media query; CSS module because the lint rules forbid Tailwind `data-[...]` variants).
+**Files Modified:** `shell-panel.tsx` (consumes the context; collapse buttons drive the same state as the shortcuts), `app-shell.tsx` (providers + `ShellShortcuts` wired), `command-registry.ts` (toggle-sidebar/toggle-right-panel commands flip from `disabled` to `action`-bearing; palette maps actions to the context), `command-palette.tsx` (⌘K via `useShortcut` with `block-editable` — SHELL-04's contenteditable semantics preserved, Caps-Lock fixed; dead `inputRef` removed; `scrollIntoView({ block: "nearest" })` keeps the active option visible; animation classes attached), palette/app-shell tests updated + extended, queue/state/changelog/handoff.
+**Architecture Decisions:** None new — the input-policy enum is the 10_DESIGN §8 guard behavior made explicit; EDIT-13/EDIT-18 consume `useShortcut` when they land.
+**Verification performed:** 320 units green (17 new across manager/palette/app-shell); typecheck/lint/format clean.
+**Outstanding Work:** PR → CI → merge. Sprint 4 core then has CI-06 remaining (+ P2 fillers SHELL-06/08/09, CI-08).
+**Known Bugs:** None.
+**Risks:** ⌘E/⌘\ under `block-all-inputs` do not fire while a form field has focus (deliberate default); revisit if the §8 table is later read to require them there. jsdom cannot exercise the CSS animation — visual check remains manual until CI-08/axe + preview E2E land.
+**Suggested Next Task:** CI-06 (Playwright E2E vs. preview deployments), or the P2 fillers.
+**Estimated Context Needed:** This entry, `shortcut-manager.tsx`, 10_DESIGN §8.
+
 ## 2026-07-24 — Claude — EDIT-03 (round-trip corpus property suite) ready for review
 
 **Session Date:** 2026-07-24
