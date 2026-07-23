@@ -21,6 +21,22 @@ Estimated Context Needed:
 
 ---
 
+## 2026-07-24 — Claude — CI-06 (preview E2E job) ready for review
+
+**Session Date:** 2026-07-24
+**Agent:** Claude, implementer (auto mode)
+**Objective:** CI-06 — run the Playwright E2E suite against each PR's Vercel preview deployment.
+**Files Added:** `tools/ci/wait-for-vercel-preview.sh` (polls the GitHub Deployments API for the head SHA's `Preview` deployment, 15s × 40 attempts, emits the preview URL; fails fast on `error`/`failure` states).
+**Files Modified:** `playwright.config.ts` (`PLAYWRIGHT_BASE_URL` switches the suite to remote mode — no local `webServer`; `VERCEL_AUTOMATION_BYPASS_SECRET` adds the `x-vercel-protection-bypass` + `x-vercel-set-bypass-cookie` headers so browser navigations inherit the bypass past Standard Preview Protection), `.github/workflows/ci.yml` (new `E2E (preview)` job: same-repo guard per GOV-7 — combined with GitHub's policy of withholding secrets from fork-originated `pull_request` runs — Chromium-only install, wait-for-preview step, suite run with the dev-project public URL and the service-role secret for admin cleanup), queue/state/changelog/handoff.
+**Architecture Decisions (disclosed):** trigger is `pull_request` + Deployments-API polling rather than `deployment_status` — a `deployment_status`-triggered workflow executes the workflow file at the deployed SHA, which would hand repo secrets to fork-modified workflows; the `pull_request` model inherits the drift-check's proven fork-safety. Preview is assumed to point at the dev Supabase project (`zkzyfwclvquiargnwgtw`, public ref hardcoded like the drift check) — correct the env var if CI-07's preview wiring differs.
+**Required provisioning (user, via `gh secret set` only — never via chat):** `VERCEL_AUTOMATION_BYPASS_SECRET` (Vercel → Project Settings → Deployment Protection → Protection Bypass for Automation → generate) and `E2E_SUPABASE_SERVICE_ROLE_KEY` (dev-project service role key, used solely for E2E user cleanup). Until both exist the job passes with a skip notice, so merges are not blocked.
+**Verification performed:** `playwright test --list` parses in both local and remote config modes; `bash -n` clean; Prettier/typecheck clean. The live path cannot be proven until the secrets exist — the PR's own run demonstrates the skip path.
+**Outstanding Work:** user provisions the two secrets; then verify a live run on the next PR and decide whether `E2E (preview)` becomes a required branch-protection context (CI-04/05 precedent says yes once proven stable). CI-08 (axe) builds on this job.
+**Known Bugs:** None.
+**Risks:** The Deployments API `environment=Preview` name matches Vercel's current convention — if Vercel renames the environment the wait step times out (fails visibly, not silently). E2E specs create real users on the preview's Supabase project; cleanup runs in `finally` but a hard crash could leave residue (same exposure as local runs).
+**Suggested Next Task:** CI-08 (after a proven live run), or SHELL-06/08/09 P2 fillers.
+**Estimated Context Needed:** This entry, the workflow diff, `wait-for-vercel-preview.sh`.
+
 ## 2026-07-24 — Claude — SHELL-05 (global shortcut manager) ready for review
 
 **Session Date:** 2026-07-24
