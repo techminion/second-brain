@@ -72,7 +72,7 @@ Done: Sprint 0 (governance), Sprint 1 (repo & tooling foundation — 21 tasks), 
 
 ## In Progress
 
-- **NOTE-01 (In Review, Codex):** typed `NoteRepository` CRUD is implemented with authenticated-only, `SECURITY INVOKER` `create_note`/`update_note` RPCs for atomic envelope+subtype writes. Claude approved the exact SQL; migration `20260722185637` is live on dev Cloud with 18/18 history parity, verified function ACL/security, and a green 14-file / 31-test Cloud suite. Eight focused units and all 153 unit tests pass; replay guards function presence, invoker security, and least privilege. Next.js is patched to 15.5.21 with no high-severity audit findings.
+- None. NOTE-01 merged (PR #87); NOTE-02 (`NoteService.create`) and NOTE-03 (`NoteService.get`) are now unblocked and Queued.
 
 ## Blocked
 
@@ -80,7 +80,7 @@ Done: Sprint 0 (governance), Sprint 1 (repo & tooling foundation — 21 tasks), 
 
 ## Upcoming
 
-- **Sprint 3 is promoted** (see [.ai/TASK_QUEUE.md](../.ai/TASK_QUEUE.md)): M0 closeout — AUTH-10 (account settings), AUTH-11/12 (delete account, FR-AUTH-6), AUTH-13 (signup→shell E2E), SHELL-04 (command palette); M1 foundation — NOTE-01..03 (note service) and EDIT-01 (Tiptap editor, highest-risk phase). NOTE-01 awaits SQL review/Cloud verification; the other dependency-ready tasks remain queued.
+- **Sprint 3 is promoted** (see [.ai/TASK_QUEUE.md](../.ai/TASK_QUEUE.md)): M0 closeout — AUTH-10 (account settings), AUTH-11/12 (delete account, FR-AUTH-6), AUTH-13 (signup→shell E2E), SHELL-04 (command palette); M1 foundation — NOTE-01..03 (note service) and EDIT-01 (Tiptap editor, highest-risk phase). NOTE-01 is **Done** (PR #87); NOTE-02/03 unblocked. AUTH-10, AUTH-13, SHELL-04, EDIT-01 remain independently claimable.
 - **Sprint 4 candidates:** the rest of NOTE/EDIT, then FOLD/TAG/ATT/DAILY (all behind the NOTE/EDIT foundation); SHELL-05/06/08/09 shell polish; CI-06 → CI-08. CRED-01 (MCP) tracks to M4; ADR-24/ADR-25 make EMB-01 (with its OpenAI key provisioning and AI gating) the first AI task, in M3.
 - **AI is per-user gated (ADR-25, user decision):** EMB/SEM/AICH/VCH are built but ship off by default, enabled per user via a single `profiles.ai_enabled` flag an operator toggles in SQL — **no admin role/panel in MVP** (deferred to a future phase). Before those tasks are implemented, the spec ripples in ADR-25 must be applied (04_DATABASE `profiles.ai_enabled` + self-grant-proof column `REVOKE`/RLS + GOV-6 self-enable-denial test, 09_SECURITY operator-only gate note, 05_API `updateProfile` exclusion, 07_AI/08_SEARCH runtime gating, 12_TASKS gating criteria).
 
@@ -102,8 +102,8 @@ Done: Sprint 0 (governance), Sprint 1 (repo & tooling foundation — 21 tasks), 
 
 ## Current Branch
 
-`feature/note-01-repository`
+`main`
 
 ## Last Updated
 
-2026-07-23 — Codex completed NOTE-01 implementation and all non-Cloud gates; the out-of-sandbox GitHub CLI check confirmed keyring authentication, unblocking the Codex-authored commit and draft SQL-review PR. Migration/application tests correctly wait for SQL approval
+2026-07-23 — Reviewer (Claude) approved and merged NOTE-01 (PR #87, `7d4f44f`): the `SECURITY INVOKER` `create_note`/`update_note` RPCs were reviewed (incl. the `service_role`-revoke hardening) and the **live dev-Cloud catalog independently verified** (INVOKER, `authenticated`-only EXECUTE, 18/18 parity, advisors clean). Atomic rollback, title dual-write, and forged-owner/cross-user denial proven by the Cloud suite. NOTE-02/03 unblocked; first M1 Collect code is live
