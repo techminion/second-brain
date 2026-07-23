@@ -7,6 +7,9 @@ import { ValidationError } from "@/shared/lib/errors";
 interface MockUserRepository {
   getProfile: Mock<(userId: string) => Promise<ProfileRecord>>;
   getVerifiedIdentity: Mock<(userId: string) => Promise<VerifiedProfileIdentity>>;
+  requestAccountDeletion: Mock<(userId: string) => Promise<void>>;
+  revokeAllMcpCredentials: Mock<(userId: string) => Promise<void>>;
+  softDeleteAllKnowledgeObjects: Mock<(userId: string) => Promise<void>>;
   updateProfile: Mock<(userId: string, displayName: string | null) => Promise<ProfileRecord>>;
 }
 
@@ -25,6 +28,9 @@ function createRepositoryMock(): MockUserRepository {
   return {
     getProfile: vi.fn(),
     getVerifiedIdentity: vi.fn(),
+    requestAccountDeletion: vi.fn().mockResolvedValue(undefined),
+    revokeAllMcpCredentials: vi.fn().mockResolvedValue(undefined),
+    softDeleteAllKnowledgeObjects: vi.fn().mockResolvedValue(undefined),
     updateProfile: vi.fn(),
   };
 }
@@ -119,5 +125,39 @@ describe("UserService", () => {
 
     expect(repository.getVerifiedIdentity).not.toHaveBeenCalled();
     expect(repository.updateProfile).not.toHaveBeenCalled();
+  });
+
+  describe("deleteAccount", () => {
+    it("soft-deletes all knowledge objects, revokes credentials, and marks the profile", async () => {
+      await service.deleteAccount("user-id");
+
+      expect(repository.softDeleteAllKnowledgeObjects).toHaveBeenCalledWith("user-id");
+      expect(repository.revokeAllMcpCredentials).toHaveBeenCalledWith("user-id");
+      expect(repository.requestAccountDeletion).toHaveBeenCalledWith("user-id");
+    });
+
+    it("soft-deletes knowledge objects before revoking credentials", async () => {
+      const callOrder: string[] = [];
+      repository.softDeleteAllKnowledgeObjects.mockImplementation(async () => {
+        callOrder.push("softDelete");
+      });
+      repository.revokeAllMcpCredentials.mockImplementation(async () => {
+        callOrder.push("revoke");
+      });
+      repository.requestAccountDeletion.mockImplementation(async () => {
+        callOrder.push("markDeletion");
+      });
+
+      await service.deleteAccount("user-id");
+
+      expect(callOrder).toEqual(["softDelete", "revoke", "markDeletion"]);
+    });
+
+    it("propagates repository errors without swallowing them", async () => {
+      repository.softDeleteAllKnowledgeObjects.mockRejectedValue(new Error("DB error"));
+
+      await expect(service.deleteAccount("user-id")).rejects.toThrow("DB error");
+      expect(repository.revokeAllMcpCredentials).not.toHaveBeenCalled();
+    });
   });
 });

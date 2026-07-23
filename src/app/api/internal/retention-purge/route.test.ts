@@ -43,6 +43,7 @@ describe("retention purge route", () => {
 
   it("runs the purge and returns the enveloped result for a valid secret", async () => {
     runMock.mockResolvedValue({
+      accountsDeleted: 0,
       foldersPurged: 1,
       knowledgeObjectsPurged: 2,
       storageObjectsRemoved: 1,
@@ -52,7 +53,12 @@ describe("retention purge route", () => {
 
     expect(response.status).toBe(200);
     expect(await response.json()).toEqual({
-      data: { foldersPurged: 1, knowledgeObjectsPurged: 2, storageObjectsRemoved: 1 },
+      data: {
+        accountsDeleted: 0,
+        foldersPurged: 1,
+        knowledgeObjectsPurged: 2,
+        storageObjectsRemoved: 1,
+      },
     });
   });
 

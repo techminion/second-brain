@@ -5,6 +5,7 @@ export interface ExpiredKnowledgeObjectRow {
 }
 
 export interface RetentionPurgeResult {
+  accountsDeleted: number;
   foldersPurged: number;
   knowledgeObjectsPurged: number;
   storageObjectsRemoved: number;

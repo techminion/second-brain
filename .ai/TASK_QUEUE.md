@@ -20,8 +20,8 @@ Promoted 2026-07-23 by the architect role after Sprint 2 closed (M0 exit criteri
 
 | ID | Title | Priority | Cx | Depends on | Owner | Status | Milestone | Acceptance criteria |
 |---|---|---|---|---|---|---|---|---|
-| AUTH-10 | Account settings page (display name) | P1 | S | AUTH-09, SHELL-03 | Claude | In Review | M0 | Edit display name through the ADR-23 `updateProfile` contract; reachable from the SHELL-03 sidebar. AC in [12_TASKS](../docs/12_TASKS.md) |
-| AUTH-11 | `UserService.deleteAccount` orchestration (FR-AUTH-6) | P1 | M | AUTH-09, DB-13 | backend | Queued | M0 | Soft-delete all owned rows → revoke MCP credentials → Auth deletion, per [05_API §11](../docs/05_API.md#11-userservice); grace period. Unblocks AUTH-12 |
+| AUTH-10 | Account settings page (display name) | P1 | S | AUTH-09, SHELL-03 | Claude | Done | M0 | Merged via PR #96 (`1adc6ae`) — `/settings` page under `(app)` group; server-side profile load via UserService, read-only email (JWT claims), `UpdateProfileForm` client component with `updateProfileAction` server action; ADR-23 contract enforced in service layer. Settings link added to sidebar nav above logout. 177/177 units green (9 new). Reviewer: no IDOR (session claims), no RLS bypass, email from verified JWT. **AUTH-12 and CRED-03 now have their UI anchor** |
+| AUTH-11 | `UserService.deleteAccount` orchestration (FR-AUTH-6) | P1 | M | AUTH-09, DB-13 | Claude | In Review | M0 | Soft-delete all owned rows → revoke MCP credentials → Auth deletion, per [05_API §11](../docs/05_API.md#11-userservice); grace period. Unblocks AUTH-12 |
 | AUTH-12 | Account deletion UI (grace-period confirmation) | P2 | M | AUTH-11 | frontend | Queued | M0 | Behind AUTH-11 |
 | AUTH-13 | Signup → empty-shell provisioning E2E (FR-AUTH-5) | P2 | S | AUTH-02, SHELL-02 | backend | Queued | M0 | Cloud-gated Playwright; closes AUTH-phase verification |
 | SHELL-04 | Command palette (`⌘K`) + static command registry | P1 | L | SHELL-02 | frontend | Queued | M0 | [10_DESIGN §8](../docs/10_DESIGN.md#8-keyboard-shortcuts); the last unbuilt M0 shell deliverable |

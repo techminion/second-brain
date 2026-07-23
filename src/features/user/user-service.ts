@@ -10,7 +10,12 @@ import { createServerActionSupabaseClient } from "@/shared/lib/supabase-server-a
 
 type UserRepositoryContract = Pick<
   UserRepository,
-  "getProfile" | "getVerifiedIdentity" | "updateProfile"
+  | "getProfile"
+  | "getVerifiedIdentity"
+  | "updateProfile"
+  | "softDeleteAllKnowledgeObjects"
+  | "revokeAllMcpCredentials"
+  | "requestAccountDeletion"
 >;
 
 function mapProfile(record: ProfileRecord, identity: VerifiedProfileIdentity): Profile {
@@ -44,6 +49,12 @@ export class UserService {
     const profile = await this.repository.getProfile(userId);
 
     return mapProfile(profile, identity);
+  }
+
+  async deleteAccount(userId: string): Promise<void> {
+    await this.repository.softDeleteAllKnowledgeObjects(userId);
+    await this.repository.revokeAllMcpCredentials(userId);
+    await this.repository.requestAccountDeletion(userId);
   }
 
   async updateProfile(userId: string, input: UpdateProfileInput): Promise<Profile> {

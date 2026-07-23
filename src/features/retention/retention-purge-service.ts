@@ -9,6 +9,7 @@ export class RetentionPurgeService {
     let knowledgeObjectsPurged = 0;
     let storageObjectsRemoved = 0;
     let foldersPurged = 0;
+    let accountsDeleted = 0;
 
     const expiredObjects = await this.repository.listExpiredKnowledgeObjects();
 
@@ -34,7 +35,18 @@ export class RetentionPurgeService {
       foldersPurged += 1;
     }
 
+    // Auth user deletion runs after knowledge-object and folder purge so that
+    // the cascades on knowledge_objects and folders (ADR-14/15) fire against
+    // already-purged rows, not live ones.
+    const expiredAccountIds = await this.repository.listExpiredAccountIds();
+
+    for (const userId of expiredAccountIds) {
+      await this.repository.deleteAuthUser(userId);
+      accountsDeleted += 1;
+    }
+
     return {
+      accountsDeleted,
       foldersPurged,
       knowledgeObjectsPurged,
       storageObjectsRemoved,

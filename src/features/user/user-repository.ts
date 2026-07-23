@@ -65,4 +65,44 @@ export class UserRepository {
 
     return mapProfileRow(data as ProfileRow);
   }
+
+  async softDeleteAllKnowledgeObjects(userId: string): Promise<void> {
+    const { error } = await this.client
+      .from("knowledge_objects")
+      .update({ deleted_at: new Date().toISOString() })
+      .eq("owner_id", userId)
+      .is("deleted_at", null);
+
+    if (error) {
+      throw new Error("Unable to soft-delete knowledge objects during account deletion", {
+        cause: error,
+      });
+    }
+  }
+
+  async revokeAllMcpCredentials(userId: string): Promise<void> {
+    const { error } = await this.client
+      .from("mcp_credentials")
+      .update({ revoked_at: new Date().toISOString() })
+      .eq("owner_id", userId)
+      .is("revoked_at", null);
+
+    if (error) {
+      throw new Error("Unable to revoke MCP credentials during account deletion", {
+        cause: error,
+      });
+    }
+  }
+
+  async requestAccountDeletion(userId: string): Promise<void> {
+    const { error } = await this.client
+      .from("profiles")
+      .update({ delete_requested_at: new Date().toISOString() })
+      .eq("id", userId)
+      .is("delete_requested_at", null);
+
+    if (error) {
+      throw new Error("Unable to mark account for deletion", { cause: error });
+    }
+  }
 }

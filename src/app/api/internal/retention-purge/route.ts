@@ -21,6 +21,7 @@ export const POST = withRequestLogging(
       const result = await createRetentionPurgeService().run();
 
       logger.info("retention.purge.completed", {
+        accountsDeleted: result.accountsDeleted,
         foldersPurged: result.foldersPurged,
         knowledgeObjectsPurged: result.knowledgeObjectsPurged,
         storageObjectsRemoved: result.storageObjectsRemoved,
