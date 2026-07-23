@@ -72,7 +72,7 @@ Done: Sprint 0 (governance), Sprint 1 (repo & tooling foundation — 21 tasks), 
 
 ## In Progress
 
-- **NOTE-01 (In Review, Codex):** typed `NoteRepository` CRUD is implemented with authenticated-only, `SECURITY INVOKER` `create_note`/`update_note` RPCs for atomic envelope+subtype writes. Eight focused units and the full 153-test unit suite pass; migration replay asserts function presence, invoker security, and least-privilege grants. Migration `20260722185637` remains intentionally unapplied until SQL review.
+- **NOTE-01 (In Review, Codex):** typed `NoteRepository` CRUD is implemented with authenticated-only, `SECURITY INVOKER` `create_note`/`update_note` RPCs for atomic envelope+subtype writes. Eight focused units and the full 153-test unit suite pass; migration replay asserts function presence, invoker security, and least-privilege grants. PR #87's initial replay failure identified Supabase's default `service_role` routine grant, and the migration now revokes it explicitly from both RPCs. Migration `20260722185637` remains intentionally unapplied until SQL review.
 
 ## Blocked
 

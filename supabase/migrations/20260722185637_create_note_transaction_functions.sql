@@ -71,7 +71,7 @@ as $$
 $$;
 
 revoke execute on function public.create_note(uuid, text, text, uuid, date)
-  from public, anon;
+  from public, anon, service_role;
 grant execute on function public.create_note(uuid, text, text, uuid, date)
   to authenticated;
 
@@ -157,7 +157,7 @@ revoke execute on function public.update_note(
   boolean,
   boolean,
   boolean
-) from public, anon;
+) from public, anon, service_role;
 grant execute on function public.update_note(
   uuid,
   uuid,

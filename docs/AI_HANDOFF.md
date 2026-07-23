@@ -21,6 +21,22 @@ Estimated Context Needed:
 
 ---
 
+## 2026-07-23 — Codex (Backend) — NOTE-01 CI grant fix
+
+**Session Date:** 2026-07-23
+**Agent:** Codex, backend implementation role
+**Objective:** Diagnose and fix PR #87's failed migration-replay check without applying the unreviewed NOTE-01 migration to Cloud.
+**Files Modified:** `supabase/migrations/20260722185637_create_note_transaction_functions.sql`, `.ai/TASK_QUEUE.md`, `docs/PROJECT_STATE.md`, `docs/AI_HANDOFF.md`.
+**Files Added:** None.
+**Architecture Decisions:** None.
+**Implementation:** GitHub Actions showed that all migrations replayed, then the function least-privilege assertion failed. Live read-only catalog inspection confirmed Supabase's `postgres` default routine ACL grants `EXECUTE` to `anon`, `authenticated`, and `service_role`. The migration already revoked `PUBLIC` and `anon`; it now explicitly revokes `service_role` from both transactional note functions before granting only `authenticated`.
+**Verification performed:** The failed Actions job and exact failing step were inspected. Live Cloud role/default-ACL state was read without schema changes. `git diff --check` passes; the existing migration-replay assertion remains the regression check. No local database or Docker resources were used.
+**Outstanding Work:** Push the fix and let PR #87 rerun CI. Independent SQL review, exact dev-Cloud migration application, Cloud integration tests, advisors, and drift verification remain required before the draft PR becomes ready.
+**Known Bugs:** None in the fix. PR checks have not yet rerun at the time of this entry.
+**Risks:** The migration is intentionally unapplied pending review, so Cloud drift is expected until the reviewed file is applied.
+**Suggested Next Task:** Complete NOTE-01 review/application/verification; do not start NOTE-02 or NOTE-03 before NOTE-01 merges.
+**Estimated Context Needed:** This entry, PR #87, the NOTE-01 migration, and the migration-replay function ACL assertion.
+
 ## 2026-07-23 — Codex (Backend) — NOTE-01 ready for SQL review
 
 **Session Date:** 2026-07-23
