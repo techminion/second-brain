@@ -7,10 +7,12 @@ import {
   PanelRightClose,
   PanelRightOpen,
 } from "lucide-react";
-import { type ReactNode, useState } from "react";
+import type { ReactNode } from "react";
 
 import { cn } from "@/shared/lib/utils";
 import { Button } from "@/shared/ui/button";
+
+import { useShellPanels } from "./shell-panels-context";
 
 type ShellPanelSide = "left" | "right";
 
@@ -38,7 +40,9 @@ function getPanelControl(side: ShellPanelSide, isExpanded: boolean): PanelContro
 }
 
 function ShellPanel({ children, label, side }: Readonly<ShellPanelProps>) {
-  const [isExpanded, setIsExpanded] = useState(true);
+  const panels = useShellPanels();
+  const isExpanded = side === "left" ? panels.isLeftExpanded : panels.isRightExpanded;
+  const toggle = side === "left" ? panels.toggleLeft : panels.toggleRight;
   const { Icon, label: controlLabel } = getPanelControl(side, isExpanded);
 
   return (
@@ -57,7 +61,7 @@ function ShellPanel({ children, label, side }: Readonly<ShellPanelProps>) {
           aria-expanded={isExpanded}
           aria-label={controlLabel}
           className="text-muted-foreground hover:text-foreground size-8 shrink-0"
-          onClick={() => setIsExpanded((currentState) => !currentState)}
+          onClick={toggle}
           size="icon"
           title={controlLabel}
           type="button"
