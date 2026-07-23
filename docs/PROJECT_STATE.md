@@ -73,11 +73,11 @@ Done: Sprint 0 (governance), Sprint 1 (repo & tooling foundation — 21 tasks), 
 - AUTH-11: `UserService.deleteAccount` orchestration live (FR-AUTH-6) — migration adds `delete_requested_at` to profiles; service soft-deletes knowledge_objects, revokes MCP credentials, sets `delete_requested_at`; purge worker extended with 30-day grace account deletion after KO/folder purge. 15 new units; 182/182 green. **Merged 2026-07-23** via PR #97 (`6fae034`).
 - AUTH-12: account deletion UI live — `deleteAccountAction` (JWT claims → `UserService.deleteAccount` → signOut local → redirect /login); `DeleteAccountForm` Radix dialog with 30-day grace explanation and loading/error states; Danger zone section on `/settings`. 7 component tests; 189/189 green. **Merged 2026-07-23** via PR #98 (`227185b`).
 - AUTH-13: signup → empty-shell provisioning E2E (FR-AUTH-5) — Cloud-gated Playwright: signup → assert sidebar nav + logout visible, assert no `role="alert"`. **Merged 2026-07-23** via PR #99 (`864fc81`).
-- SHELL-04: command palette (⌘K) live — `command-registry.ts` with all nine §8 shortcuts; `CommandPalette` client component: Radix Dialog, combobox + listbox ARIA, ↑↓ navigation, Enter executes, contenteditable focus guard; wired into AppShell. 15 unit tests; 204/204 green. **Merged 2026-07-23** via PR #100 (`4fcf64a`). **M0 deliverables fully closed.**
+- SHELL-04: command palette (⌘K) live — `command-registry.ts` with all nine §8 shortcuts; `CommandPalette` client component: Radix Dialog, combobox + listbox ARIA, ↑↓ navigation, Enter executes, contenteditable focus guard; wired into AppShell. 15 unit tests; 204/204 green. **Merged 2026-07-23** via PR #100 (`4fcf64a`). All M0 *exit-criteria* deliverables done. 6 M0-tagged polish/test-infra tasks (SHELL-05/06/08/09, CI-06/08) deferred to Sprint 4.
 
 ## In Progress
 
-- None. **Sprint 3 M0 deliverables complete** — AUTH-10/11/12/13 (account management) and SHELL-04 (command palette) all merged. The NOTE-01→02→03 backbone (repository, create, get) is live. Remaining Sprint 3: NOTE-04+ (update/delete/etc.), EDIT-02+.
+- None. **Sprint 3 M0 exit-criteria deliverables complete** — AUTH-10/11/12/13 (account management) and SHELL-04 (command palette) all merged. The NOTE-01→02→03 backbone (repository, create, get) is live. Remaining Sprint 3: NOTE-04+ (update/delete/etc.), EDIT-01/02+. Note: 6 M0-tagged polish/test-infra tasks (SHELL-05/06/08/09, CI-06/08) are deferred to Sprint 4 — not blocking M0 functional exit criteria.
 
 ## Blocked
 
@@ -86,7 +86,7 @@ Done: Sprint 0 (governance), Sprint 1 (repo & tooling foundation — 21 tasks), 
 ## Upcoming
 
 - **Sprint 3 is promoted** (see [.ai/TASK_QUEUE.md](../.ai/TASK_QUEUE.md)): M0 closeout — AUTH-10 (account settings), AUTH-11/12 (delete account, FR-AUTH-6), AUTH-13 (signup→shell E2E), SHELL-04 (command palette); M1 foundation — NOTE-01..03 (note service) and EDIT-01 (Tiptap editor, highest-risk phase). NOTE-01 is **Done** (PR #87); NOTE-02/03 unblocked. AUTH-10, AUTH-13, SHELL-04, EDIT-01 remain independently claimable.
-- **Sprint 4 candidates:** the rest of NOTE/EDIT, then FOLD/TAG/ATT/DAILY (all behind the NOTE/EDIT foundation); SHELL-05/06/08/09 shell polish; CI-06 → CI-08. CRED-01 (MCP) tracks to M4; ADR-24/ADR-25 make EMB-01 (with its OpenAI key provisioning and AI gating) the first AI task, in M3.
+- **Sprint 4 candidates:** 6 deferred M0-tagged tasks (SHELL-05 shortcut manager, SHELL-06 responsive breakpoints, SHELL-08 skeleton loading, SHELL-09 empty-state onboarding, CI-06 Playwright vs. previews, CI-08 axe a11y gate); rest of NOTE/EDIT; then FOLD/TAG/ATT/DAILY (all behind NOTE/EDIT foundation). CRED-01 (MCP) tracks to M4; ADR-24/ADR-25 make EMB-01 (with OpenAI key provisioning and AI gating) the first AI task, in M3.
 - **AI is per-user gated (ADR-25, user decision):** EMB/SEM/AICH/VCH are built but ship off by default, enabled per user via a single `profiles.ai_enabled` flag an operator toggles in SQL — **no admin role/panel in MVP** (deferred to a future phase). Before those tasks are implemented, the spec ripples in ADR-25 must be applied (04_DATABASE `profiles.ai_enabled` + self-grant-proof column `REVOKE`/RLS + GOV-6 self-enable-denial test, 09_SECURITY operator-only gate note, 05_API `updateProfile` exclusion, 07_AI/08_SEARCH runtime gating, 12_TASKS gating criteria).
 
 ## Known Technical Debt
@@ -111,4 +111,4 @@ Done: Sprint 0 (governance), Sprint 1 (repo & tooling foundation — 21 tasks), 
 
 ## Last Updated
 
-2026-07-23 — Claude (auto mode) completed Sprint 3's M0 closeout: AUTH-10 (settings page), AUTH-11 (deleteAccount service), AUTH-12 (deletion UI), AUTH-13 (signup E2E), SHELL-04 (command palette ⌘K). All five merged green (PRs #96–#100). 204/204 unit tests pass. **All M0 deliverables complete** — account management, shell UI, and provisioning E2E verified.
+2026-07-23 — Claude (auto mode) completed Sprint 3's M0 exit-criteria deliverables: AUTH-10 (settings page), AUTH-11 (deleteAccount service), AUTH-12 (deletion UI), AUTH-13 (signup E2E), SHELL-04 (command palette ⌘K). All five merged green (PRs #96–#100). 204/204 unit tests pass. **M0 exit-criteria met** — account management, shell UI, and provisioning E2E verified. Remaining M0-tagged tasks (SHELL-05/06/08/09, CI-06/08 — polish and test-infra) are deferred to Sprint 4.

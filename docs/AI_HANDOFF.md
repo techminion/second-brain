@@ -40,7 +40,7 @@ Estimated Context Needed:
 
 **Verification performed:** 204/204 unit tests, `tsc --noEmit` clean, ESLint clean, Prettier clean. All six required CI checks green (PR #100). Merged with squash into main (`4fcf64a`).
 
-**Outstanding Work:** Sprint 3 M0 deliverables all Done. Remaining Sprint 3 scope: NOTE-04+ (update/delete/list), EDIT-01/02+ (Tiptap editor). Sprint 4 candidates: SHELL-05/06/08/09, CI-06/08, rest of NOTE/EDIT, FOLD/TAG/ATT/DAILY.
+**Outstanding Work:** Sprint 3 M0 *exit-criteria* deliverables all Done. 6 M0-tagged polish/test-infra tasks deferred to Sprint 4: SHELL-05 (global shortcut manager), SHELL-06 (responsive breakpoints), SHELL-08 (skeleton loading), SHELL-09 (empty-state onboarding), CI-06 (Playwright vs. preview deployments), CI-08 (axe a11y gate). Remaining Sprint 3 scope: NOTE-04+ (update/delete/list), EDIT-01/02+ (Tiptap editor). Sprint 4 fills in the M0 polish + NOTE/EDIT continuation.
 
 **Known Bugs:** None introduced.
 
