@@ -72,7 +72,7 @@ Done: Sprint 0 (governance), Sprint 1 (repo & tooling foundation — 21 tasks), 
 
 ## In Progress
 
-- NOTE-02 — `NoteService.create` (Codex, backend) is in review: the exact 05_API §4 create contract validates documented input shapes before data access, applies the empty-body/root-folder defaults, delegates the single transactional repository write, and returns the full service-layer `Note` shape. Six focused tests, 164 full units, and 31 Cloud integrations pass.
+- None. NOTE-02 merged (PR #91); `NoteService.create` is live on the transactional NOTE-01 repository. NOTE-03 (`get`) is Queued/unblocked; EDIT-02+, AUTH-10, AUTH-13, SHELL-04 remain independently claimable.
 
 ## Blocked
 
@@ -102,8 +102,8 @@ Done: Sprint 0 (governance), Sprint 1 (repo & tooling foundation — 21 tasks), 
 
 ## Current Branch
 
-`feature/note-02-service-create`
+`main`
 
 ## Last Updated
 
-2026-07-23 — Codex completed NOTE-02 for review: `NoteService.create` now validates the documented title/body/folder shapes before persistence, supplies `body=''` and root-folder defaults, delegates exactly one atomic repository create, and maps the record to the API `Note` shape. Six focused tests, 164 units, 31 Cloud integrations, typecheck, lint, format, build, and audit pass; no schema or Cloud state changed.
+2026-07-23 — Reviewer (Claude) approved and merged NOTE-02 (PR #91, `4f5cacf`): `NoteService.create` matches 05_API §4 exactly (validation before data access, empty-body/root defaults, `Note` output), no invented rules, no synchronous embedding. Whitespace-title and bad-folder-error handling correctly deferred to NOTE-14. NOTE-03 unblocked.
