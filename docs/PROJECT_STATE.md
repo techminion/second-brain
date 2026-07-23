@@ -72,7 +72,7 @@ Done: Sprint 0 (governance), Sprint 1 (repo & tooling foundation — 21 tasks), 
 
 ## In Progress
 
-- **NOTE-03** — implementation complete and In Review on `feature/note-03-service-get`: visible active notes map to the public `Note`; nonexistent/RLS-hidden and soft-deleted rows uniformly throw `NotFoundError` per ADR-26. All local and Cloud gates pass.
+- None. NOTE-03 merged (PR #94) — `NoteService.get` implements the ADR-26 contract. The NOTE-01→02→03 backbone (repository, create, get) is now live. Remaining Sprint 3: NOTE-04+ (update/delete/etc.), EDIT-02+, AUTH-10/11/12/13, SHELL-04.
 
 ## Blocked
 
@@ -102,8 +102,8 @@ Done: Sprint 0 (governance), Sprint 1 (repo & tooling foundation — 21 tasks), 
 
 ## Current Branch
 
-`feature/note-03-service-get`
+`main`
 
 ## Last Updated
 
-2026-07-23 — Codex completed NOTE-03 on `feature/note-03-service-get`; 167 unit tests and 31 Cloud integrations pass alongside typecheck, lint, formatting, production build, and the high-severity audit gate. Awaiting independent review.
+2026-07-23 — Reviewer (Claude) approved and merged NOTE-03 (PR #94, `13a910e`): faithful ADR-26 `get` — `null` (nonexistent/foreign-owned) and `deletedAt` (soft-deleted) both map to `NotFoundError`, no `ForbiddenError`, no privileged probe; reuses the NOTE-02 mapper. The NOTE-01→02→03 backbone is live.
