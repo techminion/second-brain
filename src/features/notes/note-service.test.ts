@@ -2,10 +2,11 @@ import { beforeEach, describe, expect, it, type Mock, vi } from "vitest";
 
 import { NoteService } from "@/features/notes/note-service";
 import type { CreateNoteInput, CreateNoteRecordInput, NoteRecord } from "@/features/notes/types";
-import { ValidationError } from "@/shared/lib/errors";
+import { NotFoundError, ValidationError } from "@/shared/lib/errors";
 
 interface MockNoteRepository {
   createNote: Mock<(userId: string, input: CreateNoteRecordInput) => Promise<NoteRecord>>;
+  getNote: Mock<(userId: string, noteId: string) => Promise<NoteRecord | null>>;
 }
 
 const noteRecord: NoteRecord = {
@@ -23,6 +24,7 @@ const noteRecord: NoteRecord = {
 function createRepositoryMock(): MockNoteRepository {
   return {
     createNote: vi.fn(),
+    getNote: vi.fn(),
   };
 }
 
@@ -102,5 +104,54 @@ describe("NoteService.create", () => {
     ).rejects.toBeInstanceOf(ValidationError);
 
     expect(repository.createNote).not.toHaveBeenCalled();
+  });
+});
+
+describe("NoteService.get", () => {
+  let repository: MockNoteRepository;
+  let service: NoteService;
+
+  beforeEach(() => {
+    repository = createRepositoryMock();
+    service = new NoteService(repository);
+  });
+
+  it("returns a visible note through the RLS-scoped repository", async () => {
+    repository.getNote.mockResolvedValue(noteRecord);
+
+    await expect(service.get("user-id", "note-id")).resolves.toEqual({
+      body: "Service body",
+      createdAt: noteRecord.createdAt,
+      dailyNoteDate: null,
+      folderId: "folder-id",
+      id: "note-id",
+      tags: [],
+      title: "Service note",
+      type: "note",
+      updatedAt: noteRecord.updatedAt,
+    });
+
+    expect(repository.getNote).toHaveBeenCalledWith("user-id", "note-id");
+  });
+
+  it("returns NotFoundError when RLS or the requested id yields no note", async () => {
+    repository.getNote.mockResolvedValue(null);
+
+    await expect(service.get("user-id", "inaccessible-note-id")).rejects.toEqual(
+      expect.objectContaining({
+        code: "NOT_FOUND",
+        message: "Note not found",
+        statusCode: 404,
+      }),
+    );
+  });
+
+  it("hides soft-deleted notes outside the trash flow", async () => {
+    repository.getNote.mockResolvedValue({
+      ...noteRecord,
+      deletedAt: "2026-07-23T06:00:00.000Z",
+    });
+
+    await expect(service.get("user-id", "note-id")).rejects.toBeInstanceOf(NotFoundError);
   });
 });

@@ -21,6 +21,22 @@ Estimated Context Needed:
 
 ---
 
+## 2026-07-23 — Codex (Backend) — NOTE-03 ready for review
+
+**Session Date:** 2026-07-23
+**Agent:** Codex, backend implementation role
+**Objective:** Implement NOTE-03 only: `NoteService.get` with ADR-26's non-enumerating error behavior and the documented soft-delete visibility rule.
+**Files Modified:** `src/features/notes/note-service.ts`, `src/features/notes/note-service.test.ts`, `.ai/TASK_QUEUE.md`, `docs/PROJECT_STATE.md`, `docs/AI_HANDOFF.md`.
+**Files Added:** None.
+**Architecture Decisions:** None. Implemented the user-ratified ADR-26 and amended 05_API §3–4 contract exactly: inaccessible owner-scoped resources return `NotFoundError`; `ForbiddenError` is reserved for a future visible-but-not-permitted shared-resource model.
+**Implementation:** Extended the injected repository boundary with only `getNote`. `NoteService.get(userId, noteId)` delegates to that existing authenticated/RLS-scoped read, maps an active record to the public `Note` shape, and throws the same `NotFoundError` when the repository returns no row (nonexistent or RLS-hidden) or returns a row with `deletedAt` set. No service-role client, `SECURITY DEFINER` function, existence probe, repository query change, schema change, or new abstraction was introduced.
+**Verification performed:** Current Supabase changelog and RLS guidance were checked; official guidance confirms policies behave as implicit query filters and inaccessible rows surface as empty results, matching ADR-26. Focused service suite passes (1 file, 9 tests total; 3 NOTE-03 cases): visible mapping/delegation, empty/RLS-hidden result, and soft-deleted result. Full unit suite passes (43 files, 167 tests); typecheck, lint, Prettier, production build, `git diff --check`, and the high-severity dependency-audit gate pass. The audit retains only the two pre-existing moderate Next.js/PostCSS findings whose automated fix is a breaking downgrade. The dev-Cloud integration suite passes (14 files, 31 tests), including the existing note repository cross-user denial and soft-delete coverage. No Cloud state changed.
+**Outstanding Work:** Commit, push, open the draft PR, wait for every required check to pass, mark it ready, then obtain independent Claude review/merge. Do not start another NOTE task until review completes.
+**Known Bugs:** None.
+**Risks:** The public mapper currently returns `tags: []`, inherited from NOTE-02; tag hydration belongs to the later tag work and was not expanded in NOTE-03. Error messages expose no resource-existence distinction.
+**Suggested Next Task:** Independently review NOTE-03. After merge, the next task should be selected from the then-current queue.
+**Estimated Context Needed:** This entry, ADR-26, 05_API §3–4, and the two-file NOTE-03 implementation diff.
+
 ## 2026-07-23 — Claude (Architect) — ADR-26: NotFoundError over ForbiddenError for inaccessible resources
 
 **Session Date:** 2026-07-23

@@ -72,7 +72,7 @@ Done: Sprint 0 (governance), Sprint 1 (repo & tooling foundation — 21 tasks), 
 
 ## In Progress
 
-- None. NOTE-02 merged (PR #91). **NOTE-03's contract conflict resolved (ADR-26):** inaccessible resources (nonexistent / soft-deleted / foreign-owned) uniformly return `NotFoundError`, no `ForbiddenError` and no privileged existence probe — 05_API §3 amended and `ForbiddenError` removed from every owner-scoped single-resource method. NOTE-03 (`get`) is unblocked/Queued; EDIT-02+, AUTH-10, AUTH-13, SHELL-04 remain independently claimable.
+- **NOTE-03** — implementation complete and In Review on `feature/note-03-service-get`: visible active notes map to the public `Note`; nonexistent/RLS-hidden and soft-deleted rows uniformly throw `NotFoundError` per ADR-26. All local and Cloud gates pass.
 
 ## Blocked
 
@@ -102,8 +102,8 @@ Done: Sprint 0 (governance), Sprint 1 (repo & tooling foundation — 21 tasks), 
 
 ## Current Branch
 
-`chore/adr-26-not-found-over-forbidden`
+`feature/note-03-service-get`
 
 ## Last Updated
 
-2026-07-23 — Architect resolved NOTE-03's error-contract conflict as **ADR-26** (user-ratified): inaccessible resources (nonexistent / soft-deleted / foreign-owned) uniformly return `NotFoundError`; no `ForbiddenError` for cross-owner access and no privileged existence probe (would be an enumeration oracle, 09_SECURITY §5). 05_API §3 rewritten and `ForbiddenError` stripped from every owner-scoped single-resource method (§4–§11); `ForbiddenError` reserved for the future shared-graph model. NOTE-03 unblocked.
+2026-07-23 — Codex completed NOTE-03 on `feature/note-03-service-get`; 167 unit tests and 31 Cloud integrations pass alongside typecheck, lint, formatting, production build, and the high-severity audit gate. Awaiting independent review.
