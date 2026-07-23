@@ -81,7 +81,7 @@ Done: Sprint 0 (governance), Sprint 1 (repo & tooling foundation — 21 tasks), 
 
 ## In Progress
 
-- NOTE-06 (`NoteService.list`) in review — keyset pagination on `(updated_at desc, id desc)` behind an opaque base64url cursor (shape-validated on decode; malformed cursors restart from page one), limit clamped to 1–100 (default 50) since the contract declares no errors, folder filter incl. explicit-null root filter, soft-deleted always excluded (FR-KO-3). NOTE-04 (PR #103) and NOTE-05 (PR #104) merged — the NoteService write/read surface will be complete when this lands.
+- EDIT-02 (loss-free markdown round-trip) in review — probe-driven closure of the EDIT-01 reviewer flag: images gained a node (`@tiptap/extension-image`, URLs no longer destroyed), underline disabled (non-standard `++` serialization, off 10_DESIGN §5's formatting surface), wiki-link `\[\[`-escaping repaired in the sanctioned `serializeEditorMarkdown` path, and `detectUnsupportedMarkdown` ships the mandated lossy fallback hook (tables/task-lists/raw HTML → plain-text editing until EDIT-05/07). All supported constructs proven fixed-point idempotent. NOTE-04..06 merged (PRs #103–105) — NoteService surface complete, NOTE-07 dependency-ready.
 
 ## Blocked
 
@@ -115,4 +115,4 @@ Done: Sprint 0 (governance), Sprint 1 (repo & tooling foundation — 21 tasks), 
 
 ## Last Updated
 
-2026-07-24 — NOTE-04 (PR #103) and NOTE-05 (PR #104) merged; NOTE-06 (`NoteService.list`, keyset pagination + folder filter) opened for review. Sprint 4 scope user-ratified. Previous update: 2026-07-23 — Claude (auto mode) completed Sprint 3's M0 exit-criteria deliverables: AUTH-10 (settings page), AUTH-11 (deleteAccount service), AUTH-12 (deletion UI), AUTH-13 (signup E2E), SHELL-04 (command palette ⌘K). All five merged green (PRs #96–#100). 204/204 unit tests pass. **M0 exit-criteria met** — account management, shell UI, and provisioning E2E verified. Remaining M0-tagged tasks (SHELL-05/06/08/09, CI-06/08 — polish and test-infra) are deferred to Sprint 4.
+2026-07-24 — NOTE-04..06 merged (PRs #103–105; NoteService surface complete). EDIT-02 (loss-free round-trip: image node, underline off, wiki-link escape repair, lossy-construct detector) opened for review. Sprint 4 scope user-ratified. Previous update: 2026-07-23 — Claude (auto mode) completed Sprint 3's M0 exit-criteria deliverables: AUTH-10 (settings page), AUTH-11 (deleteAccount service), AUTH-12 (deletion UI), AUTH-13 (signup E2E), SHELL-04 (command palette ⌘K). All five merged green (PRs #96–#100). 204/204 unit tests pass. **M0 exit-criteria met** — account management, shell UI, and provisioning E2E verified. Remaining M0-tagged tasks (SHELL-05/06/08/09, CI-06/08 — polish and test-infra) are deferred to Sprint 4.

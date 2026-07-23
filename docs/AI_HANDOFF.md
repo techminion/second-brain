@@ -21,6 +21,23 @@ Estimated Context Needed:
 
 ---
 
+## 2026-07-24 — Claude — EDIT-02 (loss-free markdown round-trip) ready for review
+
+**Session Date:** 2026-07-24
+**Agent:** Claude, implementer (auto mode)
+**Objective:** Close the EDIT-01 reviewer flag: prove/repair the FR-NOTE-2 loss-free round-trip on the beta `@tiptap/markdown`, with a fallback for lossy constructs.
+**L-split (recorded per queue rules):** (2a) round-trip module + wiki-link escape repair; (2b) supported-construct gap closure — image node added, underline disabled; (2c) `detectUnsupportedMarkdown` lossy fallback hook; (2d) construct-by-construct round-trip + fixed-point test suite. EDIT-03 owns the larger corpus/property suite.
+**Method:** empirical probe first — 21 constructs pushed through parse→serialize→reparse before any code was written. Findings: all constructs idempotent after one pass; core constructs clean; **losses**: image URLs destroyed (`![alt](url)` → `alt`), task-list checkboxes dropped, GFM tables flattened, raw HTML stripped, `[[wiki links]]` escaped to `\[\[…\]\]` (would corrupt the product's core link syntax on every save); underline serializes to non-standard `++text++`.
+**Files Added:** `src/features/editor/markdown-round-trip.ts` (`serializeEditorMarkdown` — the only sanctioned editor→markdown path, repairs wiki-link escapes; `normalizeMarkdown` — canonical one-pass normal form; `detectUnsupportedMarkdown` — returns `("table"|"task-list"|"html")[]`, contract: non-empty ⇒ do not round-trip through the rich editor, fall back to plain text until EDIT-05/07), `markdown-round-trip.test.ts` (14 construct round-trips + 14 fixed-point checks + repair/schema/detector cases).
+**Files Modified:** `markdown-editor-extensions.ts` (`StarterKit.configure({ underline: false })`, `Image` extension added), `components/markdown-editor.tsx` (onUpdate and the controlled-value guard both route through `serializeEditorMarkdown` — comparing unlike serializations would loop setContent and reset the cursor), `package.json`/lockfile (`@tiptap/extension-image@^3.28.0` — official Tiptap package, version-aligned with the sanctioned stack), queue/state/changelog/handoff.
+**Architecture Decisions (disclosed):** underline removed from the schema (non-standard markdown, off 10_DESIGN §5's bold/italic/code/link surface — export portability per 09_SECURITY §11); wiki-link repair is a serializer post-pass until a dedicated wiki-link node arrives with the `[[` autocomplete work (08_SEARCH §6); canonicalizations (underscore→asterisk emphasis, setext→ATX, autolink→inline link) accepted as semantic-preserving per FR-NOTE-2's "byte-equivalent in markdown semantics".
+**Verification performed:** 261 units green (20 new); typecheck/lint/format clean; audit 0 vulnerabilities after the new dependency.
+**Outstanding Work:** PR → CI → merge; then EDIT-03 (corpus property suite — reuse `normalizeMarkdown` + the fixed-point assertion over a representative corpus).
+**Known Bugs:** None.
+**Risks:** the `\[\[`→`[[` repair also fires on intentionally escaped literal brackets (authoring `\[\[` to *avoid* a wiki link) — pathological case, resolved properly by the future wiki-link node. `@tiptap/markdown` remains beta; EDIT-03's corpus is the durability check.
+**Suggested Next Task:** EDIT-03, or SHELL-05 if a frontend change of pace is preferred.
+**Estimated Context Needed:** This entry, `markdown-round-trip.ts`, the probe findings above.
+
 ## 2026-07-24 — Claude — NOTE-06 (`NoteService.list`) ready for review
 
 **Session Date:** 2026-07-24
