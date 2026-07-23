@@ -21,6 +21,20 @@ Estimated Context Needed:
 
 ---
 
+## 2026-07-23 — Claude (Architect) — ADR-26: NotFoundError over ForbiddenError for inaccessible resources
+
+**Session Date:** 2026-07-23
+**Agent:** Claude, architect/reviewer role
+**Objective:** Resolve the NOTE-03 error-contract conflict Codex correctly surfaced (RLS makes foreign-owned indistinguishable from nonexistent, so `get` cannot honor the documented `NotFoundError`-vs-`ForbiddenError` split without a prohibited privileged probe).
+**Files Modified:** `docs/05_API.md` (§3 taxonomy + rule rewrite; `ForbiddenError` removed from every owner-scoped single-resource method in §4–§11), `docs/DECISIONS.md` (ADR-26), `.ai/TASK_QUEUE.md` (NOTE-03 contract note), `docs/PROJECT_STATE.md`, `docs/AI_HANDOFF.md`.
+**Decision (ADR-26, user-ratified):** owner-scoped single-resource access returns `NotFoundError` for nonexistent, soft-deleted, **or foreign-owned** targets. No `ForbiddenError` for cross-owner access; no `SECURITY DEFINER`/service-role existence probe (it would be an enumeration oracle and violate 09_SECURITY §5). `ForbiddenError` stays in the taxonomy, reserved for the future shared/multi-owner-graph model (a resource the caller can see but isn't permitted).
+**Verification performed:** Confirmed against 05_API §3 (the old rationale was the bug — it assumed a service can tell *why* RLS returned zero rows), 04_DATABASE §7 (indistinguishable empty results by design), and 09_SECURITY §5 (service-role exhaustively constrained; MCP/services not on the list). Rejected the privileged-probe alternative on enumeration-oracle grounds.
+**Outstanding Work:** Codex implements NOTE-03 against the resolved contract: RLS-scoped `getNote` (already returns soft-deleted rows) → apply trash-visibility → empty result maps to `NotFoundError`. No new decision required.
+**Known Bugs:** None.
+**Risks:** Any future shared-graph feature must re-introduce `ForbiddenError` where a visible resource is permission-denied.
+**Suggested Next Task:** Implement NOTE-03; the other Sprint 3 tasks (EDIT-02+, AUTH-10/13, SHELL-04) remain independently claimable.
+**Estimated Context Needed:** This entry, ADR-26, 05_API §3–4, NOTE-01's `NoteRepository.getNote`.
+
 ## 2026-07-23 — Codex (Backend) — NOTE-02 ready for review
 
 **Session Date:** 2026-07-23

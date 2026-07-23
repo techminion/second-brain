@@ -50,30 +50,30 @@ A fixed, closed set — every service throws only from this list. No service inv
 | Error | Thrown when | Web API maps to | MCP maps to |
 |---|---|---|---|
 | `ValidationError` | Input fails shape/business validation (e.g., empty title) | 400 | Tool error, `invalid_params` |
-| `NotFoundError` | Object doesn't exist, or is soft-deleted and the caller didn't request trash | 404 | Tool error, not found |
-| `ForbiddenError` | Caller authenticated but isn't the object's owner | 403 | Tool error, unauthorized |
+| `NotFoundError` | Object doesn't exist, is soft-deleted and the caller didn't request trash, **or is owned by another user** (RLS makes it indistinguishable from nonexistent — see ADR-26) | 404 | Tool error, not found |
+| `ForbiddenError` | Caller can see a resource but isn't permitted the operation. **Reserved for the future shared/multi-owner-graph model** ([04_DATABASE.md §10](04_DATABASE.md#10-future-schema-considerations)); under the current uniform owner-RLS model it is unreachable for owner-scoped access, which returns `NotFoundError` instead (ADR-26) | 403 | Tool error, unauthorized |
 | `ConflictError` | Unique constraint violated (duplicate daily note date, duplicate tag name) | 409 | Tool error, conflict |
 | `CyclicMoveError` | A folder move would make a folder its own ancestor ([04_DATABASE.md §4.5](04_DATABASE.md#45-folders)) | 400 | Tool error, `invalid_params` |
 | `FileTooLargeError` | Upload exceeds the configured max size (FR-ATTACH-3) | 413 | Tool error, `invalid_params` |
 | `RateLimitError` | Caller exceeded an AI or MCP rate limit ([09_SECURITY.md](09_SECURITY.md)) | 429 | Tool error, rate limited |
 | `UpstreamProviderError` | OpenAI (or another external dependency) call failed | 502 | Tool error, upstream failure |
 
-`ForbiddenError` exists even though RLS ([04_DATABASE.md §7](04_DATABASE.md#7-row-level-security-rls-policies)) already makes cross-owner access physically impossible at the query level — it's what a service throws when a query legitimately returns zero rows *because* RLS filtered them, so the caller gets a meaningful error instead of a bare `NotFoundError` indistinguishable from "this never existed."
+**404-over-403 for inaccessible resources (ADR-26):** RLS ([04_DATABASE.md §7](04_DATABASE.md#7-row-level-security-rls-policies)) makes a foreign-owned row return an empty result that is *indistinguishable* from a nonexistent or soft-deleted one. A service therefore **cannot** tell those cases apart without a privileged existence probe — and adding one would be an enumeration oracle (letting an authenticated user discover which object IDs exist across all users) and would violate the exhaustive service-role/`SECURITY DEFINER` constraints of [09_SECURITY.md §5](09_SECURITY.md#5-service-role-key-usage). So every owner-scoped single-resource access (`get`/`update`/`delete`/`restore`/tag ops across the services below) returns `NotFoundError` for a nonexistent, soft-deleted, **or foreign-owned** target. `ForbiddenError` stays in the taxonomy but is thrown only where the caller can already see the resource yet lacks permission — a case that does not arise under the current uniform owner-RLS model and is reserved for the future shared-graph model.
 
 ## 4. NoteService
 
 | Method | Input | Output | Errors |
 |---|---|---|---|
 | `create` | `{ title, body?, folderId? }` | `Note` | `ValidationError` |
-| `get` | `noteId` | `Note` | `NotFoundError`, `ForbiddenError` |
-| `update` | `noteId, { title?, body?, folderId? }` | `Note` | `NotFoundError`, `ForbiddenError`, `ValidationError` |
-| `delete` | `noteId` | `void` | `NotFoundError`, `ForbiddenError` |
-| `restore` | `noteId` | `Note` | `NotFoundError` (outside retention window), `ForbiddenError` |
+| `get` | `noteId` | `Note` | `NotFoundError` |
+| `update` | `noteId, { title?, body?, folderId? }` | `Note` | `NotFoundError`, `ValidationError` |
+| `delete` | `noteId` | `void` | `NotFoundError` |
+| `restore` | `noteId` | `Note` | `NotFoundError` (outside retention window) |
 | `list` | `{ folderId? } & PaginationOptions` | `Paginated<Note>` | — |
 | `getBacklinks` | `noteId` | `{ object: KnowledgeObjectSummary; snippet: string }[]` — snippet is the text surrounding the link in the source note, for the backlinks panel | `NotFoundError` |
 | `getOrCreateDailyNote` | `date` | `Note` | — |
-| `addTag` | `noteId, tagName` | `Note` | `NotFoundError`, `ForbiddenError` |
-| `removeTag` | `noteId, tagId` | `Note` | `NotFoundError`, `ForbiddenError` |
+| `addTag` | `noteId, tagName` | `Note` | `NotFoundError` |
+| `removeTag` | `noteId, tagId` | `Note` | `NotFoundError` |
 
 **Behavioral notes:**
 - `update` re-parses `[[wiki links]]` out of `body` and reconciles the `links` table (insert new, delete removed) in the same transaction as the note save — this is what makes FR-LINK-6 true without a separate reindex step ([04_DATABASE.md §4.8](04_DATABASE.md#48-links)).
@@ -97,9 +97,9 @@ Output: {
 | Method | Input | Output | Errors |
 |---|---|---|---|
 | `create` | `{ name, parentFolderId? }` | `Folder` | `ValidationError`, `NotFoundError` (bad parent) |
-| `rename` | `folderId, name` | `Folder` | `NotFoundError`, `ForbiddenError`, `ValidationError` |
-| `move` | `folderId, newParentFolderId` | `Folder` | `NotFoundError`, `ForbiddenError`, `CyclicMoveError` |
-| `delete` | `folderId, strategy: 'delete_contents' \| 'move_to_parent'` | `void` | `NotFoundError`, `ForbiddenError` |
+| `rename` | `folderId, name` | `Folder` | `NotFoundError`, `ValidationError` |
+| `move` | `folderId, newParentFolderId` | `Folder` | `NotFoundError`, `CyclicMoveError` |
+| `delete` | `folderId, strategy: 'delete_contents' \| 'move_to_parent'` | `void` | `NotFoundError` |
 | `list` | `parentFolderId?` | `Folder[]` | — |
 | `getTree` | — | `FolderTreeNode[]` (nested) | — |
 
@@ -164,11 +164,11 @@ Unlike the services above, most callers of `EmbeddingService` are the embedding 
 | Method | Input | Output | Errors |
 |---|---|---|---|
 | `upload` | `{ content: <binary stream>, fileName, mimeType, noteId? }` | `Attachment` | `ValidationError`, `FileTooLargeError` |
-| `get` | `attachmentId` | `Attachment` (includes fresh signed URL) | `NotFoundError`, `ForbiddenError` |
-| `delete` | `attachmentId` | `void` | `NotFoundError`, `ForbiddenError` |
-| `restore` | `attachmentId` | `Attachment` | `NotFoundError`, `ForbiddenError` |
+| `get` | `attachmentId` | `Attachment` (includes fresh signed URL) | `NotFoundError` |
+| `delete` | `attachmentId` | `void` | `NotFoundError` |
+| `restore` | `attachmentId` | `Attachment` | `NotFoundError` |
 | `list` | `options?: PaginationOptions` | `Paginated<Attachment>` | — |
-| `addTag` / `removeTag` | `attachmentId, tagName` / `attachmentId, tagId` | `Attachment` | `NotFoundError`, `ForbiddenError` |
+| `addTag` / `removeTag` | `attachmentId, tagName` / `attachmentId, tagId` | `Attachment` | `NotFoundError` |
 
 **Behavioral notes:** `upload` enforces the max-size limit (FR-ATTACH-3) before any bytes reach Storage, not after. `get` never returns a stored/cached signed URL — Storage URLs are generated fresh per call so a revoked or expired URL can't leak from a stale cache.
 
@@ -177,7 +177,7 @@ Unlike the services above, most callers of `EmbeddingService` are the embedding 
 | Method | Input | Output | Errors |
 |---|---|---|---|
 | `streamChat` | `{ scope: 'note' \| 'vault', noteId?, conversationId?, message }` | `AsyncIterable<ChatStreamEvent>` | `ValidationError`, `RateLimitError`, `UpstreamProviderError` |
-| `getConversation` | `conversationId` | `Conversation` | `NotFoundError`, `ForbiddenError` |
+| `getConversation` | `conversationId` | `Conversation` | `NotFoundError` |
 | `listConversations` | `{ scope? } & PaginationOptions` | `Paginated<Conversation>` | — |
 
 `ChatStreamEvent` is a discriminated union: `{ type: 'token'; value: string } \| { type: 'citation'; knowledgeObjectId: string } \| { type: 'done'; messageId: string }`.
@@ -197,7 +197,7 @@ Unlike the services above, most callers of `EmbeddingService` are the embedding 
 | `deleteAccount` | — | `void` | — |
 | `createMcpCredential` | `name` | `{ rawToken: string; credential: McpCredential }` | `ValidationError` |
 | `listMcpCredentials` | — | `McpCredential[]` (never includes `rawToken` or `tokenHash`) | — |
-| `revokeMcpCredential` | `credentialId` | `void` | `NotFoundError`, `ForbiddenError` |
+| `revokeMcpCredential` | `credentialId` | `void` | `NotFoundError` |
 
 **`Profile` shape** (ADR-23): the type returned by `getProfile`/`updateProfile`.
 
