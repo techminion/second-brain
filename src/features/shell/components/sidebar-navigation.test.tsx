@@ -18,10 +18,18 @@ describe("SidebarNavigation", () => {
     expect(screen.getByRole("heading", { name: "Tags" })).toBeInTheDocument();
   });
 
-  it("does not invent destinations before owning features define their routes", () => {
+  it("nav sections have no invented links (only the settings route is wired)", () => {
     render(<SidebarNavigation signOutAction={signOutAction} />);
 
-    expect(screen.queryAllByRole("link")).toHaveLength(0);
+    const nav = screen.getByRole("navigation", { name: "Knowledge navigation" });
+    expect(nav.querySelectorAll("a")).toHaveLength(0);
+  });
+
+  it("renders a settings link pointing to /settings", () => {
+    render(<SidebarNavigation signOutAction={signOutAction} />);
+
+    const link = screen.getByRole("link", { name: /settings/i });
+    expect(link).toHaveAttribute("href", "/settings");
   });
 
   it("renders a visible logout submit control", () => {
