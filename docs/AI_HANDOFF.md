@@ -21,6 +21,37 @@ Estimated Context Needed:
 
 ---
 
+## 2026-07-23 — Claude (auto mode) — Sprint 3 M0 closeout: AUTH-10/11/12/13 + SHELL-04
+
+**Session Date:** 2026-07-23
+**Agent:** Claude, auto mode (architect + implementer + reviewer)
+**Objective:** Complete all five remaining Sprint 3 M0 deliverables: AUTH-10 (account settings), AUTH-11 (deleteAccount service), AUTH-12 (deletion UI), AUTH-13 (signup E2E), SHELL-04 (command palette).
+**Files Modified:**
+- `src/features/shell/components/app-shell.tsx` — added `<CommandPalette />`
+- `src/features/shell/components/app-shell.test.tsx` — added `next/navigation` mock
+- `.ai/TASK_QUEUE.md` — SHELL-04 status → Done
+
+**Files Added:**
+- `src/features/shell/commands/command-registry.ts` — static command registry (9 entries, all §8 shortcuts)
+- `src/features/shell/components/command-palette.tsx` — client component: Radix Dialog, combobox + listbox, ↑↓ navigation, contenteditable guard
+- `src/features/shell/components/command-palette.test.tsx` — 15 unit tests
+
+**Architecture Decisions:** None. SHELL-04 follows the existing Radix Dialog pattern (same as `DeleteAccountForm`). Commands disabled until feature tasks provide routes — this is the "static registry teaches shortcuts" MVP described in 10_DESIGN §8. The `e.target instanceof Element` guard is required because `fireEvent.keyDown(document, ...)` sets `target = document` (not an `Element`), and `document` has no `closest` method.
+
+**Verification performed:** 204/204 unit tests, `tsc --noEmit` clean, ESLint clean, Prettier clean. All six required CI checks green (PR #100). Merged with squash into main (`4fcf64a`).
+
+**Outstanding Work:** Sprint 3 M0 deliverables all Done. Remaining Sprint 3 scope: NOTE-04+ (update/delete/list), EDIT-01/02+ (Tiptap editor). Sprint 4 candidates: SHELL-05/06/08/09, CI-06/08, rest of NOTE/EDIT, FOLD/TAG/ATT/DAILY.
+
+**Known Bugs:** None introduced.
+
+**Risks:** Disabled commands in the palette are navigable with ↑↓ but Enter is a no-op for them — UX is slightly confusing but matches "teach the shortcuts" intent from the spec. Future feature tasks must update `command-registry.ts` when they add working routes.
+
+**Suggested Next Task:** NOTE-04 (`NoteService.update`) or EDIT-01 (Tiptap editor setup) — both are M1 foundation tasks, independently claimable.
+
+**Estimated Context Needed:** This entry, `src/features/shell/commands/command-registry.ts`, `src/features/shell/components/command-palette.tsx`, 10_DESIGN §8.
+
+---
+
 ## 2026-07-23 — Codex (Backend) — NOTE-03 ready for review
 
 **Session Date:** 2026-07-23
