@@ -6,6 +6,7 @@ import { useEffect, useRef } from "react";
 import { cn } from "@/shared/lib/utils";
 
 import { markdownEditorExtensions } from "../markdown-editor-extensions";
+import { serializeEditorMarkdown } from "../markdown-round-trip";
 import styles from "./markdown-editor.module.css";
 
 export interface MarkdownEditorProps {
@@ -42,7 +43,7 @@ export function MarkdownEditor({
       },
     },
     onUpdate: ({ editor: updatedEditor }) => {
-      onChangeRef.current(updatedEditor.getMarkdown());
+      onChangeRef.current(serializeEditorMarkdown(updatedEditor));
     },
   });
 
@@ -68,7 +69,10 @@ export function MarkdownEditor({
   }, [ariaLabel, editable, editor]);
 
   useEffect(() => {
-    if (!editor || editor.getMarkdown() === value) {
+    // Compare through the same serializer onChange emits, or a value that
+    // contains a repaired wiki link would never match and setContent would
+    // reset the cursor on every render.
+    if (!editor || serializeEditorMarkdown(editor) === value) {
       return;
     }
 
