@@ -21,6 +21,22 @@ Estimated Context Needed:
 
 ---
 
+## 2026-07-23 — Codex (Backend) — NOTE-02 ready for review
+
+**Session Date:** 2026-07-23
+**Agent:** Codex, backend implementation role
+**Objective:** Implement NOTE-02 only: `NoteService.create` for FR-NOTE-1 over the merged transactional `NoteRepository`.
+**Files Modified:** `src/features/notes/types.ts`, `.ai/TASK_QUEUE.md`, `docs/PROJECT_STATE.md`, `docs/AI_HANDOFF.md`.
+**Files Added:** `src/features/notes/note-service.ts`, `src/features/notes/note-service.test.ts`.
+**Architecture Decisions:** None. The 05_API §4 contract, 04_DATABASE §4.3 single-writer/title dual-write rule, and existing NOTE-01 repository boundary govern the implementation.
+**Implementation:** Added the service-layer `CreateNoteInput` and `Note` types plus `NoteService.create`. Runtime validation mirrors the documented boundary only: title/body/folder must be strings when present, and title has the MCP-documented `minLength: 1`; no undocumented trimming, UUID-format rule, or size limit was invented. Omitted body becomes `''`, omitted folder becomes root (`null`), and daily-note date is null. The service delegates exactly one call to the NOTE-01 transactional repository and maps its internal record to the API shape (`type: 'note'`, `tags: []`, no owner/deletion internals). Its injected contract exposes only `createNote`, so synchronous embedding and adjacent repository operations are structurally unavailable.
+**Verification performed:** Current Supabase changelog/docs were checked: the 2026 Data API exposure change is already satisfied by NOTE-01's explicit function grants, Node 22 satisfies the client runtime floor, and official guidance continues to support authenticated `rpc()` calls to `SECURITY INVOKER` functions. Focused service suite passes (1 file, 6 tests): full input/output mapping, documented defaults, empty-title error shape, and non-string title/body/folder rejection before data access. Full unit suite passes (43 files, 164 tests); typecheck, lint, Prettier, production build, `git diff --check`, and the high-severity audit gate pass. The audit retains only the two pre-existing moderate Next.js/PostCSS findings whose automated fix is a breaking downgrade. The existing dev-Cloud integration suite passes (14 files, 31 tests), including the transactional note RPC/RLS coverage. No schema, migration, dependency, or Cloud state changed.
+**Outstanding Work:** Commit, push, open the draft PR, wait for every required check to pass, mark it ready, then obtain independent Claude review/merge. NOTE-03 stays queued until NOTE-02 is merged per the queue's strict chain.
+**Known Bugs:** None.
+**Risks:** A nonexistent folder currently reaches the database FK and surfaces through the existing repository failure path; the docs do not define a different service error for bad folder IDs, so this PR does not invent one. NOTE-14 later owns the full multi-method contract audit after NOTE-02..06 exist.
+**Suggested Next Task:** Independently review NOTE-02. After merge, NOTE-03 is next in the strict NOTE chain.
+**Estimated Context Needed:** This entry, the NOTE-02 diff, 05_API §3–4, 04_DATABASE §4.2–4.3, and the merged NOTE-01 repository/types/tests.
+
 ## 2026-07-23 — Codex (Frontend) — EDIT-01 ready for review
 
 **Session Date:** 2026-07-23

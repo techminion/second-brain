@@ -1,8 +1,22 @@
+import type { KnowledgeObjectSummary } from "@/shared/types";
+
+export interface CreateNoteInput {
+  body?: string;
+  folderId?: string;
+  title: string;
+}
+
 export interface CreateNoteRecordInput {
   body: string;
   dailyNoteDate: string | null;
   folderId: string | null;
   title: string;
+}
+
+export interface Note extends KnowledgeObjectSummary {
+  body: string;
+  dailyNoteDate: string | null;
+  folderId: string | null;
 }
 
 export interface NoteRecord {

@@ -72,7 +72,7 @@ Done: Sprint 0 (governance), Sprint 1 (repo & tooling foundation — 21 tasks), 
 
 ## In Progress
 
-- None. NOTE-01 and EDIT-01 are merged; the M1 foundation (note repository + editor foundation) is in place. NOTE-02/03 and EDIT-02+ are unblocked and Queued; AUTH-10, AUTH-13, SHELL-04 remain independently claimable.
+- NOTE-02 — `NoteService.create` (Codex, backend) is in review: the exact 05_API §4 create contract validates documented input shapes before data access, applies the empty-body/root-folder defaults, delegates the single transactional repository write, and returns the full service-layer `Note` shape. Six focused tests, 164 full units, and 31 Cloud integrations pass.
 
 ## Blocked
 
@@ -102,8 +102,8 @@ Done: Sprint 0 (governance), Sprint 1 (repo & tooling foundation — 21 tasks), 
 
 ## Current Branch
 
-`main`
+`feature/note-02-service-create`
 
 ## Last Updated
 
-2026-07-23 — Reviewer (Claude) approved and merged EDIT-01 (PR #89, `bfa1e6c`): SSR-safe controlled Tiptap `MarkdownEditor`, token-only CSS, accessible, no business logic; verified the controlled-value guard and scope boundary. Flagged for EDIT-02/03: FR-NOTE-2 round-trip rests on the beta `@tiptap/markdown` — needs corpus validation + a fallback. Both M1-foundation tasks (NOTE-01 repo, EDIT-01 editor) are now live; NOTE-02/03 and EDIT-02+ unblocked.
+2026-07-23 — Codex completed NOTE-02 for review: `NoteService.create` now validates the documented title/body/folder shapes before persistence, supplies `body=''` and root-folder defaults, delegates exactly one atomic repository create, and maps the record to the API `Note` shape. Six focused tests, 164 units, 31 Cloud integrations, typecheck, lint, format, build, and audit pass; no schema or Cloud state changed.
