@@ -72,7 +72,7 @@ Done: Sprint 0 (governance), Sprint 1 (repo & tooling foundation — 21 tasks), 
 
 ## In Progress
 
-- None. NOTE-02 merged (PR #91); `NoteService.create` is live on the transactional NOTE-01 repository. NOTE-03 (`get`) is Queued/unblocked; EDIT-02+, AUTH-10, AUTH-13, SHELL-04 remain independently claimable.
+- None. NOTE-02 merged (PR #91). **NOTE-03's contract conflict resolved (ADR-26):** inaccessible resources (nonexistent / soft-deleted / foreign-owned) uniformly return `NotFoundError`, no `ForbiddenError` and no privileged existence probe — 05_API §3 amended and `ForbiddenError` removed from every owner-scoped single-resource method. NOTE-03 (`get`) is unblocked/Queued; EDIT-02+, AUTH-10, AUTH-13, SHELL-04 remain independently claimable.
 
 ## Blocked
 
@@ -102,8 +102,8 @@ Done: Sprint 0 (governance), Sprint 1 (repo & tooling foundation — 21 tasks), 
 
 ## Current Branch
 
-`main`
+`chore/adr-26-not-found-over-forbidden`
 
 ## Last Updated
 
-2026-07-23 — Reviewer (Claude) approved and merged NOTE-02 (PR #91, `4f5cacf`): `NoteService.create` matches 05_API §4 exactly (validation before data access, empty-body/root defaults, `Note` output), no invented rules, no synchronous embedding. Whitespace-title and bad-folder-error handling correctly deferred to NOTE-14. NOTE-03 unblocked.
+2026-07-23 — Architect resolved NOTE-03's error-contract conflict as **ADR-26** (user-ratified): inaccessible resources (nonexistent / soft-deleted / foreign-owned) uniformly return `NotFoundError`; no `ForbiddenError` for cross-owner access and no privileged existence probe (would be an enumeration oracle, 09_SECURITY §5). 05_API §3 rewritten and `ForbiddenError` stripped from every owner-scoped single-resource method (§4–§11); `ForbiddenError` reserved for the future shared-graph model. NOTE-03 unblocked.
