@@ -1,8 +1,8 @@
 import { NoteRepository } from "@/features/notes/note-repository";
-import type { CreateNoteInput, Note, NoteRecord } from "@/features/notes/types";
+import type { CreateNoteInput, Note, NoteRecord, UpdateNoteInput } from "@/features/notes/types";
 import { NotFoundError, ValidationError } from "@/shared/lib/errors";
 
-type NoteRepositoryContract = Pick<NoteRepository, "createNote" | "getNote">;
+type NoteRepositoryContract = Pick<NoteRepository, "createNote" | "getNote" | "updateNote">;
 
 function validateCreateInput(input: CreateNoteInput): void {
   if (typeof input.title !== "string") {
@@ -19,6 +19,30 @@ function validateCreateInput(input: CreateNoteInput): void {
 
   if (input.folderId !== undefined && typeof input.folderId !== "string") {
     throw new ValidationError("Folder id must be a string");
+  }
+}
+
+function validateUpdateInput(input: UpdateNoteInput): void {
+  if (input.title !== undefined) {
+    if (typeof input.title !== "string") {
+      throw new ValidationError("Title must be a string");
+    }
+
+    if (input.title.length === 0) {
+      throw new ValidationError("Title must not be empty");
+    }
+  }
+
+  if (input.body !== undefined && typeof input.body !== "string") {
+    throw new ValidationError("Body must be a string");
+  }
+
+  if (
+    input.folderId !== undefined &&
+    input.folderId !== null &&
+    typeof input.folderId !== "string"
+  ) {
+    throw new ValidationError("Folder id must be a string or null");
   }
 }
 
@@ -55,6 +79,24 @@ export class NoteService {
   async get(userId: string, noteId: string): Promise<Note> {
     const record = await this.repository.getNote(userId, noteId);
 
+    if (!record || record.deletedAt !== null) {
+      throw new NotFoundError("Note not found");
+    }
+
+    return mapNote(record);
+  }
+
+  async update(userId: string, noteId: string, input: UpdateNoteInput): Promise<Note> {
+    validateUpdateInput(input);
+
+    const record = await this.repository.updateNote(userId, noteId, {
+      body: input.body,
+      folderId: input.folderId,
+      title: input.title,
+    });
+
+    // The update_note RPC refuses nonexistent, foreign-owned, and soft-deleted
+    // targets alike (ADR-26); deletedAt is re-checked defensively.
     if (!record || record.deletedAt !== null) {
       throw new NotFoundError("Note not found");
     }

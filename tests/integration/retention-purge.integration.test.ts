@@ -153,6 +153,7 @@ describe("retention purge (ADR-18)", () => {
     const rerunResult = await service.run();
 
     expect(rerunResult).toEqual({
+      accountsDeleted: 0,
       foldersPurged: 0,
       knowledgeObjectsPurged: 0,
       storageObjectsRemoved: 0,

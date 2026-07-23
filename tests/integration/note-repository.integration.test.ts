@@ -80,6 +80,14 @@ describe("NoteRepository Cloud integration", () => {
 
     expect(softDeletedNote?.deletedAt).not.toBeNull();
     expect(Date.parse(softDeletedNote?.deletedAt ?? "")).toBe(Date.parse(deletedAt));
+
+    // NOTE-04: update_note refuses soft-deleted targets without mutating them.
+    await expect(
+      repositoryA.updateNote(userA.id, note.id, { title: "Trash edit" }),
+    ).resolves.toBeNull();
+    const trashedNote = await repositoryA.getNote(userA.id, note.id);
+    expect(trashedNote?.title).toBe("Updated title");
+
     await expect(
       repositoryA.restoreNote(userA.id, note.id, new Date().toISOString()),
     ).resolves.toMatchObject({ deletedAt: null, id: note.id });

@@ -10,7 +10,29 @@
 - **Priorities:** `P0` — on the critical path of the current sprint; `P1` — this sprint, parallelizable; `P2` — next in line, claimable if idle.
 - When the sprint's queue empties, the architect role promotes the next dependency-ready wave from [docs/12_TASKS.md](../docs/12_TASKS.md).
 
-## Current Sprint: Sprint 3 — Account Management & Note Foundation (M0 → M1)
+## Current Sprint: Sprint 4 — Note Service Completion & Editor Round-Trip (M1)
+
+Goal: finish the `NoteService` write/read surface (NOTE-04..06 — update with the title dual-write invariant, soft delete + restore, cursor-paginated list), prove the FR-NOTE-2 loss-free markdown round-trip on the beta `@tiptap/markdown` (EDIT-02/03 — the flagged highest-risk item), and land the global shortcut manager (SHELL-05, which also absorbs the SHELL-04 review findings). CI-06 opens the preview-E2E lane; the remaining M0 polish rides as P2.
+
+Promoted 2026-07-24 by the architect role after Sprint 3 closed (all rows Done). GOV-5 sequencing: NOTE-04 → NOTE-05 → NOTE-06 (one backend chain); EDIT-02 → EDIT-03 (frontend); SHELL-05 independent (frontend); CI-06 → CI-08 (infra). SHELL-06/08/09 are parallelizable P2 fillers.
+
+**SHELL-04 review findings (fold into SHELL-05):** unused `inputRef` in `command-palette.tsx`; `e.key === "k"` misses Caps-Lock `"K"`; no `scrollIntoView` on arrow navigation past the listbox fold (`max-h-72` < 9 items); palette enter/exit animation owed to 10_DESIGN §9 (blocked by the arbitrary-value lint rule on Radix `data-[state]` variants — needs a token-conformant approach).
+
+| ID | Title | Priority | Cx | Depends on | Owner | Status | Milestone | Acceptance criteria |
+|---|---|---|---|---|---|---|---|---|
+| NOTE-04 | `NoteService.update` — title dual-write invariant | P0 | M | NOTE-02 | Claude | Claimed (Claude) | M1 | [05_API §4](../docs/05_API.md#4-noteservice) update contract; link reconciliation + rename propagation deferred to LINK-04 per [12_TASKS](../docs/12_TASKS.md) |
+| NOTE-05 | `NoteService.delete` (soft) + `restore` | P1 | S | NOTE-02 | backend | Queued | M1 | FR-NOTE-4, FR-KO-3; delete → `void`, restore → `Note`, `NotFoundError` outside retention window |
+| NOTE-06 | `NoteService.list` with cursor pagination + folder filter | P1 | M | NOTE-01 | backend | Queued | M1 | [05_API §4](../docs/05_API.md#4-noteservice) `Paginated<Note>` contract |
+| EDIT-02 | Markdown serialization round-trip, loss-free (FR-NOTE-2) | P0 | L | EDIT-01 | frontend | Queued | M1 | EDIT-01 reviewer flag: validate the beta `@tiptap/markdown` against a real corpus; keep a fallback if lossy |
+| EDIT-03 | Round-trip property test suite (markdown corpus) | P1 | M | EDIT-02 | frontend | Queued | M1 | representative corpus survives edit-save-reload |
+| SHELL-05 | Global keyboard-shortcut manager | P1 | M | SHELL-02, SHELL-04 | frontend | Queued | M0 | registration, `⌘`/`Ctrl` mapping, input-focus guards; absorb the SHELL-04 review findings above |
+| CI-06 | Playwright E2E job against preview deployments | P1 | M | SETUP-10, CI-02 | infra | Queued | M0 | gates NOTE-15 and CI-08 |
+| CI-08 | axe accessibility check job on core routes | P2 | M | CI-06 | infra | Queued | M0 | needs CI-06 |
+| SHELL-06 | Responsive breakpoint behavior for the shell | P2 | M | SHELL-02 | frontend | Queued | M0 | [10_DESIGN §11](../docs/10_DESIGN.md#11-responsive-behavior) |
+| SHELL-08 | Skeleton-loading primitives | P2 | S | SHELL-02 | frontend | Queued | M0 | match final layouts, [10_DESIGN §4](../docs/10_DESIGN.md#4-component-philosophy) |
+| SHELL-09 | Empty-state teach-the-basics component | P2 | S | SHELL-02 | frontend | Queued | M0 | [10_DESIGN §4](../docs/10_DESIGN.md#4-component-philosophy); FR-AUTH-5 empty state teaches create/link/palette |
+
+## Sprint 3 — Account Management & Note Foundation (M0 → M1) — ✅ Complete 2026-07-24
 
 Goal: close the remaining M0 deliverables — account management (settings + FR-AUTH-6 deletion), the command palette, and signup→shell verification — and lay the M1 *Collect* foundation: the note service backend (NOTE-01..03) and the Tiptap editor foundation (EDIT-01, the MVP's highest-risk markdown round-trip work, started early to de-risk).
 
