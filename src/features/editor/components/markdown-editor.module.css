@@ -1,0 +1,96 @@
+.root {
+  width: 100%;
+  border: 1px solid hsl(var(--border));
+  border-radius: var(--radius-md);
+  background: hsl(var(--background));
+  color: hsl(var(--foreground));
+}
+
+.root:focus-within {
+  outline: 2px solid hsl(var(--ring));
+  outline-offset: 2px;
+}
+
+.root[data-disabled="true"] {
+  background: hsl(var(--muted));
+  color: hsl(var(--muted-foreground));
+}
+
+.content {
+  min-height: 16rem;
+  padding: 0.75rem 1rem;
+  outline: none;
+}
+
+.content > :first-child {
+  margin-top: 0;
+}
+
+.content > :last-child {
+  margin-bottom: 0;
+}
+
+.content h1,
+.content h2,
+.content h3 {
+  margin-block: 1.5rem 0.75rem;
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+.content h1 {
+  font-size: 1.875rem;
+}
+
+.content h2 {
+  font-size: 1.5rem;
+}
+
+.content h3 {
+  font-size: 1.25rem;
+}
+
+.content p,
+.content blockquote,
+.content pre,
+.content ul,
+.content ol {
+  margin-block: 0.75rem;
+}
+
+.content ul,
+.content ol {
+  padding-inline-start: 1.5rem;
+}
+
+.content ul {
+  list-style: disc;
+}
+
+.content ol {
+  list-style: decimal;
+}
+
+.content blockquote {
+  border-inline-start: 0.25rem solid hsl(var(--border));
+  padding-inline-start: 1rem;
+  color: hsl(var(--muted-foreground));
+}
+
+.content code {
+  border-radius: var(--radius-md);
+  background: hsl(var(--muted));
+  padding: 0.125rem 0.25rem;
+  font-family: var(--font-jetbrains-mono), ui-monospace, monospace;
+}
+
+.content pre {
+  overflow-x: auto;
+  border-radius: var(--radius-md);
+  background: hsl(var(--muted));
+  padding: 0.75rem 1rem;
+}
+
+.content pre code {
+  padding: 0;
+}
