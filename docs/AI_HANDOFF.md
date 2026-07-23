@@ -21,6 +21,22 @@ Estimated Context Needed:
 
 ---
 
+## 2026-07-23 — Codex (Backend) — NOTE-01 dependency gate repair
+
+**Session Date:** 2026-07-23
+**Agent:** Codex, backend implementation role
+**Objective:** Clear PR #87's newly failing dependency-audit gate and re-evaluate the remaining migration failure.
+**Files Modified:** `package.json`, `package-lock.json`, `.ai/TASK_QUEUE.md`, `docs/PROJECT_STATE.md`, `docs/AI_HANDOFF.md`.
+**Files Added:** None.
+**Architecture Decisions:** None. Next.js remains on the documented 15.x stack.
+**Implementation:** Upgraded Next.js from 15.5.20 to the patched 15.5.21 release after GitHub published high-severity Server Action advisories affecting earlier 15.x versions. The lockfile updates only the matching Next.js packages. The migration replay itself now passes; its remaining failure is the expected CI-04 repo↔Cloud drift because migration `20260722185637` is still unapplied.
+**Verification performed:** `npm audit --audit-level=high`, typecheck, lint, format, all 153 unit tests, production build, and `git diff --check` pass. Audit retains two moderate PostCSS findings whose automated fix proposes an invalid breaking downgrade; no high findings remain. The initial sandboxed build could not reach Google Fonts, then passed outside the network sandbox.
+**Outstanding Work:** Independent reviewer approval of the exact NOTE-01 migration is still required by the merged PR #86 workflow. After approval, apply that exact file to dev Cloud, run Cloud integrations/advisors/catalog checks, confirm all PR checks green, and only then mark PR #87 ready for review.
+**Known Bugs:** None.
+**Risks:** The draft PR cannot have a green migration check before reviewer-approved Cloud application; applying first would violate the documented review-before-apply ordering.
+**Suggested Next Task:** Review and approve the NOTE-01 SQL, then complete its Cloud verification. NOTE-02/03 remain blocked.
+**Estimated Context Needed:** This entry, PR #87, PR #86's workflow ruling, and migration `20260722185637`.
+
 ## 2026-07-23 — Codex (Backend) — NOTE-01 CI grant fix
 
 **Session Date:** 2026-07-23
