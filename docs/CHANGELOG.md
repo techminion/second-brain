@@ -10,6 +10,7 @@ All notable changes to Second Brain are documented here, following [Keep a Chang
 - **2026-07-22** — Pinned `sharp` to `^0.35.3` via an npm `overrides` entry, clearing the high-severity libvips advisories (CVE-2026-33327/33328/35590/35591) that Next.js 15 pulled in transitively through `sharp@0.34.x`. Unblocks the `Dependency audit` gate without changing the documented Next.js 15 pin (SEC-07).
 
 ### Added
+- **2026-07-24** — Added reusable skeleton-loading primitives (`Skeleton`, `SkeletonText`) that pulse to signal loading, match the final layout to avoid shift, and go still under reduced-motion — the foundation for the app's spinner-free loading states (SHELL-08).
 - **2026-07-24** — A brand-new account now lands on an onboarding empty state that teaches the three core moves — create a note (`⌘N`), link ideas with `[[`, and open the command palette (`⌘K`) — instead of a placeholder (SHELL-09, FR-AUTH-5).
 - **2026-07-24** — Every pull request now runs axe WCAG 2.1 AA checks against its preview deployment (login, signup, forgot-password, the authenticated shell, and settings); the first run caught and fixed color-only auth links, which are now underlined (CI-08).
 - **2026-07-24** — Every same-repository pull request now runs the Playwright E2E suite against its own Vercel preview deployment, crossing Standard Preview Protection with an automation-bypass token; the job is fork-safe and skips cleanly until its secrets are provisioned (CI-06).
