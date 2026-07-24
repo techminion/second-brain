@@ -38,4 +38,12 @@ describe("SidebarNavigation", () => {
     expect(screen.getByRole("button", { name: "Log out" })).toHaveAttribute("type", "submit");
     expect(container.querySelector("form")).toBeInTheDocument();
   });
+
+  it("renders the provided notes slot", () => {
+    render(
+      <SidebarNavigation notesSlot={<div>note slot content</div>} signOutAction={signOutAction} />,
+    );
+
+    expect(screen.getByText("note slot content")).toBeInTheDocument();
+  });
 });

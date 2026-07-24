@@ -1,10 +1,13 @@
 import { CalendarDays, Folder, LogOut, type LucideIcon, Settings, Tags } from "lucide-react";
 import Link from "next/link";
+import type { ReactNode } from "react";
 
 import { Button } from "@/shared/ui/button";
 
 interface SidebarNavigationProps {
   signOutAction: () => Promise<void>;
+  /** Note list slot, composed at the app layer so the shell stays feature-agnostic. */
+  notesSlot?: ReactNode;
 }
 
 interface NavigationSectionProps {
@@ -31,15 +34,16 @@ function NavigationSection({ Icon, label }: Readonly<NavigationSectionProps>) {
  * tree, tag list, and daily-note destination. The specs do not define route
  * paths yet, so this frame deliberately avoids dead/invented links.
  */
-export function SidebarNavigation({ signOutAction }: Readonly<SidebarNavigationProps>) {
+export function SidebarNavigation({ notesSlot, signOutAction }: Readonly<SidebarNavigationProps>) {
   return (
     <div className="flex min-h-0 flex-1 flex-col">
-      <nav aria-label="Knowledge navigation" className="flex min-h-0 flex-1 flex-col gap-1 px-2">
+      <nav aria-label="Knowledge navigation" className="flex flex-col gap-1 px-2 pt-2">
         <NavigationSection Icon={CalendarDays} label="Daily note" />
         <NavigationSection Icon={Folder} label="Folders" />
         <NavigationSection Icon={Tags} label="Tags" />
       </nav>
-      <div className="flex flex-col gap-1 border-t p-2">
+      {notesSlot}
+      <div className="mt-auto flex flex-col gap-1 border-t p-2">
         <Button asChild className="w-full justify-start" variant="ghost">
           <Link href="/settings">
             <Settings aria-hidden="true" className="size-4" />
