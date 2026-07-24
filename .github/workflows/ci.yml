@@ -163,7 +163,56 @@ jobs:
           PLAYWRIGHT_BASE_URL: ${{ steps.preview.outputs.url }}
           NEXT_PUBLIC_SUPABASE_URL: https://zkzyfwclvquiargnwgtw.supabase.co
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.E2E_SUPABASE_SERVICE_ROLE_KEY }}
-        run: npm run test:e2e
+        run: npx playwright test --grep-invert "@a11y"
+
+  a11y:
+    name: Accessibility
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    # Fork-safe (GOV-7): same model as E2E (preview).
+    if: github.event.pull_request.head.repo.full_name == github.repository
+    env:
+      VERCEL_AUTOMATION_BYPASS_SECRET: ${{ secrets.VERCEL_AUTOMATION_BYPASS_SECRET }}
+      E2E_SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.E2E_SUPABASE_SERVICE_ROLE_KEY }}
+    steps:
+      - name: Check secret provisioning
+        id: prerequisites
+        run: |
+          if [[ -n "$VERCEL_AUTOMATION_BYPASS_SECRET" && -n "$E2E_SUPABASE_SERVICE_ROLE_KEY" ]]; then
+            echo "ready=true" >>"$GITHUB_OUTPUT"
+          else
+            echo "ready=false" >>"$GITHUB_OUTPUT"
+            echo "::notice::Accessibility skipped — VERCEL_AUTOMATION_BYPASS_SECRET and E2E_SUPABASE_SERVICE_ROLE_KEY are not both provisioned."
+          fi
+      - name: Check out repository
+        if: steps.prerequisites.outputs.ready == 'true'
+        uses: actions/checkout@v7
+      - name: Set up Node.js
+        if: steps.prerequisites.outputs.ready == 'true'
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22.12.0
+          cache: npm
+      - name: Install dependencies
+        if: steps.prerequisites.outputs.ready == 'true'
+        run: npm ci
+      - name: Install Playwright browsers
+        if: steps.prerequisites.outputs.ready == 'true'
+        run: npx playwright install --with-deps chromium
+      - name: Wait for the Vercel preview deployment
+        if: steps.prerequisites.outputs.ready == 'true'
+        id: preview
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PREVIEW_SHA: ${{ github.event.pull_request.head.sha }}
+        run: ./tools/ci/wait-for-vercel-preview.sh
+      - name: Run axe checks against the preview
+        if: steps.prerequisites.outputs.ready == 'true'
+        env:
+          PLAYWRIGHT_BASE_URL: ${{ steps.preview.outputs.url }}
+          NEXT_PUBLIC_SUPABASE_URL: https://zkzyfwclvquiargnwgtw.supabase.co
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.E2E_SUPABASE_SERVICE_ROLE_KEY }}
+        run: npx playwright test --grep "@a11y"
 
   unit-tests:
     name: Unit tests
