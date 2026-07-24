@@ -300,3 +300,13 @@ Future Revisit:
 **Chosen Solution:** By task-area prefix, since prefixes map cleanly to both feature folders and doc sections.
 **Tradeoffs:** Cross-cutting tasks (e.g., FOLD UI + service) name a primary owner and a supporting role in [MILESTONES.md](MILESTONES.md).
 **Future Revisit:** Revisit if agent count or parallelism grows beyond one agent per area.
+
+## GOV-8 — `E2E (preview)` and `Accessibility` are required branch-protection checks
+
+**Decision:** The `E2E (preview)` and `Accessibility` (axe/WCAG 2.1 AA) CI jobs are **required** status checks on `main` (added 2026-07-24 via the GitHub branch-protection API; `strict: true` / up-to-date-branches preserved). Merging is blocked until both pass, alongside the existing six (Typecheck, Lint, Format, Unit tests, Dependency audit, Migration check).
+**Status:** Accepted (2026-07-24) — user decision, recorded by the reviewer
+**Context:** CI-06/CI-08 (PRs #109/#111) added these jobs; they had run advisory-only through several clean live cycles. With the note-taking UI (Sprint 5) now landing real rendered surfaces, a browser-verified functional + accessibility gate is worth making merge-blocking.
+**Options Considered:** (a) make both required (chosen); (b) keep advisory (a preview-lane flake can never block, but a real UI/a11y regression can merge); (c) defer to Sprint 5 close.
+**Chosen Solution:** (a). Unit tests miss axe color-contrast/landmark failures and never exercise a real deployment; gating on the preview jobs closes that gap.
+**Tradeoffs:** The preview lane occasionally flakes when Vercel misses creating a deployment for a commit (seen on PR #117), which now **blocks merge** until re-triggered (e.g., an empty commit). Both jobs remain fork-safe and skip-until-provisioned (GOV-7); since the repo works on same-repo branches with secrets provisioned, they execute normally. A skipped-because-unprovisioned state would block merge — acceptable, as it signals a real misconfiguration.
+**Future Revisit:** If preview-lane flakes become frequent, harden `tools/ci/wait-for-vercel-preview.sh` (longer window / deployment-trigger nudge) before reconsidering the gate.

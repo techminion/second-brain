@@ -56,6 +56,19 @@ test("@a11y authenticated shell and settings have no WCAG 2.1 AA violations", as
     await page.getByRole("heading", { name: "Account settings" }).waitFor();
 
     await expectNoViolations(page);
+
+    // NOTE-10 note editor page. Seed a note through the authenticated Web API
+    // (the browser context's session cookies ride along), then axe the route.
+    const created = await page.request.post("/api/notes", {
+      data: { title: "Accessibility note", body: "A short body for the a11y sweep." },
+    });
+    expect(created.ok()).toBeTruthy();
+    const { data: note } = (await created.json()) as { data: { id: string } };
+
+    await page.goto(`/notes/${note.id}`);
+    await page.getByLabel("Note body").waitFor();
+
+    await expectNoViolations(page);
   } finally {
     await deleteUserByEmail(email);
   }

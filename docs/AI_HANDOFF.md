@@ -21,6 +21,26 @@ Estimated Context Needed:
 
 ---
 
+## 2026-07-24 — Claude — NOTE-10 (note editor page) ready for review
+
+**Session Date:** 2026-07-24
+**Agent:** Claude, implementer (auto mode)
+**Objective:** NOTE-10 — the Sprint 5 goal: a `/notes/[id]` route that loads a note into the editor and autosaves edits. Reuses EDIT-01's `MarkdownEditor` and the NOTE-08 hooks.
+**Files Added:** `src/app/(app)/notes/[id]/page.tsx` (thin server component: `await params` → `<NoteView noteId>`), `src/features/notes/components/note-view.tsx` (query states: skeleton / 404-or-error message / `NoteEditor`, keyed by id), `src/features/notes/components/note-editor.tsx` (editable title + `MarkdownEditor` with debounced autosave), `src/features/notes/hooks/use-autosave.ts` (debounce + flush + flush-on-unmount), `src/features/editor/index.ts` (editor public-API barrel), plus tests for each.
+**Files Modified:** `e2e/a11y.spec.ts` (authenticated test now seeds a note via the Web API and axes `/notes/[id]`); queue/state/changelog/decisions/handoff. **Also flips NOTE-08 → Done** (post-merge bookkeeping batched here; `main` protected).
+**Architecture Decisions (disclosed):**
+1. **Autosave, not a save button** (10_DESIGN §5 / FR-NOTE-5): `useAutosave` re-arms a ~800ms debounce on each edit, `flush()` saves immediately on blur (article `onBlur` catches focusout from title + editor), and unmount flushes so navigation never drops edits. `save` reads the draft through a ref and touches **no** React state, so the unmount flush is warning-free; the dirty flag clears via an effect on the mutation's `isSuccess`/`submittedAt`. Quiet "Saving…/Saved/Save failed" indicator (`role=status`, `aria-live`).
+2. **Cross-feature editor reuse via a public barrel:** `MarkdownEditor` stays in `features/editor` (it's coupled to the editor-domain extensions + round-trip serializer, so it can't move to `shared/ui` — shared can't import a feature). NOTE-10 consumes it through a new `features/editor/index.ts` imported as `@/features/editor`. **Boundary note:** the `feature-boundaries` lint rule permits this (it blocks only deep `.../components|hooks|*-repository` paths); the 11_CONTRIBUTING §2 *prose* ("never another feature's components") is stricter than the enforced rule. Recommend the docs clarify that a feature's public barrel is a sanctioned cross-feature surface (or that cross-feature UI primitives are allowed). Flagged, not silently resolved.
+3. **Draft ownership:** `NoteEditor` seeds local title/body once from `note` (parent keys it by id → remount on note switch), so background refetches never clobber typing. Title saves only when non-empty (the update contract rejects empty titles), so clearing it saves body-only + shows an inline "add a title" hint rather than spamming 400s.
+4. **Scope:** load + autosave only. Wiki-link autocomplete (LINK), slash menu + selection toolbar (EDIT-04+), paste-image (ATTACH) are separate tasks.
+**Also this session:** made `E2E (preview)` + `Accessibility` **required** branch-protection checks (user decision → **GOV-8**), via the GitHub API.
+**Verification performed:** 394 units green (16 new — autosave debounce/flush/unmount, editor autosave+blur+empty-title+error-toast, view states, page id-resolution); typecheck/lint/prettier/build clean; **a11y spec run locally: 4/4, including the new note-route axe check — 0 WCAG 2.1 AA violations on the editor surface.**
+**Outstanding Work:** PR → CI → merge. Then NOTE-09 (sidebar list — wires navigation to this route + create affordance) and NOTE-11 (delete dialog) remain; EDIT-04/05 independent. **On NOTE-09 the create→open→edit→save loop is fully wired in the UI.**
+**Known Bugs:** None.
+**Risks:** Low. The autosave sends the full draft each fire (idempotent). If a note is open when its list refetches, the editor keeps the local draft (intended). EDIT-16 (XSS) watch-item unchanged and now more pressing — the editor renders user markdown on a real page.
+**Suggested Next Task:** NOTE-09 (sidebar list, closes the UI loop) or EDIT-04 (live formatting).
+**Estimated Context Needed:** This entry, `note-editor.tsx`, `use-autosave.ts`, 10_DESIGN §5.
+
 ## 2026-07-24 — Claude — NOTE-08 (TanStack Query note hooks) ready for review
 
 **Session Date:** 2026-07-24

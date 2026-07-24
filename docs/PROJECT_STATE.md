@@ -81,7 +81,7 @@ Done: Sprint 0 (governance), Sprint 1 (repo & tooling — 21 tasks), Sprint 2 (s
 
 ## In Progress
 
-- **NOTE-08** (TanStack Query hooks + optimistic mutations) — ready for review on `note-08-query-hooks`: `useNotesList`/`useNoteQuery` + optimistic `useCreateNote`/`useUpdateNote`/`useDeleteNote` over the merged NOTE-07 `/api/notes` routes, with a typed `note-api` client. 378 units green. (NOTE-07 merged via PR #117, `bd2fda2`.)
+- **NOTE-10** (note editor page — sprint goal) — ready for review on `note-10-note-page`: `/notes/[id]` loads a note into the reused `MarkdownEditor` with editable title and debounced autosave + save-on-blur (no save button; 10_DESIGN §5 / FR-NOTE-5). 394 units green; a11y spec extended to axe the note route (0 violations, verified local). (NOTE-07 PR #117, NOTE-08 PR #118 both merged.)
 
 ## Blocked
 
@@ -90,7 +90,7 @@ Done: Sprint 0 (governance), Sprint 1 (repo & tooling — 21 tasks), Sprint 2 (s
 ## Upcoming
 
 - **After Sprint 5:** rest of EDIT formatting (EDIT-06+), NOTE-13/16, then FOLD/TAG/ATT/DAILY (the rest of M1 Collect). CRED-01 (MCP) tracks to M4; ADR-24/ADR-25 make EMB-01 the first AI task, in M3.
-- **Pending user decision (carried from Sprint 4):** make `E2E (preview)` and `Accessibility` **required** branch-protection contexts (both have clean live runs now). Currently they run but do not gate merge.
+- **Resolved 2026-07-24 (GOV-8):** `E2E (preview)` and `Accessibility` are now **required** branch-protection contexts (added via the GitHub API). A preview-lane flake now blocks merge until re-triggered — accepted tradeoff.
 - **Watch-item (reviewer flag):** EDIT-16 (XSS hardening test, 09_SECURITY §9 T4) is deferred, but the editor now renders user markdown incl. `@tiptap/extension-image` URLs — prioritize EDIT-16 before the editor reaches real users.
 - **AI is per-user gated (ADR-25, user decision):** EMB/SEM/AICH/VCH are built but ship off by default, enabled per user via a single `profiles.ai_enabled` flag an operator toggles in SQL — **no admin role/panel in MVP** (deferred to a future phase). Before those tasks are implemented, the spec ripples in ADR-25 must be applied (04_DATABASE `profiles.ai_enabled` + self-grant-proof column `REVOKE`/RLS + GOV-6 self-enable-denial test, 09_SECURITY operator-only gate note, 05_API `updateProfile` exclusion, 07_AI/08_SEARCH runtime gating, 12_TASKS gating criteria).
 
@@ -112,8 +112,8 @@ Done: Sprint 0 (governance), Sprint 1 (repo & tooling — 21 tasks), Sprint 2 (s
 
 ## Current Branch
 
-`note-07-web-api-routes`
+`note-10-note-page`
 
 ## Last Updated
 
-2026-07-24 — Claude (implementer) merged **NOTE-07** (note CRUD Web API routes) via PR #117 (`bd2fda2`), then implemented **NOTE-08** (TanStack Query hooks: `useNotesList`/`useNoteQuery` + optimistic `useCreateNote`/`useUpdateNote`/`useDeleteNote` over `/api/notes`, with a typed `note-api` client). 378 units green; ready for review on `note-08-query-hooks`. NOTE-09/10/11 unblocked next (NOTE-10 = sprint goal). Carried: the `E2E (preview)`/`Accessibility` required-context decision still awaits the user.
+2026-07-24 — Claude (implementer) merged **NOTE-07** (Web API routes, PR #117) and **NOTE-08** (Query hooks, PR #118), then implemented **NOTE-10** (the sprint goal: `/notes/[id]` editor page with debounced autosave + save-on-blur, reusing the `MarkdownEditor` via a new `@/features/editor` barrel). 394 units green; a11y spec extended to axe the note route (0 violations). Ready for review on `note-10-note-page`. Also made `E2E (preview)` + `Accessibility` **required** branch checks (user decision → **GOV-8**). Next: NOTE-09 (sidebar list — closes the create→open→edit→save UI loop) / NOTE-11 (delete dialog); EDIT-04/05 independent.
