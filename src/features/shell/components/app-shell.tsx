@@ -11,9 +11,11 @@ import { SidebarNavigation } from "./sidebar-navigation";
 
 interface AppShellProps {
   children: ReactNode;
+  /** Sidebar note list, injected at the app layer to keep the shell feature-agnostic. */
+  sidebarNotes?: ReactNode;
 }
 
-function AppShell({ children }: Readonly<AppShellProps>) {
+function AppShell({ children, sidebarNotes }: Readonly<AppShellProps>) {
   return (
     <ShortcutProvider>
       <ShellPanelsProvider>
@@ -21,7 +23,7 @@ function AppShell({ children }: Readonly<AppShellProps>) {
           <ShellShortcuts />
           <CommandPalette />
           <ShellPanel label="Application sidebar" side="left">
-            <SidebarNavigation signOutAction={signOut} />
+            <SidebarNavigation notesSlot={sidebarNotes} signOutAction={signOut} />
           </ShellPanel>
           <main className="min-w-0 flex-1 overflow-auto">{children}</main>
           <ShellPanel label="Context panel" side="right" />

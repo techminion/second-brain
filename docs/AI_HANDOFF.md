@@ -21,6 +21,26 @@ Estimated Context Needed:
 
 ---
 
+## 2026-07-25 — Claude — NOTE-09 (sidebar note list) ready for review
+
+**Session Date:** 2026-07-25
+**Agent:** Claude, implementer (auto mode)
+**Objective:** NOTE-09 — note list in the sidebar (titles + last-edited, FR-NOTE-6) with a new-note affordance. Closes the create→open→edit→save UI loop.
+**Files Added:** `src/features/notes/components/sidebar-note-list.tsx` (client island: `useNotesList` → titles + relative last-edited linking to `/notes/[id]`, `aria-current` on the open note, skeleton + empty state; "New note" button → `useCreateNote` → `router.push`), `src/features/notes/format-last-edited.ts` (relative "just now/5m/3h/2d" then short date), plus tests for both and a `sidebar-note-list.test.tsx`.
+**Files Modified:** `sidebar-navigation.tsx` + `app-shell.tsx` (added an optional `notesSlot`/`sidebarNotes` slot), `(app)/layout.tsx` (composes `<SidebarNoteList/>` into the slot), `sidebar-navigation.test.tsx` (slot test), `e2e/a11y.spec.ts` unaffected; queue/state/changelog/handoff. **Also flips NOTE-10 → Done** (post-merge bookkeeping; `main` protected).
+**Architecture Decisions (disclosed):**
+1. **Slot composition, not a shell→notes import.** The note list needs client data (`useNotesList`) + create, so it's a client island in the notes feature. Rather than have the **shell** import a notes component (a boundary smell — and the shell should stay feature-agnostic), `AppShell`/`SidebarNavigation` expose an optional `notesSlot`, and the `(app)` layout — which may import features — injects `<SidebarNoteList/>`. Cleaner than the NOTE-10 barrel route: the shell gains no notes dependency at all.
+2. **Own `nav "Notes"` landmark**, distinct from the "Knowledge navigation" section frame — keeps the SHELL-03 "no invented links in the frame" test true and gives notes a unique landmark name.
+3. **New-note affordance = header "+" button** (fires the NOTE-08 optimistic create, routes to the note). ⌘N palette-command wiring deferred (the AC's "and/or"): the shortcut lives in the shell and create lives in notes, so wiring it means threading create/router into the palette — a follow-up, not blocking the loop.
+4. **Last-edited is relative, client-only.** The list isn't server-rendered (the query is `isPending` on the server → skeleton), so a client-computed relative time causes no hydration mismatch.
+**a11y (memory rule earned its keep):** the local a11y spec caught a **serious color-contrast** fail — the active row's `text-muted-foreground` `<time>` on the filled `bg-muted` computes ~4.43:1 (just under AA). Fixed with `text-foreground` on the active row (the SHELL-09 kbd precedent); inactive rows sit on `bg-muted/30` and pass. Spec re-run **4/4** incl. authenticated shell + note route.
+**Verification performed:** 404 units green (20 new); typecheck/lint/prettier/build clean; a11y spec 4/4 local.
+**Outstanding Work:** PR → CI → merge. **On merge, Sprint 5's core loop (create → open → edit → save) is fully usable in the UI.** Remaining: NOTE-11 (delete dialog), EDIT-04/05 (formatting), and the P2 stretch NOTE-12/15 (trash + full E2E).
+**Known Bugs:** None.
+**Risks:** Low. The list refetches on mutation-settle (NOTE-08 invalidation); optimistic create prepends immediately. EDIT-16 (XSS) watch-item unchanged.
+**Suggested Next Task:** NOTE-11 (delete dialog — small, completes CRUD in the UI) or EDIT-04 (live formatting).
+**Estimated Context Needed:** This entry, `sidebar-note-list.tsx`, `sidebar-navigation.tsx`.
+
 ## 2026-07-24 — Claude — NOTE-10 (note editor page) ready for review
 
 **Session Date:** 2026-07-24

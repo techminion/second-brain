@@ -8,7 +8,7 @@
 
 ## Current Sprint
 
-**Sprint 5 — Note-Taking End-to-End** (M1; promoted 2026-07-24; scope in [.ai/TASK_QUEUE.md](../.ai/TASK_QUEUE.md)) — the note-taking UI vertical slice: NOTE-07 (Web API) → NOTE-08 (Query hooks) → NOTE-09 (sidebar list) → NOTE-10 (editor-backed note page) → NOTE-11 (delete dialog), plus EDIT-04/05 (live formatting + lists). P2 stretch: NOTE-12 (trash) → NOTE-15 (E2E). Goal: create → open → edit → save → delete a note entirely in the UI. **NOTE-07 (Web API routes) merged (PR #117); NOTE-08 (Query hooks) claimed.**
+**Sprint 5 — Note-Taking End-to-End** (M1; promoted 2026-07-24; scope in [.ai/TASK_QUEUE.md](../.ai/TASK_QUEUE.md)) — the note-taking UI vertical slice: NOTE-07 (Web API) → NOTE-08 (Query hooks) → NOTE-09 (sidebar list) → NOTE-10 (editor-backed note page) → NOTE-11 (delete dialog), plus EDIT-04/05 (live formatting + lists). P2 stretch: NOTE-12 (trash) → NOTE-15 (E2E). Goal: create → open → edit → save → delete a note entirely in the UI. **Merged: NOTE-07 (#117), NOTE-08 (#118), NOTE-10 (#119). NOTE-09 (sidebar list) in review — closes the create→open→edit→save loop. Remaining: NOTE-11 (delete), EDIT-04/05.**
 Done: Sprint 0 (governance), Sprint 1 (repo & tooling — 21 tasks), Sprint 2 (schema, auth core & app shell), Sprint 3 (M0 closeout + note/editor foundation), Sprint 4 (note service + editor round-trip + M0 tail — M0 100% complete)
 
 ## Overall Progress
@@ -17,7 +17,7 @@ Done: Sprint 0 (governance), Sprint 1 (repo & tooling — 21 tasks), Sprint 2 (s
 |---|---|
 | Engineering documentation (12 docs) | ✅ Complete, audited twice for consistency |
 | Governance layer (this file set) | ✅ Complete |
-| Implementation | 47 Done / 309 tasks ([12_TASKS.md](12_TASKS.md)) |
+| Implementation | 50 Done / 309 tasks ([12_TASKS.md](12_TASKS.md)) |
 
 ## Completed
 
@@ -81,7 +81,7 @@ Done: Sprint 0 (governance), Sprint 1 (repo & tooling — 21 tasks), Sprint 2 (s
 
 ## In Progress
 
-- **NOTE-10** (note editor page — sprint goal) — ready for review on `note-10-note-page`: `/notes/[id]` loads a note into the reused `MarkdownEditor` with editable title and debounced autosave + save-on-blur (no save button; 10_DESIGN §5 / FR-NOTE-5). 394 units green; a11y spec extended to axe the note route (0 violations, verified local). (NOTE-07 PR #117, NOTE-08 PR #118 both merged.)
+- **NOTE-09** (sidebar note list + new-note affordance) — ready for review on `note-09-sidebar-list`: `SidebarNoteList` client island (titles + last-edited → `/notes/[id]`, active-note highlight, "New note" button), wired via an `(app)`-layer slot so the shell stays feature-agnostic. 404 units green; a11y 4/4 (caught + fixed an active-row contrast dip). **On merge the create→open→edit→save loop is fully wired in the UI.** (NOTE-07/#117, NOTE-08/#118, NOTE-10/#119 merged.)
 
 ## Blocked
 
@@ -112,8 +112,8 @@ Done: Sprint 0 (governance), Sprint 1 (repo & tooling — 21 tasks), Sprint 2 (s
 
 ## Current Branch
 
-`note-10-note-page`
+`note-09-sidebar-list`
 
 ## Last Updated
 
-2026-07-24 — Claude (implementer) merged **NOTE-07** (Web API routes, PR #117) and **NOTE-08** (Query hooks, PR #118), then implemented **NOTE-10** (the sprint goal: `/notes/[id]` editor page with debounced autosave + save-on-blur, reusing the `MarkdownEditor` via a new `@/features/editor` barrel). 394 units green; a11y spec extended to axe the note route (0 violations). Ready for review on `note-10-note-page`. Also made `E2E (preview)` + `Accessibility` **required** branch checks (user decision → **GOV-8**). Next: NOTE-09 (sidebar list — closes the create→open→edit→save UI loop) / NOTE-11 (delete dialog); EDIT-04/05 independent.
+2026-07-25 — Claude (implementer) merged **NOTE-10** (note editor page, PR #119, the sprint goal), then implemented **NOTE-09** (sidebar note list + new-note affordance, wired via an `(app)`-layer slot). 404 units green; a11y caught+fixed an active-row contrast dip, re-run 4/4. Ready for review on `note-09-sidebar-list`. **On merge, create→open→edit→save is fully usable in the UI.** Next: NOTE-11 (delete dialog) / EDIT-04 (formatting).
