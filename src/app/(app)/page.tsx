@@ -1,3 +1,5 @@
+import { KnowledgeGraphEmptyState } from "@/features/shell/components/knowledge-graph-empty-state";
+
 export default function HomePage() {
-  return <p>Second Brain</p>;
+  return <KnowledgeGraphEmptyState />;
 }
