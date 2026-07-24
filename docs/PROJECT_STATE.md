@@ -8,7 +8,7 @@
 
 ## Current Sprint
 
-**Sprint 5 — Note-Taking End-to-End** (M1; promoted 2026-07-24; scope in [.ai/TASK_QUEUE.md](../.ai/TASK_QUEUE.md)) — the note-taking UI vertical slice: NOTE-07 (Web API) → NOTE-08 (Query hooks) → NOTE-09 (sidebar list) → NOTE-10 (editor-backed note page) → NOTE-11 (delete dialog), plus EDIT-04/05 (live formatting + lists). P2 stretch: NOTE-12 (trash) → NOTE-15 (E2E). Goal: create → open → edit → save → delete a note entirely in the UI. Nothing claimed yet.
+**Sprint 5 — Note-Taking End-to-End** (M1; promoted 2026-07-24; scope in [.ai/TASK_QUEUE.md](../.ai/TASK_QUEUE.md)) — the note-taking UI vertical slice: NOTE-07 (Web API) → NOTE-08 (Query hooks) → NOTE-09 (sidebar list) → NOTE-10 (editor-backed note page) → NOTE-11 (delete dialog), plus EDIT-04/05 (live formatting + lists). P2 stretch: NOTE-12 (trash) → NOTE-15 (E2E). Goal: create → open → edit → save → delete a note entirely in the UI. **NOTE-07 (Web API routes) in review; NOTE-08 next.**
 Done: Sprint 0 (governance), Sprint 1 (repo & tooling — 21 tasks), Sprint 2 (schema, auth core & app shell), Sprint 3 (M0 closeout + note/editor foundation), Sprint 4 (note service + editor round-trip + M0 tail — M0 100% complete)
 
 ## Overall Progress
@@ -81,7 +81,7 @@ Done: Sprint 0 (governance), Sprint 1 (repo & tooling — 21 tasks), Sprint 2 (s
 
 ## In Progress
 
-- None. Sprint 4 is fully merged (SHELL-06 landed via PR #114); the queue is empty pending Sprint 5 promotion.
+- **NOTE-07** (note CRUD Web API routes) — ready for review on `note-07-web-api-routes`: `GET/POST /api/notes` + `GET/PATCH/DELETE /api/notes/[id]`, thin over `NoteService`. 364 units green; typecheck/lint/build clean. PR → CI → merge, then NOTE-08 (hooks).
 
 ## Blocked
 
@@ -112,8 +112,8 @@ Done: Sprint 0 (governance), Sprint 1 (repo & tooling — 21 tasks), Sprint 2 (s
 
 ## Current Branch
 
-`chore/sprint-5-promotion`
+`note-07-web-api-routes`
 
 ## Last Updated
 
-2026-07-24 — Architect promoted **Sprint 5 — Note-Taking End-to-End** (M1): the note-taking UI vertical slice (NOTE-07→08→09→10→11 + EDIT-04/05), with NOTE-12/15 (trash + E2E) as P2 stretch. Goal: create → open → edit → save → delete a note entirely in the UI. Sprint 4 archived (M0 100% complete). Nothing claimed yet.
+2026-07-24 — Claude (implementer) claimed and implemented **NOTE-07** (note CRUD Web API routes: `GET/POST /api/notes`, `GET/PATCH/DELETE /api/notes/[id]`) — thin handlers over `NoteService` with JWT-sourced user, 05_API §3 error translation, and a `noteRoute` boundary wrapper. 364 units green; ready for review on `note-07-web-api-routes`. NOTE-08 (TanStack Query hooks) is next. Carried: the `E2E (preview)`/`Accessibility` required-context decision still awaits the user.

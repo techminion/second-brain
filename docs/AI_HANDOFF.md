@@ -21,6 +21,26 @@ Estimated Context Needed:
 
 ---
 
+## 2026-07-24 — Claude — NOTE-07 (note CRUD Web API routes) ready for review
+
+**Session Date:** 2026-07-24
+**Agent:** Claude, implementer (auto mode)
+**Objective:** NOTE-07 — thin Web API route handlers for note CRUD over `NoteService` (05_API §3–4, 11_CONTRIBUTING §2). First Sprint 5 task; unblocks NOTE-08 (TanStack Query hooks).
+**Files Added:** `src/app/api/notes/route.ts` (`GET` list, `POST` create), `src/app/api/notes/[id]/route.ts` (`GET`/`PATCH`/`DELETE`), `src/features/notes/note-route.ts` (`noteRoute` boundary wrapper: OBS-02 logging + require-session + build service + ServiceError→HTTP translation), `src/features/notes/note-request.ts` (input marshalling: `parseCreateNoteBody`/`parseUpdateNoteBody`/`parseListNotesQuery`), `src/shared/lib/api-error-response.ts` (`serviceErrorResponse`, `unauthenticatedResponse`), and tests for all four.
+**Files Modified:** `src/features/notes/note-service.ts` (added `createNoteService()` factory mirroring `createUserService`); queue/state/changelog/handoff.
+**Architecture Decisions (disclosed):**
+1. **Envelope:** success `{ data }` (matches the retention route), errors `{ error: { code, message } }` where `code` is the 05_API §3 taxonomy code (or `UNAUTHENTICATED`). The translator reads `statusCode`/`code` off the `ServiceError` itself — no per-type `switch`, so it covers the whole taxonomy and any future member for free. Non-`ServiceError` is re-thrown so `withRequestLogging` logs it and returns its generic 500 (that one path keeps the wrapper's `{ error: string }` shape — a minor divergence on the truly-unexpected branch only).
+2. **Auth:** `userId` from `resolveSessionUserId` (getClaims, verified JWT) — never from body/query, so FR-MCP-4-style scoping holds at the boundary too. `noteRoute` requires a session (401) before building the service. The resolver runs twice per request (once as the logging resolver, once for auth) because `withRequestLogging` doesn't surface its resolved id; cheap (local JWT verify), same pattern as `update-profile-action`.
+3. **`[id]` params:** item handlers are `async function` exports that `await params` (Next 15 Promise) then invoke `noteRoute(...)(request)` with the id captured by closure — keeps the clean `(request)=>Response` wrapper signature without threading Next route-context generics through the OBS-02 logger.
+4. **Validation split:** routes do only shape work (reject non-JSON-object bodies via `ValidationError`); all business validation (title non-empty, field types) stays in `NoteService`, which re-checks every field. `PATCH` uses key-presence (`in`), so an explicit `folderId: null` is a move-to-root while an absent key is "unchanged". `DELETE` returns 200 `{ data: { id } }` (not 204) for envelope consistency and optimistic-mutation convenience.
+5. **Scope:** create/read/update/delete/list only. `restore` is deliberately **not** exposed here — it's a trash operation that belongs with NOTE-12 (trash view). Root-null folder filtering via query is also deferred until folder UI exists (the list endpoint currently forwards a `folderId` uuid or nothing).
+**Verification performed:** 364 units green (24 new); typecheck/lint/prettier clean; production build clean with both routes registered as dynamic (ƒ) handlers. No rendered surface changed, so the a11y spec is unaffected (API-only).
+**Outstanding Work:** PR → CI → merge. Then NOTE-08 (TanStack Query hooks) is dependency-ready and is the P0 next step; NOTE-10 (note page, the sprint goal) follows once hooks land. EDIT-04/EDIT-05 are independent and claimable in parallel.
+**Known Bugs:** None.
+**Risks:** Low — thin boundary over already-tested services under existing RLS. Watch-item unchanged: EDIT-16 (XSS hardening) before real users render user markdown. The `{ error }` shape divergence on the wrapper's catch-all 500 is cosmetic (clients treat any non-2xx as failure).
+**Suggested Next Task:** NOTE-08 (hooks) — the P0 chain continuation — or EDIT-04 (live formatting) in parallel.
+**Estimated Context Needed:** This entry, `note-route.ts`, `note-request.ts`, 05_API §3–4.
+
 ## 2026-07-24 — Claude — SHELL-06 (responsive breakpoint behavior) ready for review
 
 **Session Date:** 2026-07-24

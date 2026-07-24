@@ -9,6 +9,7 @@ import type {
 } from "@/features/notes/types";
 import { retentionWindowDays } from "@/features/retention/constants";
 import { NotFoundError, ValidationError } from "@/shared/lib/errors";
+import { createServerActionSupabaseClient } from "@/shared/lib/supabase-server-action-client";
 import type { Paginated } from "@/shared/types";
 
 type NoteRepositoryContract = Pick<
@@ -210,4 +211,9 @@ export class NoteService {
 
     return mapNote(record);
   }
+}
+
+export async function createNoteService(): Promise<NoteService> {
+  const client = await createServerActionSupabaseClient();
+  return new NoteService(new NoteRepository(client));
 }
