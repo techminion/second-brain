@@ -10,7 +10,27 @@
 - **Priorities:** `P0` — on the critical path of the current sprint; `P1` — this sprint, parallelizable; `P2` — next in line, claimable if idle.
 - When the sprint's queue empties, the architect role promotes the next dependency-ready wave from [docs/12_TASKS.md](../docs/12_TASKS.md).
 
-## Current Sprint: Sprint 4 — Note Service Completion & Editor Round-Trip (M1)
+## Current Sprint: Sprint 5 — Note-Taking End-to-End (M1)
+
+Goal: turn the finished `NoteService` (NOTE-01..06) and editor foundation (EDIT-01/02) into real note-taking in the browser — thin Web API routes (NOTE-07) → TanStack Query hooks (NOTE-08) → a navigable sidebar note list (NOTE-09) and an editor-backed note **page** that loads/edits/saves a note (NOTE-10) with a delete confirmation (NOTE-11); and bring the editor to usable formatting: live headings/emphasis/inline-code with marker hiding (EDIT-04) and lists (EDIT-05). Result: **create → open → edit → save → delete a note entirely in the UI.**
+
+Promoted 2026-07-24 by the architect role after Sprint 4 closed (all rows Done; **M0 now 100% complete**). Scope = Option A's remaining "end-to-end note-taking" vertical slice, ratified by the user. GOV-5 sequencing: NOTE-07 (backend) → NOTE-08 (frontend) → NOTE-09/10/11 (frontend, parallel after the hooks land); EDIT-04 and EDIT-05 are independent (frontend). **P2 stretch (claimable if capacity allows, else Sprint 6 lead):** NOTE-12 (trash view + restore) → NOTE-15 (E2E create→edit→delete→restore on the CI-06 preview lane). Deferred: rest of EDIT formatting (EDIT-06+), NOTE-13/16, and FOLD/TAG/ATT/DAILY.
+
+**Carried decision (from Sprint 4):** whether to make `E2E (preview)` + `Accessibility` **required** branch-protection contexts (clean live runs exist) — pending the user. **Reviewer watch-item:** EDIT-16 (XSS hardening, 09_SECURITY §9 T4) is deferred while the editor renders user markdown incl. `@tiptap/extension-image` URLs — prioritize before real users.
+
+| ID | Title | Priority | Cx | Depends on | Owner | Status | Milestone | Acceptance criteria |
+|---|---|---|---|---|---|---|---|---|
+| NOTE-07 | Web API route handlers for note CRUD (thin) | P0 | S | NOTE-02..NOTE-06 | backend | Queued | M1 | Thin handlers over `NoteService` per [11_CONTRIBUTING §2](../docs/11_CONTRIBUTING.md#2-folder-structure); no business logic in the route. AC in [12_TASKS](../docs/12_TASKS.md). Unblocks NOTE-08 |
+| NOTE-08 | TanStack Query hooks: `useNoteQuery`/`useNotesList` + optimistic mutations | P0 | M | NOTE-07, SHELL-07 | frontend | Queued | M1 | 05_API-shaped hooks with optimistic create/update/delete. Unblocks NOTE-09/10/11 |
+| NOTE-09 | Note list view in sidebar (titles, last-edited — FR-NOTE-6) + new-note affordance | P1 | M | NOTE-08, SHELL-03 | frontend | Queued | M1 | Lands in the SHELL-03 sidebar frame; the create-note action wires the NOTE-08 mutation (and/or the SHELL-04 palette command) |
+| NOTE-10 | Note route + page: load note into the editor view | P0 | M | NOTE-08, EDIT-01 | frontend | Queued | M1 | **← sprint goal:** open/edit/save a note. Reuses the EDIT-01 controlled, SSR-safe `MarkdownEditor` |
+| NOTE-11 | Delete-note confirmation dialog naming the note | P1 | S | NOTE-08 | frontend | Queued | M1 | [10_DESIGN §4](../docs/10_DESIGN.md#4-component-philosophy); dialog names the target note |
+| EDIT-04 | Heading/bold/italic/code live-format with marker hiding | P0 | M | EDIT-01 | frontend | Queued | M1 | [10_DESIGN §5](../docs/10_DESIGN.md#5-editor-ux-tiptap); core live-formatting so the note page is a real editor |
+| EDIT-05 | Lists (bullet, ordered, task-list as markdown checkboxes) | P1 | M | EDIT-02 | frontend | Queued | M1 | Must round-trip through the EDIT-02 serializer — task-lists are in the current `detectUnsupportedMarkdown` fallback set; this enables them |
+| NOTE-12 | Trash view: list soft-deleted notes, restore action | P2 | M | NOTE-05, SHELL-03 | frontend | Queued | M1 | **Stretch.** Restore leg uses `NoteService.restore` (30-day window, ADR-26). Unblocks NOTE-15 |
+| NOTE-15 | E2E: create → edit → delete → restore note flow | P2 | M | NOTE-10, NOTE-12, CI-06 | frontend | Queued | M1 | **Stretch.** Runs on the CI-06 preview-E2E lane; proves the full loop end-to-end |
+
+## Sprint 4 — Note Service Completion & Editor Round-Trip (M1) — ✅ Complete 2026-07-24
 
 Goal: finish the `NoteService` write/read surface (NOTE-04..06 — update with the title dual-write invariant, soft delete + restore, cursor-paginated list), prove the FR-NOTE-2 loss-free markdown round-trip on the beta `@tiptap/markdown` (EDIT-02/03 — the flagged highest-risk item), and land the global shortcut manager (SHELL-05, which also absorbs the SHELL-04 review findings). CI-06 opens the preview-E2E lane; the remaining M0 polish rides as P2.
 

@@ -8,8 +8,8 @@
 
 ## Current Sprint
 
-**Sprint 4 — Note Service Completion & Editor Round-Trip** ✅ complete (all tasks merged; promoted 2026-07-24) — NOTE-04..06, EDIT-02/03, SHELL-05, CI-06/08, SHELL-06/08/09. **Sprint 5 promotion pending** (note-taking UI vertical slice — the Option-A remaining chain).
-Done: Sprint 0 (governance), Sprint 1 (repo & tooling — 21 tasks), Sprint 2 (schema, auth core & app shell), Sprint 3 (M0 closeout + note/editor foundation), Sprint 4 (note service + editor round-trip + M0 tail)
+**Sprint 5 — Note-Taking End-to-End** (M1; promoted 2026-07-24; scope in [.ai/TASK_QUEUE.md](../.ai/TASK_QUEUE.md)) — the note-taking UI vertical slice: NOTE-07 (Web API) → NOTE-08 (Query hooks) → NOTE-09 (sidebar list) → NOTE-10 (editor-backed note page) → NOTE-11 (delete dialog), plus EDIT-04/05 (live formatting + lists). P2 stretch: NOTE-12 (trash) → NOTE-15 (E2E). Goal: create → open → edit → save → delete a note entirely in the UI. Nothing claimed yet.
+Done: Sprint 0 (governance), Sprint 1 (repo & tooling — 21 tasks), Sprint 2 (schema, auth core & app shell), Sprint 3 (M0 closeout + note/editor foundation), Sprint 4 (note service + editor round-trip + M0 tail — M0 100% complete)
 
 ## Overall Progress
 
@@ -89,7 +89,7 @@ Done: Sprint 0 (governance), Sprint 1 (repo & tooling — 21 tasks), Sprint 2 (s
 
 ## Upcoming
 
-- **Sprint 5 promotion pending** (architect + user): the note-taking UI vertical slice — NOTE-07 (Web API) → NOTE-08 (Query hooks) → NOTE-09 (sidebar list) → NOTE-10 (note page in editor) → NOTE-11 (delete dialog), plus EDIT-04/05 (live formatting + lists). Optional depth: NOTE-12 (trash) + NOTE-15 (E2E). Then FOLD/TAG/ATT/DAILY. CRED-01 (MCP) tracks to M4; ADR-24/ADR-25 make EMB-01 the first AI task, in M3.
+- **After Sprint 5:** rest of EDIT formatting (EDIT-06+), NOTE-13/16, then FOLD/TAG/ATT/DAILY (the rest of M1 Collect). CRED-01 (MCP) tracks to M4; ADR-24/ADR-25 make EMB-01 the first AI task, in M3.
 - **Pending user decision (carried from Sprint 4):** make `E2E (preview)` and `Accessibility` **required** branch-protection contexts (both have clean live runs now). Currently they run but do not gate merge.
 - **Watch-item (reviewer flag):** EDIT-16 (XSS hardening test, 09_SECURITY §9 T4) is deferred, but the editor now renders user markdown incl. `@tiptap/extension-image` URLs — prioritize EDIT-16 before the editor reaches real users.
 - **AI is per-user gated (ADR-25, user decision):** EMB/SEM/AICH/VCH are built but ship off by default, enabled per user via a single `profiles.ai_enabled` flag an operator toggles in SQL — **no admin role/panel in MVP** (deferred to a future phase). Before those tasks are implemented, the spec ripples in ADR-25 must be applied (04_DATABASE `profiles.ai_enabled` + self-grant-proof column `REVOKE`/RLS + GOV-6 self-enable-denial test, 09_SECURITY operator-only gate note, 05_API `updateProfile` exclusion, 07_AI/08_SEARCH runtime gating, 12_TASKS gating criteria).
@@ -112,8 +112,8 @@ Done: Sprint 0 (governance), Sprint 1 (repo & tooling — 21 tasks), Sprint 2 (s
 
 ## Current Branch
 
-`chore/sprint-4-stale-queue-records`
+`chore/sprint-5-promotion`
 
 ## Last Updated
 
-2026-07-24 — Reviewer (Claude) corrected the stale queue: CI-08, SHELL-06, SHELL-08, SHELL-09 were merged (#111–114) but still marked *In Review* → now **Done**. With them, **M0 is 100% complete by task inventory** (exit criteria were already met). Independent review sweep of the Sprint-4 range: no committed secrets (`.env` gitignored), 20/20 repo↔Cloud migration parity, NOTE-06 cursor injection-safe (strict UUID/timestamp decode), CI-06/08 fork-safe (same-repo guard, no secrets to forks). Queue empty → Sprint 5 promotion pending.
+2026-07-24 — Architect promoted **Sprint 5 — Note-Taking End-to-End** (M1): the note-taking UI vertical slice (NOTE-07→08→09→10→11 + EDIT-04/05), with NOTE-12/15 (trash + E2E) as P2 stretch. Goal: create → open → edit → save → delete a note entirely in the UI. Sprint 4 archived (M0 100% complete). Nothing claimed yet.
