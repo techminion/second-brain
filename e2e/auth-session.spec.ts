@@ -60,8 +60,9 @@ test("signup provisions an empty authenticated shell (FR-AUTH-5)", async ({ page
     await expect(page.getByRole("navigation", { name: "Knowledge navigation" })).toBeVisible();
     await expect(page.getByRole("button", { name: "Log out" })).toBeVisible();
 
-    // No error state: no role="alert" on the landing page.
-    await expect(page.getByRole("alert")).not.toBeAttached();
+    // No error state: no role="alert" on the landing page. Next.js mounts its
+    // own route announcer with role="alert" in production builds — exclude it.
+    await expect(page.locator('[role="alert"]:not(#__next-route-announcer__)')).toHaveCount(0);
   } finally {
     await deleteUserByEmail(email);
   }
