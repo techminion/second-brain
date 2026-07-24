@@ -21,6 +21,21 @@ Estimated Context Needed:
 
 ---
 
+## 2026-07-24 — Claude — CI-08 (axe accessibility job) ready for review
+
+**Session Date:** 2026-07-24
+**Agent:** Claude, implementer (auto mode)
+**Objective:** CI-08 — axe checks on core routes in CI, riding the proven CI-06 preview infrastructure.
+**Files Added:** `e2e/a11y.spec.ts` (`@axe-core/playwright`, WCAG 2.1 A/AA tags; three public routes untethered + authenticated shell and `/settings` via real signup with admin cleanup; violations reported as compact summaries), `e2e/support/admin.ts` (admin client/cleanup helpers extracted from `auth-session.spec.ts` for reuse).
+**Files Modified:** `.github/workflows/ci.yml` (new `Accessibility` job — same fork-safe/skip-until-provisioned model as `E2E (preview)`, runs `--grep "@a11y"` against the preview; the functional job now runs `--grep-invert "@a11y"` so specs run exactly once each in CI while `npm run test:e2e` still runs everything locally), `src/app/(auth)/{login,signup,forgot-password}/page.tsx` (**real finding fixed**: cross-links were `hover:underline` only — axe `link-in-text-block`, serious, WCAG 1.4.1; links are now always underlined), `package.json` (+`@axe-core/playwright` dev dep), queue/state/changelog/handoff.
+**Architecture Decisions:** None new. Tag-based job split chosen over a separate config file. A11Y-04 (the fix-queue task) starts empty — the only current-route violation was fixed in this PR.
+**Verification performed:** 4/4 axe specs green locally against the dev server (after the link fix; before it, all three public routes failed — the check has teeth); functional suite 4/4 locally with the refactored helpers; 320 units, typecheck/lint/format/audit clean.
+**Outstanding Work:** PR → CI (both preview jobs run live) → merge. Then the pending decision: wire `E2E (preview)` + `Accessibility` as required branch-protection contexts. Remaining Sprint 4: SHELL-06/08/09.
+**Known Bugs:** None.
+**Risks:** axe runs against the routes' default states — dialog/palette open states and future routes need their own checks as they land (NOTE-09+ should extend `a11y.spec.ts`). `networkidle` waits can be slow on previews; timeout margins are generous.
+**Suggested Next Task:** SHELL-09 (empty state) or the required-context wiring.
+**Estimated Context Needed:** This entry, `e2e/a11y.spec.ts`, the ci.yml diff.
+
 ## 2026-07-24 — Claude — CI-06 (preview E2E job) ready for review
 
 **Session Date:** 2026-07-24

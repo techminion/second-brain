@@ -28,7 +28,7 @@ export default async function ForgotPasswordPage({ searchParams }: ForgotPasswor
       <PasswordResetRequestForm />
       <p className="text-muted-foreground text-sm">
         Remembered your password?{" "}
-        <Link className="text-primary underline-offset-4 hover:underline" href="/login">
+        <Link className="text-primary underline underline-offset-4" href="/login">
           Log in
         </Link>
       </p>
