@@ -21,6 +21,21 @@ Estimated Context Needed:
 
 ---
 
+## 2026-07-24 — Claude — SHELL-09 (empty-state onboarding) ready for review
+
+**Session Date:** 2026-07-24
+**Agent:** Claude, implementer (auto mode)
+**Objective:** SHELL-09 — the FR-AUTH-5 teach-the-basics empty state (10_DESIGN §4).
+**Files Added:** `src/features/shell/components/knowledge-graph-empty-state.tsx` (presentational server component; three teaching steps — create `⌘N`, link `[[`, palette `⌘K` — as semantic `<kbd>` hints inside an `aria-labelledby` region), `knowledge-graph-empty-state.test.tsx` (landmark/heading, three steps, shortcut hints).
+**Files Modified:** `src/app/(app)/page.tsx` (was a `<p>Second Brain</p>` placeholder — now renders the empty state), `src/app/(app)/page.test.tsx` (asserts the onboarding heading), queue/state/changelog/handoff.
+**Architecture Decisions:** None. Kept it a Server Component (no interactivity — the palette opens via the global ⌘K from SHELL-05); ⌘N is taught but its command is still disabled until the note-create UI lands (EDIT/NOTE-10 era), which is the intended "teach the shortcut" behavior, not a dead button. No live note-count check yet: the route is unconditionally the empty state until NOTE-09 (sidebar list) / NOTE-10 (note route) give it real content to branch on — flagged for that work.
+**Verification performed:** 323 units green (4 new); typecheck/lint/format clean; introduces no `role="alert"` so the AUTH-13 provisioning E2E still holds; the CI-08 authenticated-shell axe check now also covers this component on the preview.
+**Outstanding Work:** PR → CI → merge. Remaining Sprint 4 P2: SHELL-08 (skeletons), SHELL-06 (responsive).
+**Known Bugs:** None.
+**Risks:** The home route always shows the empty state — once NOTE-09/10 exist, the route must branch on real object count, and the empty state becomes conditional. The ⌘N hint promises a shortcut that isn't wired yet (disabled command); acceptable as onboarding, but revisit copy if note-create ships via a different affordance.
+**Suggested Next Task:** SHELL-08.
+**Estimated Context Needed:** This entry, `knowledge-graph-empty-state.tsx`, 10_DESIGN §4.
+
 ## 2026-07-24 — Claude — CI-08 (axe accessibility job) ready for review
 
 **Session Date:** 2026-07-24

@@ -30,7 +30,7 @@ Promoted 2026-07-24 by the architect role after Sprint 3 closed (all rows Done);
 | CI-08 | axe accessibility check job on core routes | P2 | M | CI-06 | Claude | In Review | M0 | needs CI-06 |
 | SHELL-06 | Responsive breakpoint behavior for the shell | P2 | M | SHELL-02 | frontend | Queued | M0 | [10_DESIGN §11](../docs/10_DESIGN.md#11-responsive-behavior) |
 | SHELL-08 | Skeleton-loading primitives | P2 | S | SHELL-02 | frontend | Queued | M0 | match final layouts, [10_DESIGN §4](../docs/10_DESIGN.md#4-component-philosophy) |
-| SHELL-09 | Empty-state teach-the-basics component | P2 | S | SHELL-02 | frontend | Queued | M0 | [10_DESIGN §4](../docs/10_DESIGN.md#4-component-philosophy); FR-AUTH-5 empty state teaches create/link/palette |
+| SHELL-09 | Empty-state teach-the-basics component | P2 | S | SHELL-02 | Claude | In Review | M0 | [10_DESIGN §4](../docs/10_DESIGN.md#4-component-philosophy); FR-AUTH-5 empty state teaches create/link/palette |
 
 ## Sprint 3 — Account Management & Note Foundation (M0 → M1) — ✅ Complete 2026-07-24
 
