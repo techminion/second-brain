@@ -21,6 +21,25 @@ Estimated Context Needed:
 
 ---
 
+## 2026-07-24 — Claude — NOTE-08 (TanStack Query note hooks) ready for review
+
+**Session Date:** 2026-07-24
+**Agent:** Claude, implementer (auto mode)
+**Objective:** NOTE-08 — TanStack Query hooks over the NOTE-07 `/api/notes` routes with optimistic mutations. First client-data layer in the app; unblocks NOTE-09 (sidebar list), NOTE-10 (note page), NOTE-11 (delete dialog).
+**Files Added:** `src/features/notes/note-api.ts` (typed client transport: unwraps `{ data }`, throws `ApiError` on `{ error }`; `fetchNotesList`/`fetchNote`/`createNoteRequest`/`updateNoteRequest`/`deleteNoteRequest`), `src/features/notes/hooks/note-keys.ts` (query-key factory: `all`/`lists`/`list(filters)`/`details`/`detail(id)`), `use-notes-list.ts` (`useInfiniteQuery`, follows `nextCursor`), `use-note-query.ts` (`useQuery`, id-gated via `enabled`), `use-note-mutations.ts` (`useCreateNote`/`useUpdateNote`/`useDeleteNote`), plus `note-api.test.ts` and `hooks/note-hooks.test.tsx`.
+**Files Modified:** queue/state/changelog/handoff. **Also flips NOTE-07 → Done** in the queue (post-merge bookkeeping batched onto this branch, since `main` is protected — same pattern as prior sessions' status-fix PRs).
+**Architecture Decisions (disclosed):**
+1. **Optimistic strategy:** mutations snapshot **all** list caches (`getQueriesData({ queryKey: noteKeys.lists() })`, every filter variant) + the detail cache, apply the change, roll back on error, and `invalidateQueries` on settle to reconcile. Create prepends a temp-id note (`optimistic-<uuid>`) to the first page (newest-first); update patches in-place in lists+detail and writes the server row on success; delete filters out of lists and drops the detail cache.
+2. **`useInfiniteQuery` for the list** — the endpoint is keyset-paginated (NOTE-06), so the infinite primitive is the correct fit and saves NOTE-09 a rewrite; consumers flatten `data.pages` and call `fetchNextPage`.
+3. **Transport, not service:** `note-api.ts` is the client HTTP layer (parallel to the server-side service). Hooks call it; components will call hooks — never fetch directly. Failures are a typed `ApiError` (status + 05_API §3 `code` + message) so UI can branch (e.g. 404 → "note gone").
+4. **`update` patch = shallow `{ ...note, ...input }`** — `UpdateNoteInput` only carries intended keys (an explicit `folderId: null` still applies), so absent fields are untouched.
+**Verification performed:** 378 units green (14 new — list/detail fetch, id-gated no-fetch, optimistic create+rollback, optimistic update+server-reconcile, optimistic delete+rollback+success-remove); typecheck/lint/prettier clean; production build clean. No rendered surface yet (hooks aren't imported by a route until NOTE-09/10), so the a11y spec is unaffected.
+**Outstanding Work:** PR → CI → merge. Then NOTE-09/10/11 are all dependency-ready (parallelizable): NOTE-10 (note page) is the sprint goal. EDIT-04/05 remain independent.
+**Known Bugs:** None.
+**Risks:** Low — client cache layer with rollback; server correctness is NOTE-07/NoteService's (already merged + tested). Optimistic create leaves a temp-id row until the list refetch reconciles it — expected, and only visible if a mounted list is showing when create fires (it invalidates immediately). EDIT-16 (XSS) watch-item unchanged.
+**Suggested Next Task:** NOTE-10 (note page — sprint goal) or NOTE-09 (sidebar list); EDIT-04 in parallel.
+**Estimated Context Needed:** This entry, `use-note-mutations.ts`, `note-api.ts`, `note-keys.ts`.
+
 ## 2026-07-24 — Claude — NOTE-07 (note CRUD Web API routes) ready for review
 
 **Session Date:** 2026-07-24
