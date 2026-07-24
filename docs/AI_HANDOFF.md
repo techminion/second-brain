@@ -21,6 +21,21 @@ Estimated Context Needed:
 
 ---
 
+## 2026-07-24 — Claude — SHELL-06 (responsive breakpoint behavior) ready for review
+
+**Session Date:** 2026-07-24
+**Agent:** Claude, implementer (auto mode)
+**Objective:** SHELL-06 — the 10_DESIGN §11 responsive shell (last Sprint 4 P2 filler).
+**Files Added:** `src/features/shell/hooks/use-breakpoint-tier.ts` (SSR/jsdom-safe `matchMedia`; tiers desktop ≥1280 / tablet 768–1279 / mobile <768, aligned to Tailwind xl/md; returns "desktop" when matchMedia is absent so SSR and existing tests get the full shell), its test, `shell-panel-responsive.test.tsx`.
+**Files Modified:** `shell-panels-context.tsx` (consumes the tier; resets each rail to its tier default on a breakpoint crossing via a previous-tier ref — desktop {open,open}, tablet {sidebar collapsed, right closed}, mobile {both closed}; added `collapseLeft`/`collapseRight` and exposed `tier`), `shell-panel.tsx` (in-flow rendering at desktop is byte-identical; below desktop an overlay rail — right at tablet+mobile, left only at mobile — renders as a `fixed inset-y-0` drawer with a click-to-close backdrop `<button>` when open, and a pinned corner reopen `<button>` when closed), queue/state/changelog/handoff.
+**Architecture Decisions (disclosed):** (1) crossing a breakpoint resets rails to the tier default rather than preserving intent across tiers — simpler and reads as a deliberate context change; noted as a reversible call if it annoys in practice. (2) closed overlay rails keep a pinned toggle affordance so touch users without ⌘\/⌘E can still open them (no hamburger in the spec; this is the minimal equivalent). (3) tablet right panel defaults **closed** (an open overlay would cover content on load) though §11 only says "collapsed by default" of the sidebar — reasonable reading.
+**Verification performed:** 340 units green (10 new — hook tiers + resize + unmount; panel in-flow/overlay/drawer/backdrop-close across all three tiers); desktop path proven unchanged by the existing 42 shell tests; a11y spec 4/4 local (desktop viewport — see risk); typecheck/lint/format clean.
+**Outstanding Work:** PR → CI → merge. **On merge the Sprint 4 queue is empty** → architect promotes Sprint 5 (candidates: NOTE-07 API routes + NOTE-08 TanStack hooks, then the note UI NOTE-09/10 — all dependency-ready off the merged NoteService; EDIT-05/07 close the round-trip construct gaps; LINK-01+ begins the graph). Also still-pending: the required-context decision (`E2E (preview)` + `Accessibility`).
+**Known Bugs:** None.
+**Risks:** The CI axe check runs at the default desktop viewport, so the overlay/drawer/backdrop surfaces are validated by unit tests + manual QA, not by CI axe — a narrow-viewport axe run is a worthwhile future add (flagged, not built, to keep this P2 sized). matchMedia-driven state can't be exercised by the desktop E2E either; responsive behavior wants a manual pass at tablet/mobile widths.
+**Suggested Next Task:** Sprint 5 promotion, or the required-context wiring.
+**Estimated Context Needed:** This entry, `use-breakpoint-tier.ts`, `shell-panel.tsx`, 10_DESIGN §11.
+
 ## 2026-07-24 — Claude — SHELL-08 (skeleton primitives) ready for review
 
 **Session Date:** 2026-07-24
