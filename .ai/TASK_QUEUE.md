@@ -20,7 +20,7 @@ Promoted 2026-07-24 by the architect role after Sprint 4 closed (all rows Done; 
 
 | ID | Title | Priority | Cx | Depends on | Owner | Status | Milestone | Acceptance criteria |
 |---|---|---|---|---|---|---|---|---|
-| NOTE-07 | Web API route handlers for note CRUD (thin) | P0 | S | NOTE-02..NOTE-06 | Claude | Claimed (Claude) | M1 | Thin handlers over `NoteService` per [11_CONTRIBUTING §2](../docs/11_CONTRIBUTING.md#2-folder-structure); no business logic in the route. AC in [12_TASKS](../docs/12_TASKS.md). Unblocks NOTE-08 |
+| NOTE-07 | Web API route handlers for note CRUD (thin) | P0 | S | NOTE-02..NOTE-06 | Claude | In Review (PR #117) | M1 | Draft PR #117 — `GET/POST /api/notes` + `GET/PATCH/DELETE /api/notes/[id]`, thin over `NoteService`; `noteRoute` wrapper (logging + require-session + ServiceError→HTTP); JWT-sourced user; `{ data }`/`{ error: { code, message } }` envelope; `restore` deferred to NOTE-12. 364 units green. Unblocks NOTE-08 |
 | NOTE-08 | TanStack Query hooks: `useNoteQuery`/`useNotesList` + optimistic mutations | P0 | M | NOTE-07, SHELL-07 | frontend | Queued | M1 | 05_API-shaped hooks with optimistic create/update/delete. Unblocks NOTE-09/10/11 |
 | NOTE-09 | Note list view in sidebar (titles, last-edited — FR-NOTE-6) + new-note affordance | P1 | M | NOTE-08, SHELL-03 | frontend | Queued | M1 | Lands in the SHELL-03 sidebar frame; the create-note action wires the NOTE-08 mutation (and/or the SHELL-04 palette command) |
 | NOTE-10 | Note route + page: load note into the editor view | P0 | M | NOTE-08, EDIT-01 | frontend | Queued | M1 | **← sprint goal:** open/edit/save a note. Reuses the EDIT-01 controlled, SSR-safe `MarkdownEditor` |
