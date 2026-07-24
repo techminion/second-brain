@@ -21,6 +21,21 @@ Estimated Context Needed:
 
 ---
 
+## 2026-07-24 — Claude — SHELL-08 (skeleton primitives) ready for review
+
+**Session Date:** 2026-07-24
+**Agent:** Claude, implementer (auto mode)
+**Objective:** SHELL-08 — reusable skeleton-loading primitives (10_DESIGN §2.3/§4: skeletons that match the final layout, never spinners).
+**Files Added:** `src/shared/ui/skeleton.tsx` (`Skeleton` — a `bg-muted animate-pulse` block sized by the caller's className; `SkeletonText` — N lines with a shortened last line so it reads as a paragraph), `skeleton.test.tsx` (7 tests: aria-hidden, pulse, reduced-motion class, sizing passthrough, line counts, last-line shortening incl. the single-line exception).
+**Files Modified:** queue/state/changelog/handoff.
+**Architecture Decisions:** primitives only — no feature-specific composed skeletons, since the surfaces that load data (NOTE-09 note list, NOTE-10 note route) aren't built; they compose these to match their own layouts. Reduced-motion via the standard `motion-reduce:animate-none` variant (not a token — this is a discrete on/off, unlike SHELL-10's duration collapse). Blocks are `aria-hidden`; the consuming container owns the announced busy state (`aria-busy`/`aria-live`) so screen readers get one coherent "loading" signal rather than a wall of decorative nodes.
+**Verification performed:** 330 units green (7 new); typecheck/lint/format clean. No route renders a skeleton yet, so the a11y spec is unaffected (and blocks are aria-hidden regardless).
+**Outstanding Work:** PR → CI → merge. Last Sprint 4 P2 filler: SHELL-06 (responsive breakpoints). Then the queue is empty → sprint promotion decision (Sprint 5 candidates: NOTE-07/08 API+hooks, the note UI NOTE-09/10, both dependency-ready off the merged NoteService).
+**Known Bugs:** None.
+**Risks:** None material — presentational primitive. If a future design adds a shimmer-sweep instead of a pulse, it must route through the same reduced-motion guard.
+**Suggested Next Task:** SHELL-06.
+**Estimated Context Needed:** This entry, `skeleton.tsx`.
+
 ## 2026-07-24 — Claude — SHELL-09 (empty-state onboarding) ready for review
 
 **Session Date:** 2026-07-24
