@@ -17,8 +17,9 @@ const steps: TeachingStep[] = [
     title: "Create your first note",
     description: (
       <>
-        Press <kbd className="bg-muted text-foreground rounded px-1.5 py-0.5 font-mono text-xs">⌘N</kbd> to start
-        writing in markdown.
+        Press{" "}
+        <kbd className="bg-muted text-foreground rounded px-1.5 py-0.5 font-mono text-xs">⌘N</kbd>{" "}
+        to start writing in markdown.
       </>
     ),
   },
@@ -27,8 +28,9 @@ const steps: TeachingStep[] = [
     title: "Link ideas together",
     description: (
       <>
-        Type <kbd className="bg-muted text-foreground rounded px-1.5 py-0.5 font-mono text-xs">[[</kbd> inside a
-        note to connect it to another.
+        Type{" "}
+        <kbd className="bg-muted text-foreground rounded px-1.5 py-0.5 font-mono text-xs">[[</kbd>{" "}
+        inside a note to connect it to another.
       </>
     ),
   },
@@ -38,8 +40,8 @@ const steps: TeachingStep[] = [
     description: (
       <>
         Open the command palette with{" "}
-        <kbd className="bg-muted text-foreground rounded px-1.5 py-0.5 font-mono text-xs">⌘K</kbd> to search and
-        navigate.
+        <kbd className="bg-muted text-foreground rounded px-1.5 py-0.5 font-mono text-xs">⌘K</kbd>{" "}
+        to search and navigate.
       </>
     ),
   },
