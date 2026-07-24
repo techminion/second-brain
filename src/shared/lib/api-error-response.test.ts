@@ -6,7 +6,11 @@ import { ConflictError, NotFoundError, ValidationError } from "./errors";
 describe("serviceErrorResponse", () => {
   it("maps each service error to its documented status and code", async () => {
     const cases = [
-      { error: new ValidationError("Title must not be empty"), status: 400, code: "VALIDATION_ERROR" },
+      {
+        error: new ValidationError("Title must not be empty"),
+        status: 400,
+        code: "VALIDATION_ERROR",
+      },
       { error: new NotFoundError("Note not found"), status: 404, code: "NOT_FOUND" },
       { error: new ConflictError("Duplicate"), status: 409, code: "CONFLICT" },
     ];

@@ -41,7 +41,9 @@ describe("parseCreateNoteBody", () => {
 
   it("rejects a JSON array or primitive body", async () => {
     await expect(parseCreateNoteBody(jsonRequest([1, 2]))).rejects.toBeInstanceOf(ValidationError);
-    await expect(parseCreateNoteBody(jsonRequest("string"))).rejects.toBeInstanceOf(ValidationError);
+    await expect(parseCreateNoteBody(jsonRequest("string"))).rejects.toBeInstanceOf(
+      ValidationError,
+    );
   });
 });
 

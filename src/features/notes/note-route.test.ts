@@ -51,9 +51,7 @@ describe("noteRoute", () => {
 
     await noteRoute("api.notes.test", handler)(request());
 
-    expect(handler).toHaveBeenCalledWith(
-      expect.objectContaining({ service, userId: "user-1" }),
-    );
+    expect(handler).toHaveBeenCalledWith(expect.objectContaining({ service, userId: "user-1" }));
   });
 
   it("translates a thrown ServiceError to its HTTP status", async () => {
