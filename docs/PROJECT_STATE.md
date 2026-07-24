@@ -4,12 +4,12 @@
 
 ## Current Milestone
 
-**M0 — Foundations** (exit criteria met; open M0 deliverables — account mgmt + command palette — closing in Sprint 3) → transitioning into **M1 — Collect**
+**M0 — Foundations** ✅ **complete** — every M0-phase task Done (SETUP/DB/AUTH/SHELL/CI/OBS), including the shell-polish tail (SHELL-05/06/08/09) and the E2E/a11y test infra (CI-06/08). → **M1 — Collect** (active)
 
 ## Current Sprint
 
-**Sprint 3 — Account Management & Note Foundation** (M0 closeout + M1 foundation; scope and priorities in [.ai/TASK_QUEUE.md](../.ai/TASK_QUEUE.md); promoted 2026-07-23)
-Done: Sprint 0 (governance), Sprint 1 (repo & tooling foundation — 21 tasks), Sprint 2 (schema, auth core & app shell — all tasks reviewed and merged; M0 exit criteria met in production)
+**Sprint 4 — Note Service Completion & Editor Round-Trip** ✅ complete (all tasks merged; promoted 2026-07-24) — NOTE-04..06, EDIT-02/03, SHELL-05, CI-06/08, SHELL-06/08/09. **Sprint 5 promotion pending** (note-taking UI vertical slice — the Option-A remaining chain).
+Done: Sprint 0 (governance), Sprint 1 (repo & tooling — 21 tasks), Sprint 2 (schema, auth core & app shell), Sprint 3 (M0 closeout + note/editor foundation), Sprint 4 (note service + editor round-trip + M0 tail)
 
 ## Overall Progress
 
@@ -81,7 +81,7 @@ Done: Sprint 0 (governance), Sprint 1 (repo & tooling foundation — 21 tasks), 
 
 ## In Progress
 
-- SHELL-06 (responsive shell) in review — `useBreakpointTier` (SSR/jsdom-safe matchMedia, 10_DESIGN §11 tiers: full ≥1280 / right-overlay 768–1279 / drawers <768) drives `ShellPanelsProvider`: each rail resets to its tier default on a breakpoint crossing (desktop both open; tablet sidebar collapsed in-flow + right panel closed overlay; mobile both closed drawers). `ShellPanel` renders in-flow at desktop (byte-identical), and below it renders overlay panels as fixed drawers with a click-to-close backdrop plus a pinned reopen affordance when closed. **Last Sprint 4 P2 filler — queue empties after this → Sprint 5 promotion decision.** **Pending user decision:** wire `E2E (preview)` + `Accessibility` as required contexts (four clean live runs each now).
+- None. Sprint 4 is fully merged (SHELL-06 landed via PR #114); the queue is empty pending Sprint 5 promotion.
 
 ## Blocked
 
@@ -89,8 +89,9 @@ Done: Sprint 0 (governance), Sprint 1 (repo & tooling foundation — 21 tasks), 
 
 ## Upcoming
 
-- **Sprint 3 is promoted** (see [.ai/TASK_QUEUE.md](../.ai/TASK_QUEUE.md)): M0 closeout — AUTH-10 (account settings), AUTH-11/12 (delete account, FR-AUTH-6), AUTH-13 (signup→shell E2E), SHELL-04 (command palette); M1 foundation — NOTE-01..03 (note service) and EDIT-01 (Tiptap editor, highest-risk phase). NOTE-01 is **Done** (PR #87); NOTE-02/03 unblocked. AUTH-10, AUTH-13, SHELL-04, EDIT-01 remain independently claimable.
-- **Sprint 4 candidates:** 6 deferred M0-tagged tasks (SHELL-05 shortcut manager, SHELL-06 responsive breakpoints, SHELL-08 skeleton loading, SHELL-09 empty-state onboarding, CI-06 Playwright vs. previews, CI-08 axe a11y gate); rest of NOTE/EDIT; then FOLD/TAG/ATT/DAILY (all behind NOTE/EDIT foundation). CRED-01 (MCP) tracks to M4; ADR-24/ADR-25 make EMB-01 (with OpenAI key provisioning and AI gating) the first AI task, in M3.
+- **Sprint 5 promotion pending** (architect + user): the note-taking UI vertical slice — NOTE-07 (Web API) → NOTE-08 (Query hooks) → NOTE-09 (sidebar list) → NOTE-10 (note page in editor) → NOTE-11 (delete dialog), plus EDIT-04/05 (live formatting + lists). Optional depth: NOTE-12 (trash) + NOTE-15 (E2E). Then FOLD/TAG/ATT/DAILY. CRED-01 (MCP) tracks to M4; ADR-24/ADR-25 make EMB-01 the first AI task, in M3.
+- **Pending user decision (carried from Sprint 4):** make `E2E (preview)` and `Accessibility` **required** branch-protection contexts (both have clean live runs now). Currently they run but do not gate merge.
+- **Watch-item (reviewer flag):** EDIT-16 (XSS hardening test, 09_SECURITY §9 T4) is deferred, but the editor now renders user markdown incl. `@tiptap/extension-image` URLs — prioritize EDIT-16 before the editor reaches real users.
 - **AI is per-user gated (ADR-25, user decision):** EMB/SEM/AICH/VCH are built but ship off by default, enabled per user via a single `profiles.ai_enabled` flag an operator toggles in SQL — **no admin role/panel in MVP** (deferred to a future phase). Before those tasks are implemented, the spec ripples in ADR-25 must be applied (04_DATABASE `profiles.ai_enabled` + self-grant-proof column `REVOKE`/RLS + GOV-6 self-enable-denial test, 09_SECURITY operator-only gate note, 05_API `updateProfile` exclusion, 07_AI/08_SEARCH runtime gating, 12_TASKS gating criteria).
 
 ## Known Technical Debt
@@ -111,8 +112,8 @@ Done: Sprint 0 (governance), Sprint 1 (repo & tooling foundation — 21 tasks), 
 
 ## Current Branch
 
-`main`
+`chore/sprint-4-stale-queue-records`
 
 ## Last Updated
 
-2026-07-24 — SHELL-08 merged (#113; skeleton primitives). SHELL-06 (responsive breakpoint behavior — the last Sprint 4 P2 filler) opened for review. Earlier today: SHELL-09 (#112), CI-08 (#111), CI-06 (#109/#110), branch prune, Sprint 4 core (#103–#109). Queue empties on SHELL-06 merge → Sprint 5 promotion. Previous update: 2026-07-23 — Claude (auto mode) completed Sprint 3's M0 exit-criteria deliverables: AUTH-10 (settings page), AUTH-11 (deleteAccount service), AUTH-12 (deletion UI), AUTH-13 (signup E2E), SHELL-04 (command palette ⌘K). All five merged green (PRs #96–#100). 204/204 unit tests pass. **M0 exit-criteria met** — account management, shell UI, and provisioning E2E verified. Remaining M0-tagged tasks (SHELL-05/06/08/09, CI-06/08 — polish and test-infra) are deferred to Sprint 4.
+2026-07-24 — Reviewer (Claude) corrected the stale queue: CI-08, SHELL-06, SHELL-08, SHELL-09 were merged (#111–114) but still marked *In Review* → now **Done**. With them, **M0 is 100% complete by task inventory** (exit criteria were already met). Independent review sweep of the Sprint-4 range: no committed secrets (`.env` gitignored), 20/20 repo↔Cloud migration parity, NOTE-06 cursor injection-safe (strict UUID/timestamp decode), CI-06/08 fork-safe (same-repo guard, no secrets to forks). Queue empty → Sprint 5 promotion pending.
