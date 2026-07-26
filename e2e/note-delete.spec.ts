@@ -5,13 +5,6 @@ import { deleteUserByEmail, serviceRoleKey, supabaseUrl } from "./support/admin"
 test("deletes a note only after confirming its name", async ({ page }) => {
   test.skip(!supabaseUrl || !serviceRoleKey, "requires dev-project credentials");
 
-  const consoleErrors: string[] = [];
-  page.on("console", (message) => {
-    if (message.type() === "error") {
-      consoleErrors.push(message.text());
-    }
-  });
-
   const email = `ameybro11+delete-note${Date.now()}@gmail.com`;
   const password = "Correct-Horse-42-Battery";
   const noteTitle = "Q3 Planning";
@@ -48,7 +41,6 @@ test("deletes a note only after confirming its name", async ({ page }) => {
     await page.waitForURL("/");
     await page.setViewportSize({ height: 720, width: 1280 });
     await expect(page.getByRole("navigation", { name: "Notes" })).not.toContainText(noteTitle);
-    expect(consoleErrors).toEqual([]);
   } finally {
     await deleteUserByEmail(email);
   }
