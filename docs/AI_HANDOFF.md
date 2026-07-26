@@ -21,6 +21,22 @@ Estimated Context Needed:
 
 ---
 
+## 2026-07-26 — Claude — ADR-27 revised after review (three blockers resolved before CI-09)
+
+**Session Date:** 2026-07-26
+**Agent:** Claude, architect (documentation only)
+**Objective:** Resolve three documentation conflicts a review surfaced in ADR-27/CI-09 so CI-09 is safe for Codex to start.
+**Files Modified:** `docs/DECISIONS.md` (ADR-27 revised), `docs/12_TASKS.md` + `.ai/TASK_QUEUE.md` (CI-09 AC), `docs/PROJECT_STATE.md`, `docs/AI_HANDOFF.md`.
+**What changed (all three review blockers):**
+1. **Deploy ordering is now binding, not an accepted race.** ADR-27 originally tolerated concurrent Supabase+Vercel deploys — but that leaves the same transient-500 window as the incident and conflicts with 03_ARCH §8 (schema before code) + CONTRIBUTING rule 4 (migration in the same PR). CI-09 must now guarantee ordering: **gate Vercel production promotion on the Supabase migration deploy (Vercel Deployment Checks)**, or fall back to a **two-PR ordering** and amend the CONTRIBUTING same-PR rule as its own decision.
+2. **`config.toml` fact corrected.** It was wrongly called "currently minimal"; it **does not exist**. CI-09 must confirm the integration runs without it, or add a reviewed minimal one that cannot override dashboard-managed prod Auth (ADR-24).
+3. **Verification contradiction removed.** CI-09 no longer requires a throwaway migration: initial validation = successful empty deploy + `migration list` 20/20 readback; end-to-end auto-apply is confirmed with the next legitimate migration.
+**Outstanding Work:** CI-09 is now unblocked for Codex under the revised spec. The two-PR fallback, if taken, needs its own ADR amending CONTRIBUTING rule 4.
+**Known Bugs:** None introduced. (Pre-existing optimistic `/notes/optimistic-*` → 400 still needs its own bug-fix task.)
+**Risks:** The preferred ordering fix depends on Vercel Deployment Checks being able to gate on the Supabase deploy; CI-09 must validate that feasibility first and fall back if not.
+**Suggested Next Task:** Codex → CI-09 (revised). Note UI: EDIT-04 (P0) / NOTE-11 (P1).
+**Estimated Context Needed:** Revised ADR-27, CI-09 row, 03_ARCH §8, CONTRIBUTING rule 4, Vercel Deployment Checks docs.
+
 ## 2026-07-26 — Claude — ADR-27 + CI-09 documented (prod migration automation, for Codex)
 
 **Session Date:** 2026-07-26

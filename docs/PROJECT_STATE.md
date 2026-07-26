@@ -101,7 +101,7 @@ Done: Sprint 0 (governance), Sprint 1 (repo & tooling — 21 tasks), Sprint 2 (s
 - The `feature-boundaries` lint rule only catches `@/features/...` alias imports; relative-path imports bypass it. Follow-up hardening candidate.
 - `tsconfig.json` typechecks `src/**` only — `e2e/`, `tools/`, and config files are not typechecked.
 - Interim pointer-README in place; OBS-10 replaces it with the full public README at launch.
-- Production migration deployment is still manual (CI-04 checks only the dev project) — the gap behind the 2026-07-26 outage. **Now specced and queued:** the architect chose the Supabase GitHub integration (**ADR-27**, honors ADR-21 — no prod DB password in Actions); **CI-09** carries it and is **owned by Codex** (Queued). Until CI-09 lands, any new production-dependent migration must be applied to prod by hand (as on 2026-07-26).
+- Production migration deployment is still manual (CI-04 checks only the dev project) — the gap behind the 2026-07-26 outage. **Specced and queued:** the architect chose the Supabase GitHub integration (**ADR-27**, honors ADR-21 — no prod DB password in Actions); **CI-09** carries it, **owned by Codex**. ADR-27 was **revised 2026-07-26 after review** to resolve three blockers before implementation: deploy-ordering is now a **binding** requirement (gate Vercel promotion on the Supabase deploy, or two-PR + amend the CONTRIBUTING same-PR rule), the `config.toml` fact is corrected (it does not exist), and initial validation no longer requires a throwaway migration. Until CI-09 lands, any new production-dependent migration must be applied to prod by hand (as on 2026-07-26).
 
 ## Architecture Decisions Pending
 
