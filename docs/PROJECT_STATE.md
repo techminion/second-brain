@@ -8,7 +8,7 @@
 
 ## Current Sprint
 
-**Sprint 5 — Note-Taking End-to-End** (M1; promoted 2026-07-24; scope in [.ai/TASK_QUEUE.md](../.ai/TASK_QUEUE.md)) — the note-taking UI vertical slice: NOTE-07 (Web API) → NOTE-08 (Query hooks) → NOTE-09 (sidebar list) → NOTE-10 (editor-backed note page) → NOTE-11 (delete dialog), plus EDIT-04/05 (live formatting + lists). P2 stretch: NOTE-12 (trash) → NOTE-15 (E2E). Goal: create → open → edit → save → delete a note entirely in the UI. **Merged: NOTE-07 (#117), NOTE-08 (#118), NOTE-09 (#120), NOTE-10 (#119), completing create → open → edit → save. Remaining: NOTE-11 (delete), EDIT-04/05.**
+**Sprint 5 — Note-Taking End-to-End** (M1; promoted 2026-07-24; scope in [.ai/TASK_QUEUE.md](../.ai/TASK_QUEUE.md)) — the note-taking UI vertical slice: NOTE-07 (Web API) → NOTE-08 (Query hooks) → NOTE-09 (sidebar list) → NOTE-10 (editor-backed note page) → NOTE-11 (delete dialog), plus EDIT-04/05 (live formatting + lists). P2 stretch: NOTE-12 (trash) → NOTE-15 (E2E). Goal: create → open → edit → save → delete a note entirely in the UI. **Merged: NOTE-07 (#117), NOTE-08 (#118), NOTE-09 (#120), NOTE-10 (#119), completing create → open → edit → save. In review: EDIT-04. Remaining: NOTE-11 and EDIT-05.**
 Done: Sprint 0 (governance), Sprint 1 (repo & tooling — 21 tasks), Sprint 2 (schema, auth core & app shell), Sprint 3 (M0 closeout + note/editor foundation), Sprint 4 (note service + editor round-trip + M0 tail — M0 100% complete)
 
 ## Overall Progress
@@ -78,10 +78,11 @@ Done: Sprint 0 (governance), Sprint 1 (repo & tooling — 21 tasks), Sprint 2 (s
 
 ## Current Sprint (updated)
 
-**Sprint 5 — Note-Taking End-to-End** (promoted 2026-07-24; scope in [.ai/TASK_QUEUE.md](../.ai/TASK_QUEUE.md)): NOTE-07..10 are merged. Remaining implementation is NOTE-11 and EDIT-04/05, with NOTE-12/15 as P2 stretch work.
+**Sprint 5 — Note-Taking End-to-End** (promoted 2026-07-24; scope in [.ai/TASK_QUEUE.md](../.ai/TASK_QUEUE.md)): NOTE-07..10 are merged. EDIT-04 is in review; remaining implementation is NOTE-11 and EDIT-05, with NOTE-12/15 as P2 stretch work.
 
 ## In Progress
 
+- **EDIT-04 (Codex):** heading, bold, italic, and inline-code syntax live-formats as typed. Markdown markers are ephemeral ProseMirror decorations: absent outside the active selection and revealed only while the focused cursor is inside the matching heading/mark, so they never enter the document or saved Markdown. Heading typography now covers h1–h6 at the documented scale. Ready for independent review.
 - **CI-09 (Codex):** production migration automation and ordering are live. The Supabase GitHub integration's empty production run succeeded at 20/20 parity with repository configuration skipped; Vercel now requires that Supabase GitHub check before assigning Production aliases. The configured gate was exercised successfully by an unchanged production redeploy. Only ADR-27's final end-to-end proof—automatic application of the next legitimate pending migration—remains before Done.
 
 ## Blocked
@@ -114,8 +115,8 @@ Done: Sprint 0 (governance), Sprint 1 (repo & tooling — 21 tasks), Sprint 2 (s
 
 ## Current Branch
 
-`chore/ci-09-gate-verification`
+`feature/edit-04-live-formatting`
 
 ## Last Updated
 
-2026-07-26 — CI-09 automation and ordering are live. Supabase's first `main` run cloned the repository, skipped protected-branch configuration and seed data, reported all 20 migrations current, and deployed no functions or buckets. Vercel now gates Production alias assignment on that Supabase GitHub check; an unchanged redeploy recorded the gate as succeeded before `brain.khaire.dev` was assigned. Production Auth's public provider settings remain unchanged. CI-09 awaits only the next legitimate migration's auto-apply proof.
+2026-07-26 — EDIT-04 is ready for review: headings, bold, italic, and inline code format live as Markdown syntax is typed; cursor-local marker decorations provide the documented live-preview reveal without changing persisted Markdown. 412 units, production build, dependency audit, rendered interaction QA, and the four-route WCAG suite are green.
