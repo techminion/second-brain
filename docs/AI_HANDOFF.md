@@ -21,6 +21,21 @@ Estimated Context Needed:
 
 ---
 
+## 2026-07-26 — Codex — CI-09 stage 1: production integration connected
+
+**Session Date:** 2026-07-26
+**Agent:** Codex, implementation agent (infra)
+**Objective:** Establish ADR-27's Supabase-managed production migration path without adding a throwaway migration or a production database credential to GitHub Actions.
+**Files Modified:** `docs/03_ARCHITECTURE.md`, `.ai/TASK_QUEUE.md`, `docs/PROJECT_STATE.md`, `docs/AI_HANDOFF.md`.
+**External Configuration:** Connected production project `hqzakxpbxqzxismmgnyn` to `techminion/second-brain`, working directory `.`, production branch `main`; enabled **Deploy to production** and left automatic Branching disabled.
+**Architecture Decisions:** None new. ADR-27's preferred Vercel Deployment Checks path remains binding. No `supabase/config.toml` was added; the repository therefore declares no Auth/API/SMTP/OAuth configuration for the integration to apply.
+**Verification performed:** Supabase project reports `ACTIVE_HEALTHY`; production migration history matches all 20 repository migrations; no Supabase check exists on the current `main` commit because the integration activates on the next `main` push. No migration or application code is present in this first-stage PR, so its merge is a safe empty-deploy trigger.
+**Outstanding Work:** After this PR merges, verify the successful empty Supabase deployment and 20/20 readback, identify the emitted GitHub check, configure it as a required Vercel `deployment-promotion` check, and verify production Auth remains unchanged. Confirm end-to-end automatic apply with the next legitimate migration before marking CI-09 Done (or retain the explicit follow-up split allowed by ADR-27).
+**Known Bugs:** None.
+**Risks:** Until the post-merge Vercel gate is configured, Supabase and Vercel still run concurrently; no schema-dependent change may ship through this interim state.
+**Suggested Next Task:** Complete CI-09's post-merge validation and promotion gate; do not start another infra task first.
+**Estimated Context Needed:** This entry, ADR-27, the CI-09 queue row, and `docs/03_ARCHITECTURE.md §8`.
+
 ## 2026-07-26 — Claude — ADR-27 revised after review (three blockers resolved before CI-09)
 
 **Session Date:** 2026-07-26
