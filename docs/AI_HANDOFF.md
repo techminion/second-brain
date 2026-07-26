@@ -21,6 +21,22 @@ Estimated Context Needed:
 
 ---
 
+## 2026-07-26 — Codex — production migration parity incident resolved
+
+**Session Date:** 2026-07-26
+**Agent:** Codex, implementation/operations
+**Objective:** Diagnose and restore production note APIs returning HTTP 500 without changing application code or inventing schema.
+**Files Modified:** `.ai/TASK_QUEUE.md` (reconciled merged NOTE-09 to Done), `package-lock.json` (transitive dev-only `brace-expansion` 5.0.7 → 5.0.8), `docs/PROJECT_STATE.md`, `docs/AI_HANDOFF.md`.
+**Files Added:** None.
+**Architecture Decisions:** None. Applied the repository's three existing reviewed migrations forward-only and preserved their exact 14-digit versions in `supabase_migrations.schema_migrations`, following the established Cloud-only deployment procedure. No migration or runtime code was changed. The PR audit gate subsequently disclosed GHSA-mh99-v99m-4gvg; the approved remediation changes only the transitive dev dependency lock resolution used by ESLint's `minimatch`, with no `package.json` or runtime dependency change.
+**Production changes:** Applied `20260722185637_create_note_transaction_functions`, `20260723134400_add_delete_requested_at_to_profiles`, and `20260723195523_update_note_reject_soft_deleted` to production project `hqzakxpbxqzxismmgnyn`. Production history now matches the repository at 20/20.
+**Verification performed:** Public `/api/notes` correctly returns 401 without a session; Supabase API logs showed the incident cause (`rpc/create_note` 404) while authenticated list queries remained 200. Live catalog verification confirms both RPCs, nullable `profiles.delete_requested_at timestamptz`, the update soft-delete guard, and authenticated-only EXECUTE (`anon`/`service_role` denied). A rollback-only smoke test assumed the `authenticated` role, created and updated one note, asserted the returned values, and rolled back; no test data was retained. Security advisor: one pre-existing warning (`auth_leaked_password_protection` disabled). Performance advisor: informational pre-existing unindexed-FK/unused-index findings only. After the lockfile remediation: `npm audit` reports zero vulnerabilities; 404/404 units, typecheck, lint, format, and production build pass.
+**Outstanding Work:** Production migration deployment is manual while CI-04 validates only the shared development project. The architect should queue a production parity/deployment gate or release runbook before another production-dependent migration ships. The secondary optimistic-ID prefetch issue (`optimistic-*` passed to UUID filters, producing Supabase 400s) needs a separately scoped bug-fix task.
+**Known Bugs:** Optimistic note rows can be prefetched as `/notes/optimistic-*`; the repository forwards the non-UUID value to Postgres and logs `22P02`/HTTP 400. This was not the 500 root cause and was not modified in this operational fix.
+**Risks:** The primary outage is resolved, but manual production migration rollout can recur until the deployment process is hardened. Leaked-password protection remains disabled in production Auth and should be dispositioned by the architect/security owner rather than changed during this incident.
+**Suggested Next Task:** Architect queues the production migration rollout safeguard; implementation queue remains EDIT-04 (P0) or NOTE-11 (P1).
+**Estimated Context Needed:** This entry, `.github/workflows/ci.yml` migration-check job, `tools/ci/check-supabase-migration-drift.sh`, and the three migrations above.
+
 ## 2026-07-25 — Claude — NOTE-09 (sidebar note list) ready for review
 
 **Session Date:** 2026-07-25
