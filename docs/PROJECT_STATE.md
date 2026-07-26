@@ -82,7 +82,7 @@ Done: Sprint 0 (governance), Sprint 1 (repo & tooling — 21 tasks), Sprint 2 (s
 
 ## In Progress
 
-- None. Next claimable Sprint 5 work: EDIT-04 (P0) or NOTE-11 (P1).
+- **CI-09 (Codex):** the production Supabase project is connected to `techminion/second-brain` through the Supabase GitHub integration (`main`, working directory `.`, Deploy to production enabled, automatic Branching disabled). The first-stage docs-only PR is the safe no-op trigger; after it merges, verify the empty deployment and 20/20 migration parity, then bind the emitted Supabase check to Vercel's `deployment-promotion` gate. Full auto-apply proof remains owed to the next legitimate migration (ADR-27).
 
 ## Blocked
 
@@ -101,7 +101,7 @@ Done: Sprint 0 (governance), Sprint 1 (repo & tooling — 21 tasks), Sprint 2 (s
 - The `feature-boundaries` lint rule only catches `@/features/...` alias imports; relative-path imports bypass it. Follow-up hardening candidate.
 - `tsconfig.json` typechecks `src/**` only — `e2e/`, `tools/`, and config files are not typechecked.
 - Interim pointer-README in place; OBS-10 replaces it with the full public README at launch.
-- Production migration deployment is still manual (CI-04 checks only the dev project) — the gap behind the 2026-07-26 outage. **Specced and queued:** the architect chose the Supabase GitHub integration (**ADR-27**, honors ADR-21 — no prod DB password in Actions); **CI-09** carries it, **owned by Codex**. ADR-27 was **revised 2026-07-26 after review** to resolve three blockers before implementation: deploy-ordering is now a **binding** requirement (gate Vercel promotion on the Supabase deploy, or two-PR + amend the CONTRIBUTING same-PR rule), the `config.toml` fact is corrected (it does not exist), and initial validation no longer requires a throwaway migration. Until CI-09 lands, any new production-dependent migration must be applied to prod by hand (as on 2026-07-26).
+- Production migration automation is partially established: the Supabase GitHub integration is connected, but its first `main` deployment and the binding Vercel promotion gate cannot be validated until the first-stage CI-09 PR merges. Until that post-merge verification completes, any new production-dependent migration must still be treated as a manual release and CI-09 remains In Progress.
 
 ## Architecture Decisions Pending
 
@@ -114,8 +114,8 @@ Done: Sprint 0 (governance), Sprint 1 (repo & tooling — 21 tasks), Sprint 2 (s
 
 ## Current Branch
 
-`bugfix/production-migration-parity`
+`chore/ci-09-production-migrations`
 
 ## Last Updated
 
-2026-07-26 — Codex restored production migration parity (20/20) by applying the three existing reviewed migrations missing from production. The authenticated note create/update smoke test passed inside a rolled-back transaction; no test data remains. NOTE-09 was also reconciled to Done after PR #120's merge. The architect then documented the permanent fix for the deployment gap — **ADR-27** (production migrations deploy via the Supabase GitHub integration; honors ADR-21) and queued **CI-09**, owned by Codex, to implement it. Next implementation: CI-09 (Codex, prod-migration automation) and EDIT-04 (P0) / NOTE-11 (P1) for the note UI.
+2026-07-26 — CI-09 first stage: production Supabase is connected to the repository's `main` branch with Deploy to production enabled and Branching disabled. Production remains healthy at 20/20 migrations; the repository still has no `supabase/config.toml`. The docs-only CI-09 PR will safely trigger the first empty deployment; its emitted check must then be bound to Vercel production promotion before CI-09 can complete.
