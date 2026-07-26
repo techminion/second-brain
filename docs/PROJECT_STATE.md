@@ -82,7 +82,7 @@ Done: Sprint 0 (governance), Sprint 1 (repo & tooling — 21 tasks), Sprint 2 (s
 
 ## In Progress
 
-- **CI-09 (Codex):** the production Supabase project is connected to `techminion/second-brain` through the Supabase GitHub integration (`main`, working directory `.`, Deploy to production enabled, automatic Branching disabled). The first-stage docs-only PR is the safe no-op trigger; after it merges, verify the empty deployment and 20/20 migration parity, then bind the emitted Supabase check to Vercel's `deployment-promotion` gate. Full auto-apply proof remains owed to the next legitimate migration (ADR-27).
+- **CI-09 (Codex):** production migration automation and ordering are live. The Supabase GitHub integration's empty production run succeeded at 20/20 parity with repository configuration skipped; Vercel now requires that Supabase GitHub check before assigning Production aliases. The configured gate was exercised successfully by an unchanged production redeploy. Only ADR-27's final end-to-end proof—automatic application of the next legitimate pending migration—remains before Done.
 
 ## Blocked
 
@@ -101,7 +101,7 @@ Done: Sprint 0 (governance), Sprint 1 (repo & tooling — 21 tasks), Sprint 2 (s
 - The `feature-boundaries` lint rule only catches `@/features/...` alias imports; relative-path imports bypass it. Follow-up hardening candidate.
 - `tsconfig.json` typechecks `src/**` only — `e2e/`, `tools/`, and config files are not typechecked.
 - Interim pointer-README in place; OBS-10 replaces it with the full public README at launch.
-- Production migration automation is partially established: the Supabase GitHub integration is connected, but its first `main` deployment and the binding Vercel promotion gate cannot be validated until the first-stage CI-09 PR merges. Until that post-merge verification completes, any new production-dependent migration must still be treated as a manual release and CI-09 remains In Progress.
+- Production migration automation is live and prevents persistent drift: Supabase applies `main` migrations and Vercel blocks Production alias assignment on the resulting GitHub check. CI-09 remains In Progress only because ADR-27 requires the next legitimate pending migration to prove end-to-end automatic application; no synthetic migration will be created for that proof.
 
 ## Architecture Decisions Pending
 
@@ -114,8 +114,8 @@ Done: Sprint 0 (governance), Sprint 1 (repo & tooling — 21 tasks), Sprint 2 (s
 
 ## Current Branch
 
-`chore/ci-09-production-migrations`
+`chore/ci-09-gate-verification`
 
 ## Last Updated
 
-2026-07-26 — CI-09 first stage: production Supabase is connected to the repository's `main` branch with Deploy to production enabled and Branching disabled. Production remains healthy at 20/20 migrations; the repository still has no `supabase/config.toml`. The docs-only CI-09 PR will safely trigger the first empty deployment; its emitted check must then be bound to Vercel production promotion before CI-09 can complete.
+2026-07-26 — CI-09 automation and ordering are live. Supabase's first `main` run cloned the repository, skipped protected-branch configuration and seed data, reported all 20 migrations current, and deployed no functions or buckets. Vercel now gates Production alias assignment on that Supabase GitHub check; an unchanged redeploy recorded the gate as succeeded before `brain.khaire.dev` was assigned. Production Auth's public provider settings remain unchanged. CI-09 awaits only the next legitimate migration's auto-apply proof.

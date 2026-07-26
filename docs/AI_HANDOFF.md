@@ -21,6 +21,21 @@ Estimated Context Needed:
 
 ---
 
+## 2026-07-26 — Codex — CI-09 production migration automation and ordering live
+
+**Session Date:** 2026-07-26
+**Agent:** Codex, implementation agent (infra)
+**Objective:** Complete CI-09's post-merge empty-deploy validation and enforce ADR-27's schema-before-code ordering at Vercel promotion.
+**Files Modified:** `docs/03_ARCHITECTURE.md`, `.ai/TASK_QUEUE.md`, `docs/PROJECT_STATE.md`, `docs/AI_HANDOFF.md`, `docs/CHANGELOG.md`.
+**External Configuration:** Added Vercel project check `Supabase production migrations` (`chk_d3e8474f-098b-47e4-bca6-55c9e616c49f`): GitHub provider source `Supabase Preview`, `requires=none`, Production target only, blocking `deployment-alias`. The live Vercel API rejected the CLI-advertised `deployment-promotion` stage; `deployment-alias` is the supported stage that prevents production-domain assignment and therefore implements ADR-27's promotion gate.
+**Verification performed:** Supabase workflow `47fc164008fa4040818f94d71ce8fc7b` cloned `main`, skipped protected-branch configuration, reported all migrations current, skipped protected-branch seed data, and deployed no buckets/functions. Production history is 20/20. Public Auth settings remain email+Google enabled, signup enabled, auto-confirm enabled. Same-code production deployment `dpl_86izK5kaUV6DgvBVTpMV5NKtNt2A` recorded check run `ckr_af71e1e6-a46a-4b6d-8a61-ac33916bc52a` as `completed/succeeded` before assigning `brain.khaire.dev` and the automatic Production aliases.
+**Architecture Decisions:** None new. The Vercel Supabase Marketplace integration was inspected and intentionally not installed: it is an environment/provisioning integration using generic legacy variable conventions, while CI-07 already owns distinct Preview/Production project variables and ADR-27 owns migrations via GitHub.
+**Outstanding Work:** CI-09 remains In Progress until the next legitimate pending repository migration is automatically applied to production and history parity is read back, as explicitly required by ADR-27. Do not create a synthetic migration.
+**Known Bugs:** None.
+**Risks:** The Supabase GitHub check is named `Supabase Preview` on both PR and protected-production workflows; the Vercel check binds that exact vendor-owned name. A future vendor rename would prevent promotion rather than bypass the gate (fail closed) and would require updating the Vercel check source.
+**Suggested Next Task:** Resume the normal queue; when the next legitimate migration merges, attach its successful Supabase run and parity readback to CI-09, then mark CI-09 Done.
+**Estimated Context Needed:** This entry, ADR-27, CI-09 queue row, and Supabase/Vercel run identifiers above.
+
 ## 2026-07-26 — Codex — CI-09 stage 1: production integration connected
 
 **Session Date:** 2026-07-26
