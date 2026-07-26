@@ -21,6 +21,21 @@ Estimated Context Needed:
 
 ---
 
+## 2026-07-26 — Claude — ADR-27 + CI-09 documented (prod migration automation, for Codex)
+
+**Session Date:** 2026-07-26
+**Agent:** Claude, architect/planner (documentation only — no implementation, no prod/infra changes)
+**Objective:** Document the permanent fix for the production migration-deploy gap (root cause of the 2026-07-26 outage) and hand a ready-to-implement task to Codex.
+**Files Modified:** `docs/DECISIONS.md` (new **ADR-27**), `docs/12_TASKS.md` (new **CI-09**), `.ai/TASK_QUEUE.md` (CI-09 queued, owner Codex), `docs/PROJECT_STATE.md` (tech-debt + Last Updated).
+**Decision (ADR-27):** Production migrations deploy via the **Supabase GitHub integration** ("Deploy to production" from `main`), verified in the current Supabase docs to run on all plans (free tier) with the migration apply on Supabase's side — so **no production DB password enters GitHub Actions**, which **honors ADR-21** (rejected the `supabase db push` Actions pattern precisely because it needs that forbidden secret). Branching (Pro-only) is out of scope.
+**Owner:** **Codex** implements **CI-09**. Full spec, options, and binding risk notes (deploy-ordering vs Vercel; `config.toml` must not override dashboard-managed prod Auth; connect the **prod** project only; first run is a no-op since prod is 20/20) live in ADR-27.
+**Verification performed:** None applicable (docs only). Confirmed current Supabase docs support the mechanism on all plans; confirmed `supabase/config.toml` is minimal (no active `[auth]`/`[api]` blocks), lowering override risk.
+**Outstanding Work:** Codex implements CI-09 (dashboard config + a verification migration + 03_ARCH §8 update). Until then, any new prod-dependent migration must be applied to prod by hand.
+**Known Bugs:** None introduced. (Pre-existing: optimistic `/notes/optimistic-*` → 400, needs its own bug-fix task — see PR #121.)
+**Risks:** Documented in ADR-27 (ordering race with Vercel; config scope). None from this docs change itself.
+**Suggested Next Task:** Codex → CI-09. Implementation queue for the note UI remains EDIT-04 (P0) / NOTE-11 (P1).
+**Estimated Context Needed:** ADR-27, CI-09 row in 12_TASKS, ADR-21, 03_ARCHITECTURE §8.
+
 ## 2026-07-26 — Codex — production migration parity incident resolved
 
 **Session Date:** 2026-07-26

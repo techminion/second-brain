@@ -29,6 +29,7 @@ Promoted 2026-07-24 by the architect role after Sprint 4 closed (all rows Done; 
 | EDIT-05 | Lists (bullet, ordered, task-list as markdown checkboxes) | P1 | M | EDIT-02 | frontend | Queued | M1 | Must round-trip through the EDIT-02 serializer — task-lists are in the current `detectUnsupportedMarkdown` fallback set; this enables them |
 | NOTE-12 | Trash view: list soft-deleted notes, restore action | P2 | M | NOTE-05, SHELL-03 | frontend | Queued | M1 | **Stretch.** Restore leg uses `NoteService.restore` (30-day window, ADR-26). Unblocks NOTE-15 |
 | NOTE-15 | E2E: create → edit → delete → restore note flow | P2 | M | NOTE-10, NOTE-12, CI-06 | frontend | Queued | M1 | **Stretch.** Runs on the CI-06 preview-E2E lane; proves the full loop end-to-end |
+| CI-09 | Automated production migration deployment (Supabase GitHub integration) | P0 | S | CI-07 | **Codex** | Queued | M0/infra | **Owned by Codex** (architect documented; ADR-27). Enable "Deploy to production" on the prod project (`hqzakxpbxqzxismmgnyn`) → `main` so `supabase/migrations/` auto-apply on merge with **no prod DB password in Actions** (honors ADR-21). Verify auto-apply + no `config.toml` Auth override (ADR-24); update 03_ARCH §8. Closes the gap behind the 2026-07-26 outage. Full spec + risks in [ADR-27](../docs/DECISIONS.md) and AC in [12_TASKS](../docs/12_TASKS.md#cicd-ci) |
 
 ## Sprint 4 — Note Service Completion & Editor Round-Trip (M1) — ✅ Complete 2026-07-24
 

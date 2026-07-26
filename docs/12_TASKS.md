@@ -115,6 +115,7 @@ Two areas span phases deliberately: OBS-01 (structured logging) lives in Phase 0
 | CI-06 | Playwright E2E job against preview deployments | M | SETUP-10, CI-02 |
 | CI-07 | Per-environment env var setup: preview vs. production Supabase + webhook secrets ([09_SECURITY.md §6](09_SECURITY.md#6-secrets-management)); OpenAI credentials are deferred to EMB-01 (ADR-24, [DECISIONS.md](DECISIONS.md)). Includes provisioning the production Supabase project ([03_ARCHITECTURE.md §8](03_ARCHITECTURE.md#8-deployment-architecture)) and applying the reviewed migration history to it — no earlier task creates it (DB-01 provisioned development only) | M | CI-02 |
 | CI-08 | axe accessibility check job on core routes | M | CI-06 |
+| CI-09 | Automated production migration deployment via the Supabase GitHub integration (ADR-27): enable "Deploy to production" on the production project (`hqzakxpbxqzxismmgnyn`) connected to `main`, so pending `supabase/migrations/` apply automatically on merge with **no production DB password in GitHub Actions** (honors ADR-21). Verify with a real migration that it auto-applies and that `supabase/config.toml` does not override dashboard-managed production Auth (ADR-24); update [03_ARCHITECTURE.md §8](03_ARCHITECTURE.md#8-deployment-architecture) to document the mechanism. Closes the CI-04/CI-07 gap that caused the 2026-07-26 outage | S | CI-07 |
 
 ### Observability foundation (OBS)
 

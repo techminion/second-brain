@@ -101,7 +101,7 @@ Done: Sprint 0 (governance), Sprint 1 (repo & tooling — 21 tasks), Sprint 2 (s
 - The `feature-boundaries` lint rule only catches `@/features/...` alias imports; relative-path imports bypass it. Follow-up hardening candidate.
 - `tsconfig.json` typechecks `src/**` only — `e2e/`, `tools/`, and config files are not typechecked.
 - Interim pointer-README in place; OBS-10 replaces it with the full public README at launch.
-- Production migration deployment remains manual and CI-04 checks only the shared development Supabase project. This allowed three merged migrations to reach the production application before the production database, causing the 2026-07-26 note-create outage. The architect should queue a production migration deployment/parity gate or release runbook before the next production-dependent migration.
+- Production migration deployment is still manual (CI-04 checks only the dev project) — the gap behind the 2026-07-26 outage. **Now specced and queued:** the architect chose the Supabase GitHub integration (**ADR-27**, honors ADR-21 — no prod DB password in Actions); **CI-09** carries it and is **owned by Codex** (Queued). Until CI-09 lands, any new production-dependent migration must be applied to prod by hand (as on 2026-07-26).
 
 ## Architecture Decisions Pending
 
@@ -118,4 +118,4 @@ Done: Sprint 0 (governance), Sprint 1 (repo & tooling — 21 tasks), Sprint 2 (s
 
 ## Last Updated
 
-2026-07-26 — Codex restored production migration parity (20/20) by applying the three existing reviewed migrations missing from production. The authenticated note create/update smoke test passed inside a rolled-back transaction; no test data remains. NOTE-09 was also reconciled to Done after PR #120's merge. Next implementation: EDIT-04 (P0) or NOTE-11 (P1). Operational follow-up: architect to queue a production migration deployment/parity gate or release runbook.
+2026-07-26 — Codex restored production migration parity (20/20) by applying the three existing reviewed migrations missing from production. The authenticated note create/update smoke test passed inside a rolled-back transaction; no test data remains. NOTE-09 was also reconciled to Done after PR #120's merge. The architect then documented the permanent fix for the deployment gap — **ADR-27** (production migrations deploy via the Supabase GitHub integration; honors ADR-21) and queued **CI-09**, owned by Codex, to implement it. Next implementation: CI-09 (Codex, prod-migration automation) and EDIT-04 (P0) / NOTE-11 (P1) for the note UI.
