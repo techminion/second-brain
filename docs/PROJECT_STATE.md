@@ -8,7 +8,7 @@
 
 ## Current Sprint
 
-**Sprint 5 — Note-Taking End-to-End** (M1; promoted 2026-07-24; scope in [.ai/TASK_QUEUE.md](../.ai/TASK_QUEUE.md)) — the note-taking UI vertical slice: NOTE-07 (Web API) → NOTE-08 (Query hooks) → NOTE-09 (sidebar list) → NOTE-10 (editor-backed note page) → NOTE-11 (delete dialog), plus EDIT-04/05 (live formatting + lists). P2 stretch: NOTE-12 (trash) → NOTE-15 (E2E). Goal: create → open → edit → save → delete a note entirely in the UI. **Merged: NOTE-07 (#117), NOTE-08 (#118), NOTE-10 (#119). NOTE-09 (sidebar list) in review — closes the create→open→edit→save loop. Remaining: NOTE-11 (delete), EDIT-04/05.**
+**Sprint 5 — Note-Taking End-to-End** (M1; promoted 2026-07-24; scope in [.ai/TASK_QUEUE.md](../.ai/TASK_QUEUE.md)) — the note-taking UI vertical slice: NOTE-07 (Web API) → NOTE-08 (Query hooks) → NOTE-09 (sidebar list) → NOTE-10 (editor-backed note page) → NOTE-11 (delete dialog), plus EDIT-04/05 (live formatting + lists). P2 stretch: NOTE-12 (trash) → NOTE-15 (E2E). Goal: create → open → edit → save → delete a note entirely in the UI. **Merged: NOTE-07 (#117), NOTE-08 (#118), NOTE-09 (#120), NOTE-10 (#119), completing create → open → edit → save. Remaining: NOTE-11 (delete), EDIT-04/05.**
 Done: Sprint 0 (governance), Sprint 1 (repo & tooling — 21 tasks), Sprint 2 (schema, auth core & app shell), Sprint 3 (M0 closeout + note/editor foundation), Sprint 4 (note service + editor round-trip + M0 tail — M0 100% complete)
 
 ## Overall Progress
@@ -74,14 +74,15 @@ Done: Sprint 0 (governance), Sprint 1 (repo & tooling — 21 tasks), Sprint 2 (s
 - AUTH-12: account deletion UI live — `deleteAccountAction` (JWT claims → `UserService.deleteAccount` → signOut local → redirect /login); `DeleteAccountForm` Radix dialog with 30-day grace explanation and loading/error states; Danger zone section on `/settings`. 7 component tests; 189/189 green. **Merged 2026-07-23** via PR #98 (`227185b`).
 - AUTH-13: signup → empty-shell provisioning E2E (FR-AUTH-5) — Cloud-gated Playwright: signup → assert sidebar nav + logout visible, assert no `role="alert"`. **Merged 2026-07-23** via PR #99 (`864fc81`).
 - SHELL-04: command palette (⌘K) live — `command-registry.ts` with all nine §8 shortcuts; `CommandPalette` client component: Radix Dialog, combobox + listbox ARIA, ↑↓ navigation, Enter executes, contenteditable focus guard; wired into AppShell. 15 unit tests; 204/204 green. **Merged 2026-07-23** via PR #100 (`4fcf64a`). All M0 *exit-criteria* deliverables done. 6 M0-tagged polish/test-infra tasks (SHELL-05/06/08/09, CI-06/08) deferred to Sprint 4.
+- Production migration parity restored 2026-07-26 after note creation returned HTTP 500: production had stopped at 17 migrations while the deployed app required 20. Applied the three existing reviewed migrations (`20260722185637`, `20260723134400`, `20260723195523`) forward-only with exact history versions. Production is now 20/20; `create_note`/`update_note`, authenticated-only EXECUTE grants, the soft-delete guard, and `profiles.delete_requested_at` were catalog-verified. A rollback-only authenticated create/update smoke test passed with no retained data. Security advisor has one pre-existing Auth warning (leaked-password protection disabled); performance advisor findings are informational and pre-existing.
 
 ## Current Sprint (updated)
 
-**Sprint 4 — Note Service Completion & Editor Round-Trip** (promoted 2026-07-24; scope in [.ai/TASK_QUEUE.md](../.ai/TASK_QUEUE.md)): NOTE-04..06 (NoteService update/delete+restore/list), EDIT-02/03 (loss-free markdown round-trip — flagged highest-risk), SHELL-05 (shortcut manager, absorbs the SHELL-04 review findings), CI-06 → CI-08, with SHELL-06/08/09 as P2 fillers.
+**Sprint 5 — Note-Taking End-to-End** (promoted 2026-07-24; scope in [.ai/TASK_QUEUE.md](../.ai/TASK_QUEUE.md)): NOTE-07..10 are merged. Remaining implementation is NOTE-11 and EDIT-04/05, with NOTE-12/15 as P2 stretch work.
 
 ## In Progress
 
-- **NOTE-09** (sidebar note list + new-note affordance) — ready for review on `note-09-sidebar-list`: `SidebarNoteList` client island (titles + last-edited → `/notes/[id]`, active-note highlight, "New note" button), wired via an `(app)`-layer slot so the shell stays feature-agnostic. 404 units green; a11y 4/4 (caught + fixed an active-row contrast dip). **On merge the create→open→edit→save loop is fully wired in the UI.** (NOTE-07/#117, NOTE-08/#118, NOTE-10/#119 merged.)
+- None. Next claimable Sprint 5 work: EDIT-04 (P0) or NOTE-11 (P1).
 
 ## Blocked
 
@@ -100,6 +101,7 @@ Done: Sprint 0 (governance), Sprint 1 (repo & tooling — 21 tasks), Sprint 2 (s
 - The `feature-boundaries` lint rule only catches `@/features/...` alias imports; relative-path imports bypass it. Follow-up hardening candidate.
 - `tsconfig.json` typechecks `src/**` only — `e2e/`, `tools/`, and config files are not typechecked.
 - Interim pointer-README in place; OBS-10 replaces it with the full public README at launch.
+- Production migration deployment remains manual and CI-04 checks only the shared development Supabase project. This allowed three merged migrations to reach the production application before the production database, causing the 2026-07-26 note-create outage. The architect should queue a production migration deployment/parity gate or release runbook before the next production-dependent migration.
 
 ## Architecture Decisions Pending
 
@@ -112,8 +114,8 @@ Done: Sprint 0 (governance), Sprint 1 (repo & tooling — 21 tasks), Sprint 2 (s
 
 ## Current Branch
 
-`note-09-sidebar-list`
+`bugfix/production-migration-parity`
 
 ## Last Updated
 
-2026-07-25 — Claude (implementer) merged **NOTE-10** (note editor page, PR #119, the sprint goal), then implemented **NOTE-09** (sidebar note list + new-note affordance, wired via an `(app)`-layer slot). 404 units green; a11y caught+fixed an active-row contrast dip, re-run 4/4. Ready for review on `note-09-sidebar-list`. **On merge, create→open→edit→save is fully usable in the UI.** Next: NOTE-11 (delete dialog) / EDIT-04 (formatting).
+2026-07-26 — Codex restored production migration parity (20/20) by applying the three existing reviewed migrations missing from production. The authenticated note create/update smoke test passed inside a rolled-back transaction; no test data remains. NOTE-09 was also reconciled to Done after PR #120's merge. Next implementation: EDIT-04 (P0) or NOTE-11 (P1). Operational follow-up: architect to queue a production migration deployment/parity gate or release runbook.
