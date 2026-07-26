@@ -21,6 +21,22 @@ Estimated Context Needed:
 
 ---
 
+## 2026-07-26 — Codex (Frontend) — EDIT-04 ready for review
+
+**Session Date:** 2026-07-26
+**Agent:** Codex, frontend implementation role
+**Objective:** Implement EDIT-04 only: heading/bold/italic/inline-code live formatting with Markdown marker hiding and cursor-local reveal per 10_DESIGN §3.1/§5.
+**Files Modified:** `src/features/editor/markdown-editor-extensions.ts`, `src/features/editor/markdown-editor-extensions.test.ts`, `src/features/editor/components/markdown-editor.module.css`, `.ai/TASK_QUEUE.md`, `docs/PROJECT_STATE.md`, `docs/CHANGELOG.md`, `docs/AI_HANDOFF.md`.
+**Files Added:** `src/features/editor/markdown-marker-visibility.ts`, `src/features/editor/markdown-marker-visibility.test.ts`.
+**Architecture Decisions:** None. The implementation follows the documented live-formatted Markdown model. Tiptap StarterKit remains the input-rule owner; the new feature-local extension only supplies transient ProseMirror widget decorations and introduces no dependency or persistent document state.
+**Implementation:** Proved the existing Tiptap input rules transform typed `# `, `**…**`, `*…*`, and `` `…` `` syntax into heading/bold/italic/code document nodes. Added selection-aware marker decorations that exist only while the editor is focused and the cursor is within the corresponding heading/mark; they are `aria-hidden`, non-editable, and absent from serialization. Nested mark widget ordering is deterministic. Extended heading styling through h6 and aligned h1–h3 with the documented Tailwind typography scale. Lists, keyboard shortcuts, slash menu, floating toolbar, and unrelated formatting remain scoped to EDIT-05/08/09/13.
+**Verification performed:** 68 files / 412 unit tests green (8 new: four typed-input transformations, bold/italic/code focus/selection marker behavior, heading marker behavior, and serialization invariance); typecheck, ESLint, Prettier, production build, `git diff --check`, and `npm audit --audit-level=high` green (0 vulnerabilities). The in-app Browser plugin was listed but its required control interface was unavailable, so the established Playwright fallback was used: real Cloud-dev signup → authenticated note creation → sequential Markdown typing on `/notes/[id]`; h1/strong/em/code rendered, cursor switching revealed only the matching markers, autosave reached “Saved,” screenshot looked correct at 1280×720, and console/page errors were empty (1/1). Existing WCAG 2.1 AA Playwright suite passed 4/4 including the authenticated note route. Temporary QA spec and test user were removed.
+**Outstanding Work:** Commit, push, open the draft PR, wait for every required check to pass, then mark ready for independent Claude review/merge. EDIT-05 and the rest of editor formatting remain separate tasks. CI-09 still awaits the next legitimate migration's automatic-production-apply proof.
+**Known Bugs:** None introduced.
+**Risks:** Low. Marker widgets are visual decorations recalculated from selection state; they cannot modify the ProseMirror document or persisted Markdown. The existing EDIT-16 hostile-Markdown/XSS watch-item remains outstanding and should land before real-user exposure.
+**Suggested Next Task:** Independent review of EDIT-04. After merge, NOTE-11 or EDIT-05 is the next Sprint 5 implementation task.
+**Estimated Context Needed:** This entry, `markdown-marker-visibility.ts`, `markdown-editor-extensions.test.ts`, and 10_DESIGN §3.1/§5.
+
 ## 2026-07-26 — Codex — CI-09 production migration automation and ordering live
 
 **Session Date:** 2026-07-26

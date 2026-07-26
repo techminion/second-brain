@@ -32,22 +32,39 @@
 
 .content h1,
 .content h2,
-.content h3 {
+.content h3,
+.content h4,
+.content h5,
+.content h6 {
   margin-block: 1.5rem 0.75rem;
-  font-weight: 700;
+  font-weight: var(--font-weight-semibold);
   line-height: 1.25;
 }
 
 .content h1 {
-  font-size: 1.875rem;
+  font-size: var(--text-2xl);
 }
 
 .content h2 {
-  font-size: 1.5rem;
+  font-size: var(--text-xl);
 }
 
 .content h3 {
-  font-size: 1.25rem;
+  font-size: var(--text-lg);
+}
+
+.content h4,
+.content h5,
+.content h6 {
+  font-size: inherit;
+}
+
+.content [data-markdown-marker] {
+  color: hsl(var(--muted-foreground));
+  font-style: normal;
+  font-weight: var(--font-weight-normal);
+  pointer-events: none;
+  user-select: none;
 }
 
 .content p,
