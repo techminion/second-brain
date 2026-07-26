@@ -69,6 +69,11 @@ test("@a11y authenticated shell and settings have no WCAG 2.1 AA violations", as
     await page.getByLabel("Note body").waitFor();
 
     await expectNoViolations(page);
+
+    await page.getByRole("button", { name: "Delete" }).click();
+    await page.getByRole("dialog").waitFor();
+
+    await expectNoViolations(page);
   } finally {
     await deleteUserByEmail(email);
   }

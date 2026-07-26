@@ -9,6 +9,7 @@ import { Input } from "@/shared/ui/input";
 
 import { useAutosave } from "../hooks/use-autosave";
 import { useUpdateNote } from "../hooks/use-note-mutations";
+import { DeleteNoteDialog } from "./delete-note-dialog";
 
 /**
  * The loaded note surface: an editable title + the markdown body editor, with
@@ -72,7 +73,7 @@ export function NoteEditor({ note }: Readonly<{ note: Note }>) {
 
   return (
     <article className="mx-auto flex max-w-3xl flex-col gap-4 px-6 py-10" onBlur={flush}>
-      <div className="flex items-baseline justify-between gap-4">
+      <div className="flex items-start justify-between gap-4">
         <Input
           aria-label="Note title"
           className="h-auto border-0 px-0 text-2xl font-semibold shadow-none focus-visible:ring-0"
@@ -80,9 +81,16 @@ export function NoteEditor({ note }: Readonly<{ note: Note }>) {
           placeholder="Untitled"
           value={title}
         />
-        <span aria-live="polite" className="text-muted-foreground shrink-0 text-sm" role="status">
-          {status}
-        </span>
+        <div className="flex shrink-0 items-center gap-3">
+          <span aria-live="polite" className="text-muted-foreground text-sm" role="status">
+            {status}
+          </span>
+          <DeleteNoteDialog
+            isSaving={mutation.isPending}
+            noteId={note.id}
+            noteTitle={title.trim() || "Untitled"}
+          />
+        </div>
       </div>
       {title.trim() === "" ? (
         <p className="text-destructive text-sm">Add a title to save this note’s name.</p>
