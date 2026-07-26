@@ -21,6 +21,22 @@ Estimated Context Needed:
 
 ---
 
+## 2026-07-26 — Codex (Frontend) — NOTE-11 ready for review
+
+**Session Date:** 2026-07-26
+**Agent:** Codex, frontend implementation role
+**Objective:** Implement NOTE-11 only: a note-delete confirmation that names the target per 10_DESIGN §4 and completes the Sprint 5 create → open → edit → save → delete UI loop.
+**Files Modified:** `src/features/notes/components/note-editor.tsx`, `src/features/notes/components/note-editor.test.tsx`, `e2e/a11y.spec.ts`, `.ai/TASK_QUEUE.md`, `docs/PROJECT_STATE.md`, `docs/CHANGELOG.md`, `docs/AI_HANDOFF.md`.
+**Files Added:** `src/features/notes/components/delete-note-dialog.tsx`, `src/features/notes/components/delete-note-dialog.test.tsx`, `e2e/note-delete.spec.ts`.
+**Architecture Decisions:** None. The component reuses the existing shared Radix Dialog and Button primitives and the NOTE-08 `useDeleteNote` mutation; no dependency or data-access path was added.
+**Implementation:** The note editor now exposes a destructive Delete action. Its focus-managed dialog names the current visible title (falling back to “Untitled”), explains that the note moves to trash and remains restorable for 30 days, and offers explicit Cancel/Delete actions. Delete is held while an autosave is in flight to prevent update/delete races; mutation failures are announced in-place and leave the dialog open; success closes it and replaces the route with `/`. The permanent Playwright flow proves confirmability, cancellation, deletion, redirect, and sidebar removal.
+**Verification performed:** 418 unit tests green (6 new); typecheck, ESLint, Prettier, production build, `git diff --check`, and `npm audit --audit-level=high` green. The in-app Browser plugin was listed but its required control interface was unavailable, so the repository Playwright fallback exercised a real Cloud-dev signup → API note seed → note route at 1280×720 and 390×844 → named confirmation → Cancel → reopen → Delete → `/` redirect and sidebar removal. Browser console errors were empty; desktop/mobile screenshots were visually checked. Functional E2E passed 1/1; WCAG 2.1 AA suite passed 4/4 and now scans the open delete dialog.
+**Outstanding Work:** Commit, push, open the draft PR, wait for every required check to pass, then mark ready for independent Claude review/merge. NOTE-12 owns trash/restore UI; NOTE-15 owns the later full delete→restore E2E.
+**Known Bugs:** None introduced.
+**Risks:** Low. The dialog's visible title may be newer than the persisted title while autosave is pending, but deletion is disabled until that update settles. The existing EDIT-16 hostile-Markdown/XSS watch-item remains unchanged.
+**Suggested Next Task:** Independent review of NOTE-11. After merge, EDIT-05 is the remaining Sprint 5 core task; NOTE-12 is the P2 stretch continuation.
+**Estimated Context Needed:** This entry, `delete-note-dialog.tsx`, `note-editor.tsx`, `e2e/note-delete.spec.ts`, and 10_DESIGN §4.
+
 ## 2026-07-26 — Codex (Frontend) — EDIT-04 ready for review
 
 **Session Date:** 2026-07-26

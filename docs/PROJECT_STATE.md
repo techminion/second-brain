@@ -8,7 +8,7 @@
 
 ## Current Sprint
 
-**Sprint 5 — Note-Taking End-to-End** (M1; promoted 2026-07-24; scope in [.ai/TASK_QUEUE.md](../.ai/TASK_QUEUE.md)) — the note-taking UI vertical slice: NOTE-07 (Web API) → NOTE-08 (Query hooks) → NOTE-09 (sidebar list) → NOTE-10 (editor-backed note page) → NOTE-11 (delete dialog), plus EDIT-04/05 (live formatting + lists). P2 stretch: NOTE-12 (trash) → NOTE-15 (E2E). Goal: create → open → edit → save → delete a note entirely in the UI. **Merged: NOTE-07 (#117), NOTE-08 (#118), NOTE-09 (#120), NOTE-10 (#119), completing create → open → edit → save. In review: EDIT-04. Remaining: NOTE-11 and EDIT-05.**
+**Sprint 5 — Note-Taking End-to-End** (M1; promoted 2026-07-24; scope in [.ai/TASK_QUEUE.md](../.ai/TASK_QUEUE.md)) — the note-taking UI vertical slice: NOTE-07 (Web API) → NOTE-08 (Query hooks) → NOTE-09 (sidebar list) → NOTE-10 (editor-backed note page) → NOTE-11 (delete dialog), plus EDIT-04/05 (live formatting + lists). P2 stretch: NOTE-12 (trash) → NOTE-15 (E2E). Goal: create → open → edit → save → delete a note entirely in the UI. **Merged: NOTE-07 (#117), NOTE-08 (#118), NOTE-09 (#120), NOTE-10 (#119), completing create → open → edit → save. In review: EDIT-04 and NOTE-11. Remaining: EDIT-05.**
 Done: Sprint 0 (governance), Sprint 1 (repo & tooling — 21 tasks), Sprint 2 (schema, auth core & app shell), Sprint 3 (M0 closeout + note/editor foundation), Sprint 4 (note service + editor round-trip + M0 tail — M0 100% complete)
 
 ## Overall Progress

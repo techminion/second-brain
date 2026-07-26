@@ -14,9 +14,14 @@ const mutation = {
   mutate,
   submittedAt: 0,
 };
+const deleteMutation = { isPending: false, mutate: vi.fn() };
 const toastError = vi.fn();
 
-vi.mock("../hooks/use-note-mutations", () => ({ useUpdateNote: () => mutation }));
+vi.mock("next/navigation", () => ({ useRouter: () => ({ replace: vi.fn() }) }));
+vi.mock("../hooks/use-note-mutations", () => ({
+  useDeleteNote: () => deleteMutation,
+  useUpdateNote: () => mutation,
+}));
 vi.mock("sonner", () => ({ toast: { error: (...args: unknown[]) => toastError(...args) } }));
 vi.mock("@/features/editor", () => ({
   MarkdownEditor: ({
@@ -64,6 +69,7 @@ describe("NoteEditor", () => {
     expect(screen.getByLabelText("Note title")).toHaveValue("Title");
     expect(screen.getByLabelText("Note body")).toHaveValue("Body");
     expect(screen.getByRole("status")).toHaveTextContent("Saved");
+    expect(screen.getByRole("button", { name: "Delete" })).toBeInTheDocument();
   });
 
   it("autosaves the edited body after the debounce window", () => {
