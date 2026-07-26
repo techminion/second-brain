@@ -3,7 +3,7 @@ import { Editor as TiptapEditor } from "@tiptap/react";
 
 import { markdownEditorExtensions } from "./markdown-editor-extensions";
 
-export type UnsupportedMarkdownReason = "html" | "table" | "task-list";
+export type UnsupportedMarkdownReason = "html" | "table";
 
 // `[[wiki links]]` are plain text to the editor model, so the markdown
 // serializer escapes their brackets. That escaping would corrupt the graph's
@@ -45,8 +45,6 @@ const unsupportedPatterns: readonly [UnsupportedMarkdownReason, RegExp][] = [
   // A table delimiter row (`|---|---|`) marks GFM table structure the editor
   // flattens today; tables arrive with EDIT-07.
   ["table", /^\s*\|?(\s*:?-{2,}:?\s*\|)+\s*:?-{0,}:?\s*\|?\s*$/m],
-  // Task-list checkboxes are dropped by the current schema; EDIT-05 adds them.
-  ["task-list", /^\s*[-*+]\s+\[[ xX]\]\s/m],
   // Raw HTML tags are stripped on parse. The pattern requires a tag-shaped
   // token so `<https://autolink>` stays clean.
   ["html", /<\/?[a-zA-Z][a-zA-Z0-9-]*(\s[^>]*)?\/?>/],
@@ -57,7 +55,7 @@ const unsupportedPatterns: readonly [UnsupportedMarkdownReason, RegExp][] = [
  * without loss. Callers that persist editor output (autosave, note routes)
  * must treat a non-empty result as "do not round-trip this body through the
  * rich editor" and fall back to plain-text editing — this is the FR-NOTE-2
- * loss guard until EDIT-05/07 close the construct gaps.
+ * loss guard until EDIT-07 closes the remaining construct gaps.
  */
 export function detectUnsupportedMarkdown(markdown: string): UnsupportedMarkdownReason[] {
   return unsupportedPatterns

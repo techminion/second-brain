@@ -100,4 +100,33 @@ describe("markdownEditorExtensions", () => {
 
     editor.destroy();
   });
+
+  it.each([
+    {
+      input: "- bullet item",
+      markdown: "- bullet item",
+      node: { type: "bulletList" },
+    },
+    {
+      input: "1. ordered item",
+      markdown: "1. ordered item",
+      node: { type: "orderedList" },
+    },
+    {
+      input: "[ ] task item",
+      markdown: "- [ ] task item",
+      node: { type: "taskList" },
+    },
+  ])("creates $node.type from typed Markdown syntax", ({ input, markdown, node }) => {
+    const editor = new Editor({
+      extensions: markdownEditorExtensions,
+    });
+
+    typeText(editor, input);
+
+    expect(editor.getJSON().content?.[0]).toMatchObject(node);
+    expect(editor.getMarkdown().trimEnd()).toBe(markdown);
+
+    editor.destroy();
+  });
 });

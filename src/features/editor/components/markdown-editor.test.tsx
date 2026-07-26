@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 
 import { MarkdownEditor } from "./markdown-editor";
@@ -48,5 +48,29 @@ describe("MarkdownEditor", () => {
 
     expect(editor).toHaveAttribute("aria-disabled", "true");
     expect(editor).toHaveAttribute("contenteditable", "false");
+  });
+
+  it("renders accessible task checkboxes and emits checked Markdown", async () => {
+    const onChange = vi.fn();
+
+    render(<MarkdownEditor value={"- [ ] Write tests\n- [x] Review tests"} onChange={onChange} />);
+
+    const pendingTask = await screen.findByRole("checkbox", {
+      name: "Task item checkbox for Write tests",
+    });
+    const completedTask = screen.getByRole("checkbox", {
+      name: "Task item checkbox for Review tests",
+    });
+
+    expect(pendingTask).not.toBeChecked();
+    expect(completedTask).toBeChecked();
+
+    fireEvent.click(pendingTask);
+
+    await waitFor(() => {
+      const emittedMarkdown = onChange.mock.lastCall?.[0];
+
+      expect(emittedMarkdown?.trimEnd()).toBe("- [x] Write tests\n- [x] Review tests");
+    });
   });
 });

@@ -46,6 +46,16 @@ describe("normalizeMarkdown", () => {
       "1. first\n2. second\n  1. nested\n3. third",
     ],
     [
+      "checked and unchecked task lists",
+      "- [ ] Write the migration\n- [x] Review the migration",
+      "- [ ] Write the migration\n- [x] Review the migration",
+    ],
+    [
+      "nested task lists",
+      "- [ ] Parent task\n  - [x] Completed child\n  - [ ] Pending child",
+      "- [ ] Parent task\n  - [x] Completed child\n  - [ ] Pending child",
+    ],
+    [
       "fenced code with language",
       "```ts\nconst x: number = 1;\n```",
       "```ts\nconst x: number = 1;\n```",
@@ -110,8 +120,8 @@ describe("detectUnsupportedMarkdown", () => {
     expect(detectUnsupportedMarkdown("| a | b |\n|---|---|\n| 1 | 2 |")).toEqual(["table"]);
   });
 
-  it("flags task-list checkboxes", () => {
-    expect(detectUnsupportedMarkdown("- [ ] todo\n- [x] done")).toEqual(["task-list"]);
+  it("accepts task-list checkboxes", () => {
+    expect(detectUnsupportedMarkdown("- [ ] todo\n- [x] done")).toEqual([]);
   });
 
   it("flags raw HTML tags", () => {
@@ -126,7 +136,6 @@ describe("detectUnsupportedMarkdown", () => {
   it("reports multiple reasons together", () => {
     expect(detectUnsupportedMarkdown("|---|---|\n- [ ] todo\n<b>bold</b>")).toEqual([
       "table",
-      "task-list",
       "html",
     ]);
   });

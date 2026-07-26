@@ -21,6 +21,22 @@ Estimated Context Needed:
 
 ---
 
+## 2026-07-26 — Codex (Frontend) — EDIT-05 ready for review
+
+**Session Date:** 2026-07-26
+**Agent:** Codex, frontend implementation role
+**Objective:** Implement EDIT-05 only: live bullet, ordered, and task lists whose checked state round-trips as plain Markdown through the EDIT-02 serializer.
+**Files Modified:** `package.json`, `package-lock.json`, `src/features/editor/markdown-editor-extensions.ts`, `src/features/editor/markdown-editor-extensions.test.ts`, `src/features/editor/markdown-round-trip.ts`, `src/features/editor/markdown-round-trip.test.ts`, `src/features/editor/round-trip-corpus.ts`, `src/features/editor/components/markdown-editor.module.css`, `src/features/editor/components/markdown-editor.test.tsx`, `.ai/TASK_QUEUE.md`, `docs/PROJECT_STATE.md`, `docs/CHANGELOG.md`, `docs/AI_HANDOFF.md`.
+**Files Added:** `e2e/editor-lists.spec.ts`.
+**Architecture Decisions:** None. Bullet and ordered lists continue to use StarterKit. Task lists use the official `@tiptap/extension-list` package already present transitively in the documented Tiptap stack; it is now a direct dependency pinned to `3.28.0` to match the repository's installed Tiptap peer family. No toolbar, slash menu, persistence abstraction, or data-access path was added.
+**Implementation:** Registered nested `TaskList`/`TaskItem` nodes and supplied task-local accessible checkbox names so a parent task never announces its descendants. Task lists now parse/serialize checked state as `- [ ]` / `- [x]`, participate in live input-rule formatting, and are removed from `detectUnsupportedMarkdown`. The round-trip corpus now includes a nested project checklist. Editor CSS provides native semantic-token checkbox styling and correct nested indentation. The permanent browser flow proves bullet/ordered rendering, mobile checkbox interaction, autosave, API persistence, reload durability, and task-list accessibility.
+**Verification performed:** 69 files / 430 unit tests green (12 added assertions across input rules, checked-state interaction, unsupported detection, normalization, fixed points, and corpus properties); typecheck, ESLint, Prettier, production build, `git diff --check`, and production dependency audit green (0 vulnerabilities). The in-app Browser plugin was listed but its required control runtime was unavailable, so the repository Playwright fallback exercised a real Cloud-dev signup → API note seed → desktop list render → 390×844 task toggle → autosave/API readback → reload. Targeted Chromium E2E passed 1/1 and its post-reload WCAG 2.1 AA scan had zero violations.
+**Outstanding Work:** Commit, push, open the draft PR, wait for every required check to pass, then mark ready for independent Claude review/merge. EDIT-08 owns the slash menu and EDIT-09 the selection toolbar; neither was started.
+**Known Bugs:** None introduced.
+**Risks:** Low. Tiptap's checkbox NodeView emits a trailing blank paragraph when it restores focus after a toggle; serializer tests normalize that insignificant trailing whitespace while proving the task-list document model and checked state are stable. The existing EDIT-16 hostile-Markdown/XSS watch-item remains unchanged.
+**Suggested Next Task:** Independent review of EDIT-05. After merge, the architect can close Sprint 5 or choose its P2 stretch (NOTE-12, then NOTE-15).
+**Estimated Context Needed:** This entry, `markdown-editor-extensions.ts`, `markdown-round-trip.ts`, `round-trip-corpus.ts`, `editor-lists.spec.ts`, and 10_DESIGN §5.
+
 ## 2026-07-26 — Codex (Frontend) — NOTE-11 ready for review
 
 **Session Date:** 2026-07-26

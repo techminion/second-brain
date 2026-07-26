@@ -8,7 +8,7 @@
 
 ## Current Sprint
 
-**Sprint 5 — Note-Taking End-to-End** (M1; promoted 2026-07-24; scope in [.ai/TASK_QUEUE.md](../.ai/TASK_QUEUE.md)) — the note-taking UI vertical slice: NOTE-07 (Web API) → NOTE-08 (Query hooks) → NOTE-09 (sidebar list) → NOTE-10 (editor-backed note page) → NOTE-11 (delete dialog), plus EDIT-04/05 (live formatting + lists). P2 stretch: NOTE-12 (trash) → NOTE-15 (E2E). Goal: create → open → edit → save → delete a note entirely in the UI. **Merged: NOTE-07 (#117), NOTE-08 (#118), NOTE-09 (#120), NOTE-10 (#119), EDIT-04 (#126), NOTE-11 (#127) — the full create → open → edit → save → delete UI loop is in. Remaining: EDIT-05.**
+**Sprint 5 — Note-Taking End-to-End** (M1; promoted 2026-07-24; scope in [.ai/TASK_QUEUE.md](../.ai/TASK_QUEUE.md)) — the note-taking UI vertical slice: NOTE-07 (Web API) → NOTE-08 (Query hooks) → NOTE-09 (sidebar list) → NOTE-10 (editor-backed note page) → NOTE-11 (delete dialog), plus EDIT-04/05 (live formatting + lists). P2 stretch: NOTE-12 (trash) → NOTE-15 (E2E). Goal: create → open → edit → save → delete a note entirely in the UI. **Merged: NOTE-07 (#117), NOTE-08 (#118), NOTE-09 (#120), NOTE-10 (#119), EDIT-04 (#126), NOTE-11 (#127) — the full create → open → edit → save → delete UI loop is in. EDIT-05 is in review; only the P2 stretch remains after it merges.**
 Done: Sprint 0 (governance), Sprint 1 (repo & tooling — 21 tasks), Sprint 2 (schema, auth core & app shell), Sprint 3 (M0 closeout + note/editor foundation), Sprint 4 (note service + editor round-trip + M0 tail — M0 100% complete)
 
 ## Overall Progress
@@ -78,10 +78,11 @@ Done: Sprint 0 (governance), Sprint 1 (repo & tooling — 21 tasks), Sprint 2 (s
 
 ## Current Sprint (updated)
 
-**Sprint 5 — Note-Taking End-to-End** (promoted 2026-07-24; scope in [.ai/TASK_QUEUE.md](../.ai/TASK_QUEUE.md)): NOTE-07..11 and EDIT-04 are merged (create → open → edit → save → delete). Remaining implementation is EDIT-05, with NOTE-12/15 as P2 stretch work.
+**Sprint 5 — Note-Taking End-to-End** (promoted 2026-07-24; scope in [.ai/TASK_QUEUE.md](../.ai/TASK_QUEUE.md)): NOTE-07..11 and EDIT-04 are merged (create → open → edit → save → delete). EDIT-05 is in review; NOTE-12/15 remain P2 stretch work.
 
 ## In Progress
 
+- **EDIT-05 (Codex, in review):** bullet, ordered, and nested task lists render and live-format in the editor; task checkboxes expose concise accessible names and persist checked state through autosave/reload. The EDIT-02 serializer/property corpus now treats task lists as supported. All local gates and the authenticated rendered flow are green.
 - **CI-09 (Codex):** production migration automation and ordering are live. The Supabase GitHub integration's empty production run succeeded at 20/20 parity with repository configuration skipped; Vercel now requires that Supabase GitHub check before assigning Production aliases. The configured gate was exercised successfully by an unchanged production redeploy. Only ADR-27's final end-to-end proof—automatic application of the next legitimate pending migration—remains before Done.
 
 ## Blocked
@@ -114,8 +115,8 @@ Done: Sprint 0 (governance), Sprint 1 (repo & tooling — 21 tasks), Sprint 2 (s
 
 ## Current Branch
 
-`feature/edit-04-live-formatting`
+`feature/edit-05-lists`
 
 ## Last Updated
 
-2026-07-26 — EDIT-04 (#126) and NOTE-11 (#127) merged, completing the Sprint 5 create → open → edit → save → delete UI loop: live Markdown formatting with cursor-local marker reveal, and a named delete confirmation with the 30-day trash window. Remaining Sprint 5 implementation is EDIT-05 (lists). CI-09 stays In Progress pending the next legitimate migration's auto-apply proof.
+2026-07-26 — EDIT-05 implementation is ready for review: bullet, ordered, and nested task lists are live-formatted; accessible task checkboxes round-trip checked state through autosave and reload. CI-09 stays In Progress pending the next legitimate migration's auto-apply proof.
