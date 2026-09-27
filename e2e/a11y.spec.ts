@@ -74,6 +74,15 @@ test("@a11y authenticated shell and settings have no WCAG 2.1 AA violations", as
     await page.getByRole("dialog").waitFor();
 
     await expectNoViolations(page);
+
+    // NOTE-12 trash view, with the note just seeded moved into it.
+    const deleted = await page.request.delete(`/api/notes/${note.id}`);
+    expect(deleted.ok()).toBeTruthy();
+
+    await page.goto("/trash");
+    await page.getByRole("list", { name: "Deleted notes" }).waitFor();
+
+    await expectNoViolations(page);
   } finally {
     await deleteUserByEmail(email);
   }
