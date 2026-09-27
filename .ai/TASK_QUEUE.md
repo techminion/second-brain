@@ -17,6 +17,14 @@ Promoted 2026-09-27 after Sprint 5's implementation rows went In Review. User di
 | ID | Title | Priority | Cx | Depends on | Owner | Status | Milestone | Acceptance criteria |
 |---|---|---|---|---|---|---|---|---|
 | EDIT-16 | XSS hardening test: hostile markdown corpus renders sanitized (09_SECURITY §9 T4) | P0 | M | EDIT-02 | Claude | In Review | M1 | 21-case hostile corpus (script/iframe/object/style/form/svg, on* handlers, javascript:/vbscript:/data: links incl. mixed-case, whitespace and entity tricks, image javascript:/data:/protocol-relative src, markup inside code/wiki/task items) rendered through `MarkdownEditor`: no script-capable element, no `on*` attribute, no executable scheme in any `href`, image `src` only http(s)/root-relative. **Gap found and fixed:** stock Image rendered any `src` scheme → `SafeImage` sanitizes at render time only (markdown still round-trips unchanged, FR-NOTE-2) |
+| DAILY-01 | `NoteService.getOrCreateDailyNote` upsert — FR-DAILY-1/3 | P1 | M | NOTE-02 | Claude | In Review | M1 | Gaps surfaced → **ADR-29** (user decisions). Active → return; trashed → auto-restore (window ignored); absent → create (ISO-date title, template); lost unique race (`23505` → `createDailyNote` null) → re-read winner. Invalid date → `ValidationError` before data access |
+| DAILY-02 | Daily note template applied on creation | P1 | S | DAILY-01 | Claude | In Review | M1 | Fixed MVP template `## Notes` / `## Tasks` + empty checkbox (`dailyNoteTemplate`, ADR-29) |
+| DAILY-03 | `⌘D` + sidebar "Today" entry | P1 | S | DAILY-01, SHELL-05 | Claude | In Review | M1 | `/daily` resolves the browser-local date → `/daily/[date]` server page (get-or-create → redirect to `/notes/[id]`); ⌘D (blocked only inside the editor) + sidebar Today link (shows ⌘D) via a new `dailySlot` so the shell stays feature-agnostic |
+| DAILY-04 | Date picker navigation — FR-DAILY-2 | P2 | M | DAILY-01 | Claude | In Review | M1 | Labelled native date input in the sidebar daily section → `/daily/<date>` |
+| DAILY-05 | Prev/next day navigation | P2 | S | DAILY-04 | Claude | In Review | M1 | `DailyNotePager` in the note header when `dailyNoteDate` is set; month/year boundaries tested |
+| DAILY-06 | Service tests: idempotent get-or-create, template, uniqueness race | P1 | S | DAILY-01 | Claude | In Review | M1 | Service (5 cases + 4 invalid dates) and repository (date query, 23505 → null, other errors rethrown) tests |
+| DAILY-07 | E2E: open today via shortcut, navigate to past date | P2 | S | DAILY-03/04, CI-06 | Claude | In Review | M1 | `e2e/daily-note.spec.ts` — Cloud-gated; first real run is the CI-06 preview lane |
+| DAILY-08 | Command palette entries for daily-note actions | P2 | S | DAILY-03, SHELL-04 | Claude | In Review | M1 | "Today's daily note" (⌘D) enabled → `/daily`; new "Yesterday's daily note" → `/daily?offset=-1` |
 
 ## Current Sprint: Sprint 5 — Note-Taking End-to-End (M1)
 

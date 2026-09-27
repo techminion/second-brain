@@ -115,6 +115,46 @@ export class NoteRepository {
     return mapNoteRpcRow(data as NoteRpcRow);
   }
 
+  /**
+   * Create a daily note, or return null when the `(owner_id, daily_note_date)`
+   * unique index already holds one (a concurrent get-or-create won the race).
+   * `create_note` is a single statement, so a conflict leaves no orphan
+   * envelope row behind.
+   */
+  async createDailyNote(
+    userId: string,
+    input: CreateNoteRecordInput & { dailyNoteDate: string },
+  ): Promise<NoteRecord | null> {
+    try {
+      return await this.createNote(userId, input);
+    } catch (error) {
+      const cause = error instanceof Error ? (error.cause as { code?: string } | undefined) : null;
+
+      if (cause?.code === "23505") {
+        return null;
+      }
+
+      throw error;
+    }
+  }
+
+  /** The owner's daily note for a date, in any deletion state (trash included). */
+  async getDailyNote(userId: string, date: string): Promise<NoteRecord | null> {
+    const { data, error } = await this.client
+      .from("knowledge_objects")
+      .select(noteSelect)
+      .eq("owner_id", userId)
+      .eq("type", "note")
+      .eq("notes.daily_note_date", date)
+      .maybeSingle();
+
+    if (error) {
+      throw new Error("Unable to read daily note", { cause: error });
+    }
+
+    return data ? mapNoteQueryRow(data as NoteQueryRow) : null;
+  }
+
   async getNote(userId: string, noteId: string): Promise<NoteRecord | null> {
     const { data, error } = await this.client
       .from("knowledge_objects")

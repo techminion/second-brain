@@ -9,6 +9,7 @@ import { Input } from "@/shared/ui/input";
 
 import { useAutosave } from "../hooks/use-autosave";
 import { useUpdateNote } from "../hooks/use-note-mutations";
+import { DailyNotePager } from "./daily-note-pager";
 import { DeleteNoteDialog } from "./delete-note-dialog";
 
 /**
@@ -82,6 +83,7 @@ export function NoteEditor({ note }: Readonly<{ note: Note }>) {
           value={title}
         />
         <div className="flex shrink-0 items-center gap-3">
+          {note.dailyNoteDate ? <DailyNotePager date={note.dailyNoteDate} /> : null}
           <span aria-live="polite" className="text-muted-foreground text-sm" role="status">
             {status}
           </span>

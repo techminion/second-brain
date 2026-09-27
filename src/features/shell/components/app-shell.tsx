@@ -13,9 +13,11 @@ interface AppShellProps {
   children: ReactNode;
   /** Sidebar note list, injected at the app layer to keep the shell feature-agnostic. */
   sidebarNotes?: ReactNode;
+  /** Sidebar daily-note section, injected at the app layer like `sidebarNotes`. */
+  sidebarDaily?: ReactNode;
 }
 
-function AppShell({ children, sidebarNotes }: Readonly<AppShellProps>) {
+function AppShell({ children, sidebarDaily, sidebarNotes }: Readonly<AppShellProps>) {
   return (
     <ShortcutProvider>
       <ShellPanelsProvider>
@@ -23,7 +25,11 @@ function AppShell({ children, sidebarNotes }: Readonly<AppShellProps>) {
           <ShellShortcuts />
           <CommandPalette />
           <ShellPanel label="Application sidebar" side="left">
-            <SidebarNavigation notesSlot={sidebarNotes} signOutAction={signOut} />
+            <SidebarNavigation
+              dailySlot={sidebarDaily}
+              notesSlot={sidebarNotes}
+              signOutAction={signOut}
+            />
           </ShellPanel>
           <main className="min-w-0 flex-1 overflow-auto">{children}</main>
           <ShellPanel label="Context panel" side="right" />

@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, type Mock, vi } from "vitest";
 
-import { NoteService } from "@/features/notes/note-service";
+import { dailyNoteTemplate, NoteService } from "@/features/notes/note-service";
 import type {
   CreateNoteInput,
   CreateNoteRecordInput,
@@ -13,6 +13,10 @@ import type {
 import { NotFoundError, ValidationError } from "@/shared/lib/errors";
 
 interface MockNoteRepository {
+  createDailyNote: Mock<
+    (userId: string, input: CreateNoteRecordInput) => Promise<NoteRecord | null>
+  >;
+  getDailyNote: Mock<(userId: string, date: string) => Promise<NoteRecord | null>>;
   createNote: Mock<(userId: string, input: CreateNoteRecordInput) => Promise<NoteRecord>>;
   getNote: Mock<(userId: string, noteId: string) => Promise<NoteRecord | null>>;
   listNotes: Mock<(userId: string, options: ListNotesRecordOptions) => Promise<NoteRecord[]>>;
@@ -47,6 +51,8 @@ const noteRecord: NoteRecord = {
 
 function createRepositoryMock(): MockNoteRepository {
   return {
+    createDailyNote: vi.fn(),
+    getDailyNote: vi.fn(),
     createNote: vi.fn(),
     getNote: vi.fn(),
     listNotes: vi.fn(),
@@ -597,4 +603,83 @@ describe("NoteService.listTrash", () => {
 
     await expect(service.listTrash("user-id")).resolves.toEqual({ items: [] });
   });
+});
+
+describe("NoteService.getOrCreateDailyNote", () => {
+  let repository: MockNoteRepository;
+  let service: NoteService;
+
+  const daily: NoteRecord = {
+    ...noteRecord,
+    body: dailyNoteTemplate,
+    dailyNoteDate: "2026-09-27",
+    folderId: null,
+    title: "2026-09-27",
+  };
+
+  beforeEach(() => {
+    repository = createRepositoryMock();
+    service = new NoteService(repository);
+  });
+
+  it("returns the existing active daily note without writing", async () => {
+    repository.getDailyNote.mockResolvedValue(daily);
+
+    await expect(service.getOrCreateDailyNote("user-id", "2026-09-27")).resolves.toEqual(
+      expect.objectContaining({ dailyNoteDate: "2026-09-27", id: "note-id" }),
+    );
+    expect(repository.getDailyNote).toHaveBeenCalledWith("user-id", "2026-09-27");
+    expect(repository.createDailyNote).not.toHaveBeenCalled();
+    expect(repository.restoreNote).not.toHaveBeenCalled();
+  });
+
+  it("creates the note with the ISO date title and the fixed template", async () => {
+    repository.getDailyNote.mockResolvedValue(null);
+    repository.createDailyNote.mockResolvedValue(daily);
+
+    await service.getOrCreateDailyNote("user-id", "2026-09-27");
+
+    expect(repository.createDailyNote).toHaveBeenCalledWith("user-id", {
+      body: "## Notes\n\n\n## Tasks\n\n- [ ] ",
+      dailyNoteDate: "2026-09-27",
+      folderId: null,
+      title: "2026-09-27",
+    });
+  });
+
+  it("re-reads the winner when a concurrent create takes the date first", async () => {
+    repository.getDailyNote.mockResolvedValueOnce(null).mockResolvedValueOnce(daily);
+    repository.createDailyNote.mockResolvedValue(null);
+
+    await expect(service.getOrCreateDailyNote("user-id", "2026-09-27")).resolves.toEqual(
+      expect.objectContaining({ id: "note-id" }),
+    );
+    expect(repository.getDailyNote).toHaveBeenCalledTimes(2);
+  });
+
+  it("auto-restores a trashed daily note regardless of the retention window", async () => {
+    repository.getDailyNote.mockResolvedValue({ ...daily, deletedAt: "2026-01-01T00:00:00.000Z" });
+    repository.restoreNote.mockResolvedValue(daily);
+
+    await expect(service.getOrCreateDailyNote("user-id", "2026-09-27")).resolves.toEqual(
+      expect.objectContaining({ id: "note-id" }),
+    );
+    expect(repository.restoreNote).toHaveBeenCalledWith(
+      "user-id",
+      "note-id",
+      expect.any(String),
+      "1970-01-01T00:00:00.000Z",
+    );
+    expect(repository.createDailyNote).not.toHaveBeenCalled();
+  });
+
+  it.each(["2026-02-30", "27/09/2026", "", "2026-09-27T00:00:00Z"])(
+    "rejects %j before touching data",
+    async (date) => {
+      await expect(service.getOrCreateDailyNote("user-id", date)).rejects.toBeInstanceOf(
+        ValidationError,
+      );
+      expect(repository.getDailyNote).not.toHaveBeenCalled();
+    },
+  );
 });

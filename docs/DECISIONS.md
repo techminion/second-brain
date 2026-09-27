@@ -339,3 +339,14 @@ Future Revisit:
 **Tradeoffs:** One more method on the NoteService surface. MCP (06_MCP) does not gain a trash tool — MCP parity (FR-MCP-2) covers the documented tool list only; a trash tool would need its own decision.
 **Applied to specs:** [05_API §4](05_API.md#4-noteservice) — `listTrash` row + behavioral note.
 **Future Revisit:** When folders gain a trash view (FOLD-*), decide whether trash becomes a cross-type `KnowledgeObject` listing rather than per-service.
+
+## ADR-29 — Daily-note conventions: ISO-date title, fixed template, auto-restore from trash, browser-local "today"
+
+**Decision:** `NoteService.getOrCreateDailyNote(date)` (1) validates `date` as a real `YYYY-MM-DD` calendar date (`ValidationError` otherwise — input validation, not a contract error); (2) returns the active daily note for that date; (3) if that date's note is **in trash**, restores it (ignoring the 30-day window, since an expired-but-unpurged row still occupies the unique index) and returns it; (4) otherwise creates it with **title = the ISO date** (e.g. `2026-09-27`) and a **fixed MVP template** body `## Notes` / `## Tasks` with an empty checkbox; (5) a create that loses the `(owner_id, daily_note_date)` unique-index race re-reads the winner, so no `ConflictError` surfaces. "Today" is the user's **local** calendar day, resolved in the browser (`/daily` → `/daily/<date>`); the server never guesses a timezone.
+**Status:** Accepted (2026-09-27) — explicit user (product-owner) decisions on three implementer-surfaced gaps (title format, template content, trashed-daily-note behavior).
+**Context:** FR-DAILY-1/3 require "created automatically from a template" and a "naming/date convention", but no spec defined either; the unique index includes soft-deleted rows, so a trashed daily note would otherwise block reopening that date.
+**Options Considered:** Title — ISO date (chosen) / long-form localized / weekday+ISO. Template — fixed minimal (chosen) / empty. Trashed daily — auto-restore (chosen) / detach the date on delete / error.
+**Chosen Solution:** As above. ISO titles are sortable, locale-neutral, and clean `[[wiki link]]` targets; auto-restore keeps "one action opens today" true without losing content.
+**Tradeoffs:** The template is not user-editable in MVP. Restoring an old daily note surprises nobody but does resurrect content the user trashed.
+**Applied to specs:** [05_API §4](05_API.md#4-noteservice) behavioral note on `getOrCreateDailyNote`.
+**Future Revisit:** User-editable templates (settings) — needs a storage decision (profile column vs. a template note).

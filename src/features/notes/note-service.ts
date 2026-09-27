@@ -14,9 +14,13 @@ import { NotFoundError, ValidationError } from "@/shared/lib/errors";
 import { createServerActionSupabaseClient } from "@/shared/lib/supabase-server-action-client";
 import type { Paginated, PaginationOptions } from "@/shared/types";
 
+import { isIsoDate } from "./daily-note-date";
+
 type NoteRepositoryContract = Pick<
   NoteRepository,
+  | "createDailyNote"
   | "createNote"
+  | "getDailyNote"
   | "getNote"
   | "listNotes"
   | "listTrashedNotes"
@@ -26,6 +30,12 @@ type NoteRepositoryContract = Pick<
 >;
 
 const defaultListLimit = 50;
+
+/**
+ * Fixed MVP daily-note template (DAILY-02, ADR-29). User-editable templates
+ * are a later decision.
+ */
+export const dailyNoteTemplate = "## Notes\n\n\n## Tasks\n\n- [ ] ";
 const maxListLimit = 100;
 
 const isoTimestampPattern = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2})$/;
@@ -219,6 +229,64 @@ export class NoteService {
     return records.length > limit && lastRecord
       ? { items, nextCursor: encodeCursor(lastRecord.id, lastRecord.updatedAt) }
       : { items };
+  }
+
+  /**
+   * Open the daily note for a calendar date (FR-DAILY-1/2/3, ADR-29): return the
+   * active note; if that date's note is in trash, restore it (the unique index
+   * still holds the trashed row, and restoring keeps its content); otherwise
+   * create it with the ISO date as title and the fixed template as body. A
+   * concurrent create that loses the unique-index race re-reads the winner, so
+   * this never surfaces a `ConflictError` (05_API §4).
+   */
+  async getOrCreateDailyNote(userId: string, date: string): Promise<Note> {
+    if (!isIsoDate(date)) {
+      throw new ValidationError("Date must be a calendar date in YYYY-MM-DD form");
+    }
+
+    const existing = await this.repository.getDailyNote(userId, date);
+    if (existing) {
+      return this.activateDailyNote(userId, existing);
+    }
+
+    const created = await this.repository.createDailyNote(userId, {
+      body: dailyNoteTemplate,
+      dailyNoteDate: date,
+      folderId: null,
+      title: date,
+    });
+    if (created) {
+      return mapNote(created);
+    }
+
+    const winner = await this.repository.getDailyNote(userId, date);
+    if (!winner) {
+      throw new Error("Daily note vanished after a create conflict");
+    }
+
+    return this.activateDailyNote(userId, winner);
+  }
+
+  private async activateDailyNote(userId: string, record: NoteRecord): Promise<Note> {
+    if (record.deletedAt === null) {
+      return mapNote(record);
+    }
+
+    // Auto-restore ignores the retention window: an expired-but-unpurged
+    // daily note still occupies the date, and bringing it back is the only
+    // way to open that day without losing content.
+    const restored = await this.repository.restoreNote(
+      userId,
+      record.id,
+      new Date().toISOString(),
+      new Date(0).toISOString(),
+    );
+
+    if (!restored) {
+      throw new NotFoundError("Note not found");
+    }
+
+    return mapNote(restored);
   }
 
   /**

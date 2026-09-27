@@ -338,4 +338,40 @@ describe("NoteRepository", () => {
       repository.listTrashedNotes("user-id", { limit: 5, windowStart: "2026-06-25T00:00:00Z" }),
     ).rejects.toThrow("Unable to list trashed notes");
   });
+
+  it("reads a daily note by date in any deletion state", async () => {
+    const { builder, repository } = createTableRepository({ data: null, error: null });
+
+    await expect(repository.getDailyNote("user-id", "2026-09-27")).resolves.toBeNull();
+
+    expect(builder.eq).toHaveBeenCalledWith("owner_id", "user-id");
+    expect(builder.eq).toHaveBeenCalledWith("notes.daily_note_date", "2026-09-27");
+    expect(builder.is).not.toHaveBeenCalled();
+  });
+
+  it("returns null from createDailyNote on a unique-index conflict", async () => {
+    const { repository } = createRpcRepository({ data: null, error: { code: "23505" } });
+
+    await expect(
+      repository.createDailyNote("user-id", {
+        body: "",
+        dailyNoteDate: "2026-09-27",
+        folderId: null,
+        title: "2026-09-27",
+      }),
+    ).resolves.toBeNull();
+  });
+
+  it("rethrows non-conflict failures from createDailyNote", async () => {
+    const { repository } = createRpcRepository({ data: null, error: { code: "42501" } });
+
+    await expect(
+      repository.createDailyNote("user-id", {
+        body: "",
+        dailyNoteDate: "2026-09-27",
+        folderId: null,
+        title: "2026-09-27",
+      }),
+    ).rejects.toThrow("Unable to create note");
+  });
 });
