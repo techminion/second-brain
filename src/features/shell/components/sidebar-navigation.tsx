@@ -1,4 +1,12 @@
-import { CalendarDays, Folder, LogOut, type LucideIcon, Settings, Tags } from "lucide-react";
+import {
+  CalendarDays,
+  Folder,
+  LogOut,
+  type LucideIcon,
+  Settings,
+  Tags,
+  Trash2,
+} from "lucide-react";
 import Link from "next/link";
 import type { ReactNode } from "react";
 
@@ -44,6 +52,12 @@ export function SidebarNavigation({ notesSlot, signOutAction }: Readonly<Sidebar
       </nav>
       {notesSlot}
       <div className="mt-auto flex flex-col gap-1 border-t p-2">
+        <Button asChild className="w-full justify-start" variant="ghost">
+          <Link href="/trash">
+            <Trash2 aria-hidden="true" className="size-4" />
+            Trash
+          </Link>
+        </Button>
         <Button asChild className="w-full justify-start" variant="ghost">
           <Link href="/settings">
             <Settings aria-hidden="true" className="size-4" />

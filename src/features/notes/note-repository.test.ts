@@ -287,4 +287,55 @@ describe("NoteRepository", () => {
     expect(builder.not).toHaveBeenCalledWith("deleted_at", "is", null);
     expect(builder.gte).toHaveBeenCalledWith("deleted_at", windowStart);
   });
+
+  it("lists restorable trash newest-deleted first with a deleted_at keyset", async () => {
+    const trashedRow = {
+      created_at: "2026-07-23T00:00:00.000Z",
+      deleted_at: "2026-07-24T00:00:00.000Z",
+      id: "note-id",
+      notes: [{ body: "Repository body", daily_note_date: null, folder_id: null }],
+      owner_id: "user-id",
+      title: "Repository note",
+      updated_at: "2026-07-24T00:00:00.000Z",
+    };
+    const { builder, from, repository } = createTableRepository({
+      data: [trashedRow],
+      error: null,
+    });
+
+    await expect(
+      repository.listTrashedNotes("user-id", {
+        keysetBefore: { deletedAtBefore: "2026-07-25T00:00:00.000Z", idBefore: "cursor-id" },
+        limit: 11,
+        windowStart: "2026-06-25T00:00:00.000Z",
+      }),
+    ).resolves.toEqual([
+      {
+        ...expectedRecord,
+        deletedAt: "2026-07-24T00:00:00.000Z",
+        folderId: null,
+        updatedAt: "2026-07-24T00:00:00.000Z",
+      },
+    ]);
+
+    expect(from).toHaveBeenCalledWith("knowledge_objects");
+    expect(builder.eq).toHaveBeenCalledWith("owner_id", "user-id");
+    expect(builder.eq).toHaveBeenCalledWith("type", "note");
+    expect(builder.not).toHaveBeenCalledWith("deleted_at", "is", null);
+    expect(builder.gte).toHaveBeenCalledWith("deleted_at", "2026-06-25T00:00:00.000Z");
+    expect(builder.or).toHaveBeenCalledWith(
+      'deleted_at.lt."2026-07-25T00:00:00.000Z",and(deleted_at.eq."2026-07-25T00:00:00.000Z",id.lt."cursor-id")',
+    );
+    expect(builder.order).toHaveBeenNthCalledWith(1, "deleted_at", { ascending: false });
+    expect(builder.order).toHaveBeenNthCalledWith(2, "id", { ascending: false });
+    expect(builder.limit).toHaveBeenCalledWith(11);
+  });
+
+  it("surfaces trash-listing failures without leaking the database error", async () => {
+    const { repository } = createTableRepository({ data: null, error: { message: "secret" } });
+
+    await expect(
+      repository.listTrashedNotes("user-id", { limit: 5, windowStart: "2026-06-25T00:00:00Z" }),
+    ).rejects.toThrow("Unable to list trashed notes");
+  });
 });

@@ -5,6 +5,7 @@ import type {
   CreateNoteInput,
   CreateNoteRecordInput,
   ListNotesRecordOptions,
+  ListTrashedNotesRecordOptions,
   NoteRecord,
   UpdateNoteInput,
   UpdateNoteRecordInput,
@@ -15,6 +16,9 @@ interface MockNoteRepository {
   createNote: Mock<(userId: string, input: CreateNoteRecordInput) => Promise<NoteRecord>>;
   getNote: Mock<(userId: string, noteId: string) => Promise<NoteRecord | null>>;
   listNotes: Mock<(userId: string, options: ListNotesRecordOptions) => Promise<NoteRecord[]>>;
+  listTrashedNotes: Mock<
+    (userId: string, options: ListTrashedNotesRecordOptions) => Promise<NoteRecord[]>
+  >;
   restoreNote: Mock<
     (
       userId: string,
@@ -46,6 +50,7 @@ function createRepositoryMock(): MockNoteRepository {
     createNote: vi.fn(),
     getNote: vi.fn(),
     listNotes: vi.fn(),
+    listTrashedNotes: vi.fn(),
     restoreNote: vi.fn(),
     softDeleteNote: vi.fn(),
     updateNote: vi.fn(),
@@ -506,5 +511,90 @@ describe("NoteService.list", () => {
       "user-id",
       expect.objectContaining({ folderId: null }),
     );
+  });
+});
+
+describe("NoteService.listTrash", () => {
+  let repository: MockNoteRepository;
+  let service: NoteService;
+
+  const trashed = (id: string, deletedAt: string): NoteRecord => ({
+    ...noteRecord,
+    deletedAt,
+    id,
+    updatedAt: deletedAt,
+  });
+
+  beforeEach(() => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-08-31T12:00:00.000Z"));
+    repository = createRepositoryMock();
+    service = new NoteService(repository);
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it("returns restorable trash with deletedAt, bounded by the 30-day window", async () => {
+    repository.listTrashedNotes.mockResolvedValue([
+      trashed("11111111-1111-4111-8111-111111111111", "2026-08-30T00:00:00.000Z"),
+    ]);
+
+    await expect(service.listTrash("user-id")).resolves.toEqual({
+      items: [
+        expect.objectContaining({
+          deletedAt: "2026-08-30T00:00:00.000Z",
+          id: "11111111-1111-4111-8111-111111111111",
+          type: "note",
+        }),
+      ],
+    });
+    expect(repository.listTrashedNotes).toHaveBeenCalledWith("user-id", {
+      keysetBefore: undefined,
+      limit: 51,
+      windowStart: "2026-08-01T12:00:00.000Z",
+    });
+  });
+
+  it("pages by (deleted_at, id) with an opaque cursor that round-trips", async () => {
+    const first = trashed("22222222-2222-4222-8222-222222222222", "2026-08-30T00:00:00.000Z");
+    const second = trashed("11111111-1111-4111-8111-111111111111", "2026-08-29T00:00:00.000Z");
+    repository.listTrashedNotes.mockResolvedValueOnce([first, second]);
+
+    const page = await service.listTrash("user-id", { limit: 1 });
+
+    expect(page.items.map((note) => note.id)).toEqual([first.id]);
+    expect(page.nextCursor).toEqual(expect.any(String));
+
+    repository.listTrashedNotes.mockResolvedValueOnce([second]);
+    await service.listTrash("user-id", { cursor: page.nextCursor, limit: 1 });
+
+    expect(repository.listTrashedNotes).toHaveBeenLastCalledWith(
+      "user-id",
+      expect.objectContaining({
+        keysetBefore: { deletedAtBefore: first.deletedAt, idBefore: first.id },
+      }),
+    );
+  });
+
+  it("treats a forged cursor as absent and clamps the limit", async () => {
+    repository.listTrashedNotes.mockResolvedValue([]);
+    const forged = Buffer.from(JSON.stringify({ i: "x),or(1.eq.1", u: "now" })).toString(
+      "base64url",
+    );
+
+    await service.listTrash("user-id", { cursor: forged, limit: 1000 });
+
+    expect(repository.listTrashedNotes).toHaveBeenCalledWith(
+      "user-id",
+      expect.objectContaining({ keysetBefore: undefined, limit: 101 }),
+    );
+  });
+
+  it("never surfaces a row the repository returned without a deletion marker", async () => {
+    repository.listTrashedNotes.mockResolvedValue([noteRecord]);
+
+    await expect(service.listTrash("user-id")).resolves.toEqual({ items: [] });
   });
 });

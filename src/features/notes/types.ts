@@ -42,6 +42,26 @@ export interface ListNotesKeyset {
   updatedAtBefore: string;
 }
 
+/**
+ * A soft-deleted note as the trash view sees it (ADR-28): the full `Note` plus
+ * when it was deleted, so the UI can show how long until the 30-day purge.
+ */
+export interface TrashedNote extends Note {
+  deletedAt: string;
+}
+
+export interface ListTrashedNotesKeyset {
+  deletedAtBefore: string;
+  idBefore: string;
+}
+
+export interface ListTrashedNotesRecordOptions {
+  keysetBefore?: ListTrashedNotesKeyset;
+  limit: number;
+  /** Only trash deleted at or after this instant is still restorable. */
+  windowStart: string;
+}
+
 export interface ListNotesRecordOptions {
   folderId?: string | null;
   keysetBefore?: ListNotesKeyset;

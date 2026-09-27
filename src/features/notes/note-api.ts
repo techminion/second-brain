@@ -2,9 +2,10 @@ import type {
   CreateNoteInput,
   ListNotesOptions,
   Note,
+  TrashedNote,
   UpdateNoteInput,
 } from "@/features/notes/types";
-import type { Paginated } from "@/shared/types";
+import type { Paginated, PaginationOptions } from "@/shared/types";
 
 /**
  * Client transport for the NOTE-07 note Web API. Unwraps the `{ data }`
@@ -82,4 +83,23 @@ export function updateNoteRequest(id: string, input: UpdateNoteInput): Promise<N
 
 export function deleteNoteRequest(id: string): Promise<{ id: string }> {
   return requestJson<{ id: string }>(`/api/notes/${encodeURIComponent(id)}`, { method: "DELETE" });
+}
+
+export function fetchTrashList(options: PaginationOptions = {}): Promise<Paginated<TrashedNote>> {
+  const params = new URLSearchParams();
+
+  if (options.cursor) {
+    params.set("cursor", options.cursor);
+  }
+
+  if (options.limit !== undefined) {
+    params.set("limit", String(options.limit));
+  }
+
+  const query = params.toString();
+  return requestJson<Paginated<TrashedNote>>(`/api/notes/trash${query ? `?${query}` : ""}`);
+}
+
+export function restoreNoteRequest(id: string): Promise<Note> {
+  return requestJson<Note>(`/api/notes/${encodeURIComponent(id)}/restore`, { method: "POST" });
 }

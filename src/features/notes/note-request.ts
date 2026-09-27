@@ -1,5 +1,6 @@
 import type { CreateNoteInput, ListNotesOptions, UpdateNoteInput } from "@/features/notes/types";
 import { ValidationError } from "@/shared/lib/errors";
+import type { PaginationOptions } from "@/shared/types";
 
 // Boundary input marshalling for the note Web API. These functions do only
 // *shape* work — decode the request, reject non-JSON-object bodies, and hand
@@ -60,12 +61,18 @@ export async function parseUpdateNoteBody(request: Request): Promise<UpdateNoteI
 }
 
 export function parseListNotesQuery(params: URLSearchParams): ListNotesOptions {
-  const options: ListNotesOptions = {};
+  const options: ListNotesOptions = parsePaginationQuery(params);
 
   const folderId = params.get("folderId");
   if (folderId) {
     options.folderId = folderId;
   }
+
+  return options;
+}
+
+export function parsePaginationQuery(params: URLSearchParams): PaginationOptions {
+  const options: PaginationOptions = {};
 
   const cursor = params.get("cursor");
   if (cursor) {

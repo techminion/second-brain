@@ -32,6 +32,12 @@ describe("SidebarNavigation", () => {
     expect(link).toHaveAttribute("href", "/settings");
   });
 
+  it("renders a trash link pointing to /trash (NOTE-12)", () => {
+    render(<SidebarNavigation signOutAction={signOutAction} />);
+
+    expect(screen.getByRole("link", { name: /trash/i })).toHaveAttribute("href", "/trash");
+  });
+
   it("renders a visible logout submit control", () => {
     const { container } = render(<SidebarNavigation signOutAction={signOutAction} />);
 

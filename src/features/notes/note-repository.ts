@@ -3,6 +3,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import type {
   CreateNoteRecordInput,
   ListNotesRecordOptions,
+  ListTrashedNotesRecordOptions,
   NoteRecord,
   UpdateNoteRecordInput,
 } from "@/features/notes/types";
@@ -184,6 +185,40 @@ export class NoteRepository {
 
     if (error) {
       throw new Error("Unable to list notes", { cause: error });
+    }
+
+    return (data as NoteQueryRow[]).map(mapNoteQueryRow);
+  }
+
+  async listTrashedNotes(
+    userId: string,
+    options: ListTrashedNotesRecordOptions,
+  ): Promise<NoteRecord[]> {
+    // Deliberate trash query (04_DATABASE §6): soft-deleted notes still inside
+    // the retention window, most recently deleted first. Expired trash awaiting
+    // the purge worker is excluded — it can no longer be restored.
+    let query = this.client
+      .from("knowledge_objects")
+      .select(noteSelect)
+      .eq("owner_id", userId)
+      .eq("type", "note")
+      .not("deleted_at", "is", null)
+      .gte("deleted_at", options.windowStart);
+
+    if (options.keysetBefore) {
+      const { deletedAtBefore, idBefore } = options.keysetBefore;
+      query = query.or(
+        `deleted_at.lt."${deletedAtBefore}",and(deleted_at.eq."${deletedAtBefore}",id.lt."${idBefore}")`,
+      );
+    }
+
+    const { data, error } = await query
+      .order("deleted_at", { ascending: false })
+      .order("id", { ascending: false })
+      .limit(options.limit);
+
+    if (error) {
+      throw new Error("Unable to list trashed notes", { cause: error });
     }
 
     return (data as NoteQueryRow[]).map(mapNoteQueryRow);

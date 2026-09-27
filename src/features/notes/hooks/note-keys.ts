@@ -7,7 +7,9 @@ export interface NotesListFilters {
  * TanStack Query key factory for notes. Everything hangs off `["notes"]` so a
  * single `invalidateQueries({ queryKey: noteKeys.all })` clears the whole
  * feature; `lists()` scopes list caches (all filter variants) for optimistic
- * mutation updates, and `detail(id)` is one note's cache.
+ * mutation updates, `detail(id)` is one note's cache, and `trash()` is the
+ * restorable-trash listing (NOTE-12) — deliberately outside `lists()` so the
+ * active-list optimistic updaters never touch it.
  */
 export const noteKeys = {
   all: ["notes"] as const,
@@ -15,4 +17,5 @@ export const noteKeys = {
   list: (filters: NotesListFilters = {}) => [...noteKeys.lists(), filters] as const,
   details: () => [...noteKeys.all, "detail"] as const,
   detail: (id: string) => [...noteKeys.details(), id] as const,
+  trash: () => [...noteKeys.all, "trash"] as const,
 };

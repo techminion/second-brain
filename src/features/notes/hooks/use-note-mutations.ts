@@ -8,13 +8,19 @@ import {
   useQueryClient,
 } from "@tanstack/react-query";
 
-import { createNoteRequest, deleteNoteRequest, updateNoteRequest } from "@/features/notes/note-api";
-import type { CreateNoteInput, Note, UpdateNoteInput } from "@/features/notes/types";
+import {
+  createNoteRequest,
+  deleteNoteRequest,
+  restoreNoteRequest,
+  updateNoteRequest,
+} from "@/features/notes/note-api";
+import type { CreateNoteInput, Note, TrashedNote, UpdateNoteInput } from "@/features/notes/types";
 import type { Paginated } from "@/shared/types";
 
 import { noteKeys } from "./note-keys";
 
 type ListCache = InfiniteData<Paginated<Note>> | undefined;
+type TrashCache = InfiniteData<Paginated<TrashedNote>> | undefined;
 type ListSnapshot = [QueryKey, ListCache][];
 
 function mapListItems(cache: ListCache, transform: (items: Note[]) => Note[]): ListCache {
@@ -156,6 +162,46 @@ export function useDeleteNote() {
     },
     onSettled: () => {
       invalidateLists(queryClient);
+      void queryClient.invalidateQueries({ queryKey: noteKeys.trash() });
+    },
+  });
+}
+
+/**
+ * Restore a note from trash (NOTE-12). Optimistically removes it from the trash
+ * listing, rolls back on error, seeds its detail cache with the restored note
+ * on success, and invalidates both the trash and the active lists on settle.
+ */
+export function useRestoreNote() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (id: string) => restoreNoteRequest(id),
+    onMutate: async (id) => {
+      await queryClient.cancelQueries({ queryKey: noteKeys.trash() });
+      const previousTrash = queryClient.getQueryData<TrashCache>(noteKeys.trash());
+      queryClient.setQueryData<TrashCache>(noteKeys.trash(), (cache) =>
+        cache
+          ? {
+              ...cache,
+              pages: cache.pages.map((page) => ({
+                ...page,
+                items: page.items.filter((note) => note.id !== id),
+              })),
+            }
+          : cache,
+      );
+      return { previousTrash };
+    },
+    onError: (_error, _id, context) => {
+      queryClient.setQueryData(noteKeys.trash(), context?.previousTrash);
+    },
+    onSuccess: (note) => {
+      queryClient.setQueryData(noteKeys.detail(note.id), note);
+    },
+    onSettled: () => {
+      invalidateLists(queryClient);
+      void queryClient.invalidateQueries({ queryKey: noteKeys.trash() });
     },
   });
 }

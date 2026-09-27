@@ -3,18 +3,26 @@ import type {
   CreateNoteInput,
   ListNotesKeyset,
   ListNotesOptions,
+  ListTrashedNotesKeyset,
   Note,
   NoteRecord,
+  TrashedNote,
   UpdateNoteInput,
 } from "@/features/notes/types";
 import { retentionWindowDays } from "@/features/retention/constants";
 import { NotFoundError, ValidationError } from "@/shared/lib/errors";
 import { createServerActionSupabaseClient } from "@/shared/lib/supabase-server-action-client";
-import type { Paginated } from "@/shared/types";
+import type { Paginated, PaginationOptions } from "@/shared/types";
 
 type NoteRepositoryContract = Pick<
   NoteRepository,
-  "createNote" | "getNote" | "listNotes" | "restoreNote" | "softDeleteNote" | "updateNote"
+  | "createNote"
+  | "getNote"
+  | "listNotes"
+  | "listTrashedNotes"
+  | "restoreNote"
+  | "softDeleteNote"
+  | "updateNote"
 >;
 
 const defaultListLimit = 50;
@@ -34,11 +42,28 @@ function clampListLimit(limit: number | undefined): number {
   return Math.min(Math.max(Math.floor(limit), 1), maxListLimit);
 }
 
-function encodeListCursor(record: NoteRecord): string {
-  return Buffer.from(JSON.stringify({ i: record.id, u: record.updatedAt })).toString("base64url");
+interface DecodedCursor {
+  id: string;
+  timestamp: string;
+}
+
+// Cursors are opaque base64url `{ i: id, u: timestamp }` pairs. `list` keys on
+// `updated_at`, `listTrash` on `deleted_at`; the shape is shared.
+function encodeCursor(id: string, timestamp: string): string {
+  return Buffer.from(JSON.stringify({ i: id, u: timestamp })).toString("base64url");
 }
 
 function decodeListCursor(cursor: string | undefined): ListNotesKeyset | undefined {
+  const decoded = decodeCursor(cursor);
+  return decoded ? { idBefore: decoded.id, updatedAtBefore: decoded.timestamp } : undefined;
+}
+
+function decodeTrashCursor(cursor: string | undefined): ListTrashedNotesKeyset | undefined {
+  const decoded = decodeCursor(cursor);
+  return decoded ? { deletedAtBefore: decoded.timestamp, idBefore: decoded.id } : undefined;
+}
+
+function decodeCursor(cursor: string | undefined): DecodedCursor | undefined {
   if (!cursor) {
     return undefined;
   }
@@ -56,7 +81,7 @@ function decodeListCursor(cursor: string | undefined): ListNotesKeyset | undefin
       uuidPattern.test(parsed.i) &&
       isoTimestampPattern.test(parsed.u)
     ) {
-      return { idBefore: parsed.i, updatedAtBefore: parsed.u };
+      return { id: parsed.i, timestamp: parsed.u };
     }
   } catch {
     // Fall through — a cursor that does not decode is treated as absent.
@@ -192,7 +217,34 @@ export class NoteService {
     const lastRecord = pageRecords[pageRecords.length - 1];
 
     return records.length > limit && lastRecord
-      ? { items, nextCursor: encodeListCursor(lastRecord) }
+      ? { items, nextCursor: encodeCursor(lastRecord.id, lastRecord.updatedAt) }
+      : { items };
+  }
+
+  /**
+   * Restorable trash (ADR-28): soft-deleted notes still inside the 30-day
+   * retention window, most recently deleted first. Like `list`, it declares no
+   * errors — limit and cursor are normalized, not rejected.
+   */
+  async listTrash(
+    userId: string,
+    options: PaginationOptions = {},
+  ): Promise<Paginated<TrashedNote>> {
+    const limit = clampListLimit(options.limit);
+    const records = await this.repository.listTrashedNotes(userId, {
+      keysetBefore: decodeTrashCursor(options.cursor),
+      limit: limit + 1,
+      windowStart: retentionWindowStart(new Date()),
+    });
+
+    const pageRecords = records.slice(0, limit);
+    const items = pageRecords.flatMap((record) =>
+      record.deletedAt === null ? [] : [{ ...mapNote(record), deletedAt: record.deletedAt }],
+    );
+    const lastRecord = pageRecords[pageRecords.length - 1];
+
+    return records.length > limit && lastRecord?.deletedAt
+      ? { items, nextCursor: encodeCursor(lastRecord.id, lastRecord.deletedAt) }
       : { items };
   }
 

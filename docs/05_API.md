@@ -70,12 +70,14 @@ A fixed, closed set — every service throws only from this list. No service inv
 | `delete` | `noteId` | `void` | `NotFoundError` |
 | `restore` | `noteId` | `Note` | `NotFoundError` (outside retention window) |
 | `list` | `{ folderId? } & PaginationOptions` | `Paginated<Note>` | — |
+| `listTrash` | `PaginationOptions` | `Paginated<Note & { deletedAt: string }>` — restorable trash only, most recently deleted first ([ADR-28](DECISIONS.md)) | — |
 | `getBacklinks` | `noteId` | `{ object: KnowledgeObjectSummary; snippet: string }[]` — snippet is the text surrounding the link in the source note, for the backlinks panel | `NotFoundError` |
 | `getOrCreateDailyNote` | `date` | `Note` | — |
 | `addTag` | `noteId, tagName` | `Note` | `NotFoundError` |
 | `removeTag` | `noteId, tagId` | `Note` | `NotFoundError` |
 
 **Behavioral notes:**
+- `listTrash` is the deliberate trash query [04_DATABASE.md §6](04_DATABASE.md#6-soft-deletes) allows: soft-deleted notes whose `deleted_at` is inside the 30-day retention window, keyset-paginated on `(deleted_at desc, id desc)`. Expired rows awaiting the purge worker are excluded, since `restore` would refuse them ([ADR-28](DECISIONS.md)).
 - `update` re-parses `[[wiki links]]` out of `body` and reconciles the `links` table (insert new, delete removed) in the same transaction as the note save — this is what makes FR-LINK-6 true without a separate reindex step ([04_DATABASE.md §4.8](04_DATABASE.md#48-links)).
 - `update` writes `notes.title` and `knowledge_objects.title` together, always — `NoteService` is the schema's designated single writer for both ([04_DATABASE.md §4.3](04_DATABASE.md#43-notes)).
 - **Rename propagation (FR-NOTE-3):** when `title` changes, `update` uses the `links` table to find every note linking to this one and rewrites their `[[old title]]` occurrences to `[[new title]]` in the same transaction. Link *edges* are ID-based and unchanged — only display text in referencing bodies is updated. This keeps raw markdown human-readable (`[[title]]`, never opaque IDs), which is what makes export ([09_SECURITY.md §11](09_SECURITY.md#11-privacy--data-ownership)) portable without a translation step.
