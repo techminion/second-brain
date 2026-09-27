@@ -71,4 +71,11 @@ describe("MarkdownEditor", () => {
     const lastMarkdown = String(onChange.mock.lastCall?.[0]);
     expect(lastMarkdown.trim()).toBe("- [x] Draft\n- [x] Review");
   });
+
+  it("names each task checkbox from its own text, not its nested sub-tasks", async () => {
+    render(<MarkdownEditor onChange={vi.fn()} value={"- [ ] Parent\n  - [x] Child"} />);
+
+    expect(await screen.findByRole("checkbox", { name: "Task: Parent" })).not.toBeChecked();
+    expect(screen.getByRole("checkbox", { name: "Task: Child" })).toBeChecked();
+  });
 });

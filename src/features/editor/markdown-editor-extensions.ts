@@ -26,10 +26,11 @@ const SafeImage = Image.extend({
 });
 
 // The checkbox announces its own checked state, so the label carries only the
-// task text. (Tiptap computes the first label before it sets `checked`, so the
-// state argument would be stale on initial render anyway.)
+// task text — from the item's own paragraph, since `textContent` would also
+// concatenate every nested sub-task (adopted from PR #129). Tiptap computes
+// the first label before it sets `checked`, so a state argument would be stale.
 function taskCheckboxLabel(node: ProseMirrorNode): string {
-  return `Task: ${node.textContent.trim() || "empty task"}`;
+  return `Task: ${node.firstChild?.textContent.trim() || "empty task"}`;
 }
 
 // Underline is disabled: it has no standard markdown form (it would serialize
@@ -43,7 +44,13 @@ export const markdownEditorExtensions = [
   StarterKit.configure({ underline: false }),
   SafeImage,
   TaskList,
-  TaskItem.configure({ nested: true, a11y: { checkboxLabel: taskCheckboxLabel } }),
+  TaskItem.configure({
+    a11y: { checkboxLabel: taskCheckboxLabel },
+    // The live NodeView only emits configured attributes, so without this the
+    // `li[data-type="taskItem"]` layout styles never match in the browser.
+    HTMLAttributes: { "data-type": "taskItem" },
+    nested: true,
+  }),
   Markdown,
   MarkdownMarkerVisibility,
 ];
