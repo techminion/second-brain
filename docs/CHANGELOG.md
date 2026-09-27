@@ -7,7 +7,7 @@ All notable changes to Second Brain are documented here, following [Keep a Chang
 ## [Unreleased]
 
 ### Security
-- **2026-09-27** — Upgraded the Tiptap editor family 3.28 → 3.31.3 (GHSA-cp6q-959q-f8rh `__proto__` attribute injection; GHSA-j95f-988m-3j2f markdown ReDoS), Next.js 15.5.21 → 15.5.26 (critical image-optimization RCE advisory reduced to a moderate one that only Next 16 fixes), and the `sharp` (^0.35.4) and `nanoid` (^3.3.18) overrides. `npm audit --audit-level=high` is clean; two moderate Next.js advisories remain pending a Next 16 decision.
+- **2026-09-27** — Upgraded the Tiptap editor family 3.28 → 3.31.3 (GHSA-cp6q-959q-f8rh `__proto__` attribute injection; GHSA-j95f-988m-3j2f markdown ReDoS), Next.js 15.5.21 → 15.5.26 (critical image-optimization RCE advisory reduced to a moderate one that only Next 16 fixes), and the `sharp` (^0.35.4), `nanoid` (^3.3.18), and dev-only `undici` (^7.30.0, via jsdom) and `brace-expansion` (^5.0.12, via eslint) overrides. `npm audit --audit-level=high` is clean; two moderate Next.js advisories remain pending a Next 16 decision.
 - **2026-09-27** — Editor XSS hardening (09_SECURITY §9 T4): a hostile-markdown test corpus now proves note bodies render with no scripts, event handlers, or executable link schemes; images only load from `http(s)` or same-origin paths — `javascript:`/`data:`/protocol-relative image sources render blank while the note text itself is preserved untouched (EDIT-16).
 - **2026-07-22** — Pinned `sharp` to `^0.35.3` via an npm `overrides` entry, clearing the high-severity libvips advisories (CVE-2026-33327/33328/35590/35591) that Next.js 15 pulled in transitively through `sharp@0.34.x`. Unblocks the `Dependency audit` gate without changing the documented Next.js 15 pin (SEC-07).
 
