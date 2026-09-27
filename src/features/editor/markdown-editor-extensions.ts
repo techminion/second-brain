@@ -5,6 +5,25 @@ import type { Node as ProseMirrorNode } from "@tiptap/pm/model";
 import StarterKit from "@tiptap/starter-kit";
 
 import { MarkdownMarkerVisibility } from "./markdown-marker-visibility";
+import { isSafeImageSrc } from "./safe-image-src";
+
+// EDIT-16 (09_SECURITY §9 T4): the stock Image node renders any `src` scheme.
+// This keeps the attribute in the model (loss-free markdown) but only emits it
+// to the DOM when it is an http(s) or root-relative URL.
+const SafeImage = Image.extend({
+  addAttributes() {
+    const parent = this.parent?.() ?? {};
+
+    return {
+      ...parent,
+      src: {
+        default: null,
+        renderHTML: (attributes: { src?: unknown }) =>
+          isSafeImageSrc(attributes.src) ? { src: attributes.src } : {},
+      },
+    };
+  },
+});
 
 // The checkbox announces its own checked state, so the label carries only the
 // task text. (Tiptap computes the first label before it sets `checked`, so the
@@ -15,14 +34,14 @@ function taskCheckboxLabel(node: ProseMirrorNode): string {
 
 // Underline is disabled: it has no standard markdown form (it would serialize
 // as non-standard `++text++`), and 10_DESIGN §5 scopes formatting to
-// bold/italic/code/link. Image is added so `![alt](url)` survives the
+// bold/italic/code/link. Image (as SafeImage, EDIT-16) is added so `![alt](url)` survives the
 // FR-NOTE-2 round-trip instead of collapsing to its alt text. TaskList and
 // TaskItem (EDIT-05) hold GFM `- [ ]` / `- [x]` checkboxes; nesting is on so
 // indented sub-tasks survive, and each checkbox is labelled with its task
 // text so a screen reader announces more than "checkbox".
 export const markdownEditorExtensions = [
   StarterKit.configure({ underline: false }),
-  Image,
+  SafeImage,
   TaskList,
   TaskItem.configure({ nested: true, a11y: { checkboxLabel: taskCheckboxLabel } }),
   Markdown,

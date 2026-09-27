@@ -7,6 +7,7 @@ All notable changes to Second Brain are documented here, following [Keep a Chang
 ## [Unreleased]
 
 ### Security
+- **2026-09-27** — Editor XSS hardening (09_SECURITY §9 T4): a hostile-markdown test corpus now proves note bodies render with no scripts, event handlers, or executable link schemes; images only load from `http(s)` or same-origin paths — `javascript:`/`data:`/protocol-relative image sources render blank while the note text itself is preserved untouched (EDIT-16).
 - **2026-07-22** — Pinned `sharp` to `^0.35.3` via an npm `overrides` entry, clearing the high-severity libvips advisories (CVE-2026-33327/33328/35590/35591) that Next.js 15 pulled in transitively through `sharp@0.34.x`. Unblocks the `Dependency audit` gate without changing the documented Next.js 15 pin (SEC-07).
 
 ### Added

@@ -10,6 +10,14 @@
 - **Priorities:** `P0` — on the critical path of the current sprint; `P1` — this sprint, parallelizable; `P2` — next in line, claimable if idle.
 - When the sprint's queue empties, the architect role promotes the next dependency-ready wave from [docs/12_TASKS.md](../docs/12_TASKS.md).
 
+## Sprint 6 — M1 Collect Continuation (in progress)
+
+Promoted 2026-09-27 after Sprint 5's implementation rows went In Review. User direction for this session: "go as far as possible", stopping at any blocking decision. Order: EDIT-16 first (standing reviewer watch-item — XSS hardening before real users), then DAILY → FOLD → TAG → the M1 tail. All rows below are on branch `claude/gallant-ride-gl1fkf`.
+
+| ID | Title | Priority | Cx | Depends on | Owner | Status | Milestone | Acceptance criteria |
+|---|---|---|---|---|---|---|---|---|
+| EDIT-16 | XSS hardening test: hostile markdown corpus renders sanitized (09_SECURITY §9 T4) | P0 | M | EDIT-02 | Claude | In Review | M1 | 21-case hostile corpus (script/iframe/object/style/form/svg, on* handlers, javascript:/vbscript:/data: links incl. mixed-case, whitespace and entity tricks, image javascript:/data:/protocol-relative src, markup inside code/wiki/task items) rendered through `MarkdownEditor`: no script-capable element, no `on*` attribute, no executable scheme in any `href`, image `src` only http(s)/root-relative. **Gap found and fixed:** stock Image rendered any `src` scheme → `SafeImage` sanitizes at render time only (markdown still round-trips unchanged, FR-NOTE-2) |
+
 ## Current Sprint: Sprint 5 — Note-Taking End-to-End (M1)
 
 Goal: turn the finished `NoteService` (NOTE-01..06) and editor foundation (EDIT-01/02) into real note-taking in the browser — thin Web API routes (NOTE-07) → TanStack Query hooks (NOTE-08) → a navigable sidebar note list (NOTE-09) and an editor-backed note **page** that loads/edits/saves a note (NOTE-10) with a delete confirmation (NOTE-11); and bring the editor to usable formatting: live headings/emphasis/inline-code with marker hiding (EDIT-04) and lists (EDIT-05). Result: **create → open → edit → save → delete a note entirely in the UI.**
