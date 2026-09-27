@@ -41,9 +41,9 @@ describe("normalizeMarkdown", () => {
       "- one\n- two\n  - two.a\n  - two.b\n- three",
     ],
     [
-      "ordered lists, nesting reindented",
+      "ordered lists, nesting preserved (Tiptap ≥3.31 keeps the 3-space indent)",
       "1. first\n2. second\n   1. nested\n3. third",
-      "1. first\n2. second\n  1. nested\n3. third",
+      "1. first\n2. second\n   1. nested\n3. third",
     ],
     [
       "fenced code with language",

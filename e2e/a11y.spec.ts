@@ -39,6 +39,9 @@ for (const route of ["/login", "/signup", "/forgot-password"]) {
 
 test("@a11y authenticated shell and settings have no WCAG 2.1 AA violations", async ({ page }) => {
   test.skip(!supabaseUrl || !serviceRoleKey, "requires dev-project credentials");
+  // This sweep visits ~8 authenticated routes in one session; the default 30s
+  // budget is too tight once each route's first render is counted.
+  test.setTimeout(90_000);
 
   const email = `ameybro11+a11y${Date.now()}@gmail.com`;
   const password = "Correct-Horse-42-Battery";
