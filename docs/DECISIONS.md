@@ -360,3 +360,14 @@ Future Revisit:
 **Chosen Solution:** (1). Every step is idempotent and ordered so contents move before their container disappears: a partial failure leaves notes either still in the (still-visible) folder or already relocated/trashed (restorable), and retrying the same delete completes it. No note is ever orphaned in a hidden folder by a failure.
 **Tradeoffs:** Not atomic; N+1 requests for large folders (fine at MVP scale, bounded by a batch guard). A concurrent move could, in principle, race the cycle check (two simultaneous cross-moves) — accepted for a single-user MVP. Notes restored from trash whose folder was later trashed keep that `folder_id` and appear only in the flat note list until moved.
 **Future Revisit:** If folder operations show latency or partial-failure reports, move them into an RPC and amend the §4.3 single-writer rule accordingly.
+
+## ADR-31 — Tag shape and tagging rules
+
+**Decision:** (1) `Tag = { id, name }`, and `KnowledgeObjectSummary.tags` is `Tag[]` (sorted by name) — clients need the id because `removeTag` takes `tagId`. (2) Tag names are trimmed, a leading `#` is stripped, empty names are rejected, and names are capped at **64 characters** (`ValidationError`). (3) `NoteService.addTag` creates the tag on first use via a case-insensitive exact lookup (LIKE wildcards escaped) against the `(owner_id, lower(name))` index, re-reading on a lost insert race; re-attaching is a no-op. `removeTag` of a tag not on the note is a no-op (only a missing/trashed note is `NotFoundError`). (4) Unused tags are kept (no tag delete in MVP). (5) Web API: `POST /api/notes/[id]/tags {name}`, `DELETE /api/notes/[id]/tags/[tagId]`, `GET /api/tags`, `GET /api/tags/[id]/objects` (keyset-paged, active objects only, unknown tag → 404).
+**Status:** Accepted (2026-09-27) — implementer decisions filling unspecified details within the 05_API §4/§6 contracts; flagged for reviewer confirmation. The 64-character cap is the only new product constraint.
+**Context:** 05_API names `tags` on `KnowledgeObjectSummary` without a shape and defines no tag-name validation.
+**Options Considered:** `tags: string[]` (names only — cannot drive `removeTag(tagId)` without a second lookup) vs. `Tag[]` (chosen).
+**Chosen Solution:** As above; tag rows are written by the owning object's service (05_API §6 note), tag reads by `SearchService`.
+**Tradeoffs:** Orphaned tags accumulate in the sidebar until a tag-management feature exists.
+**Applied to specs:** [05_API §2 Shared Types](05_API.md#shared-types) — `Tag` row; `KnowledgeObjectSummary.tags` typed.
+**Future Revisit:** Tag rename/merge/delete (post-MVP tag management).

@@ -7,6 +7,7 @@ import type {
   NoteRecord,
   UpdateNoteRecordInput,
 } from "@/features/notes/types";
+import type { Tag } from "@/shared/types";
 
 const noteSelect = `
   id,
@@ -19,8 +20,27 @@ const noteSelect = `
     body,
     folder_id,
     daily_note_date
+  ),
+  knowledge_object_tags (
+    tags ( id, name )
   )
 `;
+
+interface TagJoinRow {
+  tags: Tag | Tag[] | null;
+}
+
+function mapTagJoinRows(rows: TagJoinRow[] | null | undefined): Tag[] {
+  return (rows ?? [])
+    .flatMap((row) => (Array.isArray(row.tags) ? row.tags : row.tags ? [row.tags] : []))
+    .map((tag) => ({ id: tag.id, name: tag.name }))
+    .sort((a, b) => a.name.localeCompare(b.name));
+}
+
+/** Escape LIKE wildcards so `ilike` performs a case-insensitive *exact* match. */
+function escapeLikePattern(value: string): string {
+  return value.replace(/[\\%_]/g, (character) => `\\${character}`);
+}
 
 interface NoteSubtypeRow {
   body: string;
@@ -29,6 +49,7 @@ interface NoteSubtypeRow {
 }
 
 interface NoteQueryRow {
+  knowledge_object_tags?: TagJoinRow[] | null;
   created_at: string;
   deleted_at: string | null;
   id: string;
@@ -75,6 +96,7 @@ function mapNoteQueryRow(row: NoteQueryRow): NoteRecord {
     folderId: note.folder_id,
     id: row.id,
     ownerId: row.owner_id,
+    tags: mapTagJoinRows(row.knowledge_object_tags),
     title: row.title,
     updatedAt: row.updated_at,
   };
@@ -262,6 +284,112 @@ export class NoteRepository {
     }
 
     return (data as NoteQueryRow[]).map(mapNoteQueryRow);
+  }
+
+  /** Tags on the given objects, keyed by object id (for RPC results that lack them). */
+  async getTagsForObjects(userId: string, objectIds: string[]): Promise<Map<string, Tag[]>> {
+    const result = new Map<string, Tag[]>(objectIds.map((id) => [id, []]));
+
+    if (objectIds.length === 0) {
+      return result;
+    }
+
+    const { data, error } = await this.client
+      .from("knowledge_object_tags")
+      .select("knowledge_object_id, tags ( id, name )")
+      .eq("owner_id", userId)
+      .in("knowledge_object_id", objectIds);
+
+    if (error) {
+      throw new Error("Unable to read tags", { cause: error });
+    }
+
+    for (const row of data as (TagJoinRow & { knowledge_object_id: string })[]) {
+      result.set(row.knowledge_object_id, [
+        ...(result.get(row.knowledge_object_id) ?? []),
+        ...mapTagJoinRows([row]),
+      ]);
+    }
+
+    for (const [id, tags] of result) {
+      result.set(
+        id,
+        [...tags].sort((a, b) => a.name.localeCompare(b.name)),
+      );
+    }
+
+    return result;
+  }
+
+  /**
+   * The owner's tag with this name, case-insensitively (the `(owner_id,
+   * lower(name))` unique index), creating it if absent (FR-TAG-2). A create
+   * that loses a concurrent race re-reads the winner.
+   */
+  async findOrCreateTag(userId: string, name: string): Promise<Tag> {
+    const existing = await this.findTagByName(userId, name);
+    if (existing) {
+      return existing;
+    }
+
+    const { data, error } = await this.client
+      .from("tags")
+      .insert({ name, owner_id: userId })
+      .select("id, name")
+      .single();
+
+    if (!error && data) {
+      return data as Tag;
+    }
+
+    if (error?.code === "23505") {
+      const winner = await this.findTagByName(userId, name);
+      if (winner) {
+        return winner;
+      }
+    }
+
+    throw new Error("Unable to create tag", { cause: error ?? undefined });
+  }
+
+  private async findTagByName(userId: string, name: string): Promise<Tag | null> {
+    const { data, error } = await this.client
+      .from("tags")
+      .select("id, name")
+      .eq("owner_id", userId)
+      .ilike("name", escapeLikePattern(name))
+      .limit(1)
+      .maybeSingle();
+
+    if (error) {
+      throw new Error("Unable to read tag", { cause: error });
+    }
+
+    return (data as Tag | null) ?? null;
+  }
+
+  /** Attach a tag to an object; attaching twice is a no-op (composite PK). */
+  async attachTag(userId: string, objectId: string, tagId: string): Promise<void> {
+    const { error } = await this.client
+      .from("knowledge_object_tags")
+      .insert({ knowledge_object_id: objectId, owner_id: userId, tag_id: tagId });
+
+    if (error && error.code !== "23505") {
+      throw new Error("Unable to attach tag", { cause: error });
+    }
+  }
+
+  async detachTag(userId: string, objectId: string, tagId: string): Promise<void> {
+    const { error } = await this.client
+      .from("knowledge_object_tags")
+      .delete()
+      .eq("owner_id", userId)
+      .eq("knowledge_object_id", objectId)
+      .eq("tag_id", tagId);
+
+    if (error) {
+      throw new Error("Unable to detach tag", { cause: error });
+    }
   }
 
   async softDeleteNote(userId: string, noteId: string, deletedAt: string): Promise<boolean> {

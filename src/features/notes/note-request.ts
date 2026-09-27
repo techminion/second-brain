@@ -89,3 +89,8 @@ export function parsePaginationQuery(params: URLSearchParams): PaginationOptions
 
   return options;
 }
+
+export async function parseTagNameBody(request: Request): Promise<string> {
+  const body = await readJsonObject(request);
+  return body.name as string;
+}

@@ -33,7 +33,8 @@ Referenced across multiple services below; full field-level definition lives in 
 
 | Type | Shape |
 |---|---|
-| `KnowledgeObjectSummary` | `{ id, type, title, tags, createdAt, updatedAt }` — the common envelope, used in list/search results |
+| `KnowledgeObjectSummary` | `{ id, type, title, tags: Tag[], createdAt, updatedAt }` — the common envelope, used in list/search results |
+| `Tag` | `{ id, name }` — tags sorted by name on an object ([ADR-31](DECISIONS.md)) |
 | `Note` | `KnowledgeObjectSummary & { body, folderId, dailyNoteDate }` |
 | `Folder` | `{ id, name, parentFolderId, createdAt, updatedAt }` |
 | `Attachment` | `KnowledgeObjectSummary & { mimeType, sizeBytes, url }` — `url` is a short-lived signed URL, generated per request, never stored |

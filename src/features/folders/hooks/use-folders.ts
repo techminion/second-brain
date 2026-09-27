@@ -9,8 +9,9 @@ import {
   updateFolderRequest,
 } from "@/features/folders/folder-api";
 import type { CreateFolderInput, FolderDeleteStrategy } from "@/features/folders/types";
+import { notesRootKey } from "@/shared/lib/query-keys";
 
-import { folderKeys, notesRootKey } from "./folder-keys";
+import { folderKeys } from "./folder-keys";
 
 export function useFolderTree() {
   return useQuery({ queryKey: folderKeys.tree(), queryFn: fetchFolderTree });

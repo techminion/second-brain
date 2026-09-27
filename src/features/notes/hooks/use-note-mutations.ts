@@ -9,12 +9,15 @@ import {
 } from "@tanstack/react-query";
 
 import {
+  addTagRequest,
   createNoteRequest,
   deleteNoteRequest,
+  removeTagRequest,
   restoreNoteRequest,
   updateNoteRequest,
 } from "@/features/notes/note-api";
 import type { CreateNoteInput, Note, TrashedNote, UpdateNoteInput } from "@/features/notes/types";
+import { tagsRootKey } from "@/shared/lib/query-keys";
 import type { Paginated } from "@/shared/types";
 
 import { noteKeys } from "./note-keys";
@@ -202,6 +205,29 @@ export function useRestoreNote() {
     onSettled: () => {
       invalidateLists(queryClient);
       void queryClient.invalidateQueries({ queryKey: noteKeys.trash() });
+    },
+  });
+}
+
+/**
+ * Add or remove a tag on a note (TAG-03). The server returns the note with its
+ * tags, which is written straight into the detail cache; note lists and every
+ * tag query (a new tag may now exist; tag listings changed) are invalidated.
+ */
+export function useNoteTagMutation() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (change: { noteId: string; add: string } | { noteId: string; remove: string }) =>
+      "add" in change
+        ? addTagRequest(change.noteId, change.add)
+        : removeTagRequest(change.noteId, change.remove),
+    onSuccess: (note) => {
+      queryClient.setQueryData(noteKeys.detail(note.id), note);
+    },
+    onSettled: () => {
+      invalidateLists(queryClient);
+      void queryClient.invalidateQueries({ queryKey: tagsRootKey });
     },
   });
 }

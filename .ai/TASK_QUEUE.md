@@ -39,6 +39,16 @@ Promoted 2026-09-27 after Sprint 5's implementation rows went In Review. User di
 | FOLD-12 | E2E: nested folders, move note, delete with relocation | P2 | M | FOLD-08/09, CI-06 | Claude | In Review | M1 | `e2e/folders.spec.ts` (Cloud-gated; first run on CI-06); a11y sweep adds the folder page |
 | FOLD-13 | Folder filter applied to note list view | P2 | S | FOLD-06, NOTE-09 | Claude | In Review | M1 | `/folders/[id]`: breadcrumb + subfolders (`FolderHeader`) + that folder's notes (`FolderNoteList`, `useNotesList({ folderId })`) |
 | FOLD-14 | Empty-folder state | P2 | S | FOLD-06, SHELL-09 | Claude | In Review | M1 | Explains the folder is empty, teaches drag-to-folder, offers "New note in this folder" |
+| TAG-01 | Tag repository + `NoteService.addTag`/`removeTag` — FR-TAG-2 | P1 | M | DB-06, NOTE-02 | Claude | In Review | M1 | **ADR-31**: case-insensitive find-or-create (LIKE-escaped exact `ilike`, 23505 re-read), idempotent attach/detach, name normalization (trim, strip `#`, ≤64); notes now carry `tags: Tag[]` on every read (embedded join; `update` re-reads tags) |
+| TAG-02 | `SearchService.listTags` / `listByTag` — FR-TAG-3 | P1 | S | TAG-01 | Claude | In Review | M1 | New `features/search` slice: owner-scoped tag list; active objects by tag across types, keyset-paged (shared `keyset-cursor` extracted from NoteService), unknown/foreign/malformed tag → 404 |
+| TAG-03 | Web API routes + hooks for tags | P1 | S | TAG-01/02 | Claude | In Review | M1 | `POST/DELETE /api/notes/[id]/tags[/tagId]`, `GET /api/tags`, `GET /api/tags/[id]/objects`; `useNoteTagMutation`, `useTags`, `useObjectsByTag`; cross-feature invalidation via `shared/lib/query-keys` roots |
+| TAG-04 | Tag input: suggest-as-you-type, create inline | P1 | M | TAG-03 | Claude | In Review | M1 | ARIA combobox (listbox, `aria-activedescendant`), prefix suggestions excluding applied tags (08_SEARCH §8), Enter/`,` applies suggestion or creates |
+| TAG-05 | Tag chips on note view; remove interaction | P1 | S | TAG-04, NOTE-10 | Claude | In Review | M1 | Chips link to `/tags/[id]`; named remove buttons |
+| TAG-06 | Tag browsing view | P1 | M | TAG-02, SHELL-03 | Claude | In Review | M1 | `/tags/[id]`: notes (linked) and attachments (listed) carrying the tag, load-more, missing-tag state |
+| TAG-07 | Tags section in sidebar | P2 | S | TAG-06 | Claude | In Review | M1 | `SidebarTagList` via `tagsSlot`, `aria-current` on the open tag |
+| TAG-08 | Service tests: dedupe, case-insensitivity, cross-type | P2 | S | TAG-01, ATT-03 | Claude | Blocked (ATT-03) | M1 | Dedupe/case-insensitivity/idempotency covered in TAG-01 tests; the cross-type (note + attachment) leg waits on AttachmentService |
+| TAG-09 | E2E: tag a note inline, browse by tag | P2 | S | TAG-05/06, CI-06 | Claude | In Review | M1 | `e2e/tags.spec.ts` (Cloud-gated; first run on CI-06); a11y sweep adds the tag page |
+| TAG-10 | Tag filter chips in note list | P2 | S | TAG-06, NOTE-09 | Claude | In Review | M1 | Interpreted as the tag browse view's chip row (`nav "Filter by tag"`) switching the filter; the flat sidebar note list is unchanged — **reviewer: confirm this reading** |
 
 ## Current Sprint: Sprint 5 — Note-Taking End-to-End (M1)
 

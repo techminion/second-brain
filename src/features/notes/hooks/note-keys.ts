@@ -1,3 +1,5 @@
+import { notesRootKey } from "@/shared/lib/query-keys";
+
 export interface NotesListFilters {
   folderId?: string;
   limit?: number;
@@ -12,7 +14,7 @@ export interface NotesListFilters {
  * active-list optimistic updaters never touch it.
  */
 export const noteKeys = {
-  all: ["notes"] as const,
+  all: notesRootKey,
   lists: () => [...noteKeys.all, "list"] as const,
   list: (filters: NotesListFilters = {}) => [...noteKeys.lists(), filters] as const,
   details: () => [...noteKeys.all, "detail"] as const,

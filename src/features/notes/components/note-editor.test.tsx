@@ -37,6 +37,15 @@ vi.mock("@/features/editor", () => ({
   ),
 }));
 
+vi.mock("./note-tags", () => ({
+  NoteTags: ({ tags }: { tags: { name: string }[] }) => (
+    <ul aria-label="Tags">
+      {tags.map((tag) => (
+        <li key={tag.name}>{tag.name}</li>
+      ))}
+    </ul>
+  ),
+}));
 vi.mock("@/features/folders", () => ({
   FolderPicker: ({
     onChange,

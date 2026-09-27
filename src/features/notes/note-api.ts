@@ -66,3 +66,17 @@ export function fetchTrashList(options: PaginationOptions = {}): Promise<Paginat
 export function restoreNoteRequest(id: string): Promise<Note> {
   return requestJson<Note>(`/api/notes/${encodeURIComponent(id)}/restore`, { method: "POST" });
 }
+
+export function addTagRequest(noteId: string, name: string): Promise<Note> {
+  return requestJson<Note>(`/api/notes/${encodeURIComponent(noteId)}/tags`, {
+    body: JSON.stringify({ name }),
+    method: "POST",
+  });
+}
+
+export function removeTagRequest(noteId: string, tagId: string): Promise<Note> {
+  return requestJson<Note>(
+    `/api/notes/${encodeURIComponent(noteId)}/tags/${encodeURIComponent(tagId)}`,
+    { method: "DELETE" },
+  );
+}

@@ -12,6 +12,7 @@ import { useAutosave } from "../hooks/use-autosave";
 import { useUpdateNote } from "../hooks/use-note-mutations";
 import { DailyNotePager } from "./daily-note-pager";
 import { DeleteNoteDialog } from "./delete-note-dialog";
+import { NoteTags } from "./note-tags";
 
 /**
  * The loaded note surface: an editable title + the markdown body editor, with
@@ -95,6 +96,7 @@ export function NoteEditor({ note }: Readonly<{ note: Note }>) {
           />
         </div>
       </div>
+      <NoteTags noteId={note.id} tags={note.tags} />
       <FolderPicker
         onChange={(folderId) =>
           mutate(

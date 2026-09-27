@@ -85,6 +85,20 @@ test("@a11y authenticated shell and settings have no WCAG 2.1 AA violations", as
 
     await expectNoViolations(page);
 
+    // TAG-04..07 tag chips/input on the note, then the tag browse page.
+    const tagged = await page.request.post(`/api/notes/${note.id}/tags`, {
+      data: { name: "a11y" },
+    });
+    expect(tagged.ok()).toBeTruthy();
+    const { data: taggedNote } = (await tagged.json()) as {
+      data: { tags: { id: string }[] };
+    };
+
+    await page.goto(`/tags/${taggedNote.tags[0].id}`);
+    await page.getByRole("list", { name: "Tagged items" }).waitFor();
+
+    await expectNoViolations(page);
+
     // NOTE-12 trash view, with the note just seeded moved into it.
     const deleted = await page.request.delete(`/api/notes/${note.id}`);
     expect(deleted.ok()).toBeTruthy();

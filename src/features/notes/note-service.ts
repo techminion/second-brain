@@ -11,6 +11,12 @@ import type {
 } from "@/features/notes/types";
 import { retentionWindowDays } from "@/features/retention/constants";
 import { NotFoundError, ValidationError } from "@/shared/lib/errors";
+import {
+  clampListLimit,
+  decodeCursor,
+  encodeCursor,
+  uuidPattern,
+} from "@/shared/lib/keyset-cursor";
 import { createServerActionSupabaseClient } from "@/shared/lib/supabase-server-action-client";
 import type { Paginated, PaginationOptions } from "@/shared/types";
 
@@ -18,6 +24,10 @@ import { isIsoDate } from "./daily-note-date";
 
 type NoteRepositoryContract = Pick<
   NoteRepository,
+  | "attachTag"
+  | "detachTag"
+  | "findOrCreateTag"
+  | "getTagsForObjects"
   | "createDailyNote"
   | "createNote"
   | "getDailyNote"
@@ -29,39 +39,13 @@ type NoteRepositoryContract = Pick<
   | "updateNote"
 >;
 
-const defaultListLimit = 50;
+const maxTagNameLength = 64;
 
 /**
  * Fixed MVP daily-note template (DAILY-02, ADR-29). User-editable templates
  * are a later decision.
  */
 export const dailyNoteTemplate = "## Notes\n\n\n## Tasks\n\n- [ ] ";
-const maxListLimit = 100;
-
-const isoTimestampPattern = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2})$/;
-const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-
-// The list contract declares no errors (05_API §4), so limit and cursor are
-// normalized defensively instead of thrown on: out-of-range limits clamp,
-// malformed cursors restart from the first page.
-function clampListLimit(limit: number | undefined): number {
-  if (typeof limit !== "number" || !Number.isFinite(limit)) {
-    return defaultListLimit;
-  }
-
-  return Math.min(Math.max(Math.floor(limit), 1), maxListLimit);
-}
-
-interface DecodedCursor {
-  id: string;
-  timestamp: string;
-}
-
-// Cursors are opaque base64url `{ i: id, u: timestamp }` pairs. `list` keys on
-// `updated_at`, `listTrash` on `deleted_at`; the shape is shared.
-function encodeCursor(id: string, timestamp: string): string {
-  return Buffer.from(JSON.stringify({ i: id, u: timestamp })).toString("base64url");
-}
 
 function decodeListCursor(cursor: string | undefined): ListNotesKeyset | undefined {
   const decoded = decodeCursor(cursor);
@@ -73,37 +57,28 @@ function decodeTrashCursor(cursor: string | undefined): ListTrashedNotesKeyset |
   return decoded ? { deletedAtBefore: decoded.timestamp, idBefore: decoded.id } : undefined;
 }
 
-function decodeCursor(cursor: string | undefined): DecodedCursor | undefined {
-  if (!cursor) {
-    return undefined;
-  }
-
-  try {
-    const parsed: unknown = JSON.parse(Buffer.from(cursor, "base64url").toString("utf8"));
-
-    if (
-      typeof parsed === "object" &&
-      parsed !== null &&
-      "i" in parsed &&
-      "u" in parsed &&
-      typeof parsed.i === "string" &&
-      typeof parsed.u === "string" &&
-      uuidPattern.test(parsed.i) &&
-      isoTimestampPattern.test(parsed.u)
-    ) {
-      return { id: parsed.i, timestamp: parsed.u };
-    }
-  } catch {
-    // Fall through — a cursor that does not decode is treated as absent.
-  }
-
-  return undefined;
-}
-
 function retentionWindowStart(reference: Date): string {
   const windowStart = new Date(reference);
   windowStart.setUTCDate(windowStart.getUTCDate() - retentionWindowDays);
   return windowStart.toISOString();
+}
+
+/** Trimmed, `#`-prefix-stripped, non-empty tag name (FR-TAG-2). */
+function normalizeTagName(tagName: unknown): string {
+  if (typeof tagName !== "string") {
+    throw new ValidationError("Tag name must be a string");
+  }
+
+  const name = tagName.trim().replace(/^#+/, "").trim();
+  if (name.length === 0) {
+    throw new ValidationError("Tag name must not be empty");
+  }
+
+  if (name.length > maxTagNameLength) {
+    throw new ValidationError(`Tag name must be at most ${maxTagNameLength} characters`);
+  }
+
+  return name;
 }
 
 function validateCreateInput(input: CreateNoteInput): void {
@@ -155,7 +130,7 @@ function mapNote(record: NoteRecord): Note {
     dailyNoteDate: record.dailyNoteDate,
     folderId: record.folderId,
     id: record.id,
-    tags: [],
+    tags: record.tags ?? [],
     title: record.title,
     type: "note",
     updatedAt: record.updatedAt,
@@ -203,7 +178,7 @@ export class NoteService {
       throw new NotFoundError("Note not found");
     }
 
-    return mapNote(record);
+    return this.withTags(userId, record);
   }
 
   async delete(userId: string, noteId: string): Promise<void> {
@@ -294,6 +269,37 @@ export class NoteService {
    * retention window, most recently deleted first. Like `list`, it declares no
    * errors — limit and cursor are normalized, not rejected.
    */
+  /**
+   * Tag a note by name (FR-TAG-1/2): the tag is created on first use,
+   * case-insensitively deduplicated per owner, and attaching it again is a
+   * no-op. Returns the note with its current tags.
+   */
+  async addTag(userId: string, noteId: string, tagName: string): Promise<Note> {
+    const name = normalizeTagName(tagName);
+    await this.get(userId, noteId);
+
+    const tag = await this.repository.findOrCreateTag(userId, name);
+    await this.repository.attachTag(userId, noteId, tag.id);
+
+    return this.get(userId, noteId);
+  }
+
+  /** Remove a tag from a note; removing an absent tag is a no-op. */
+  async removeTag(userId: string, noteId: string, tagId: string): Promise<Note> {
+    await this.get(userId, noteId);
+
+    if (typeof tagId === "string" && uuidPattern.test(tagId)) {
+      await this.repository.detachTag(userId, noteId, tagId);
+    }
+
+    return this.get(userId, noteId);
+  }
+
+  private async withTags(userId: string, record: NoteRecord): Promise<Note> {
+    const tags = await this.repository.getTagsForObjects(userId, [record.id]);
+    return mapNote({ ...record, tags: tags.get(record.id) ?? [] });
+  }
+
   async listTrash(
     userId: string,
     options: PaginationOptions = {},

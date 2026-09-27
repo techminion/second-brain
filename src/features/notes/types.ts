@@ -1,4 +1,4 @@
-import type { KnowledgeObjectSummary } from "@/shared/types";
+import type { KnowledgeObjectSummary, Tag } from "@/shared/types";
 
 export interface CreateNoteInput {
   body?: string;
@@ -21,6 +21,8 @@ export interface Note extends KnowledgeObjectSummary {
 
 export interface NoteRecord {
   body: string;
+  /** Present when the read embedded the note's tags; RPC writes omit it. */
+  tags?: Tag[];
   createdAt: string;
   dailyNoteDate: string | null;
   deletedAt: string | null;

@@ -10,6 +10,7 @@ import type { FolderTreeNode } from "@/features/folders/types";
 import { updateNoteRequest } from "@/features/notes/note-api";
 import { ApiError } from "@/shared/lib/api-client";
 import { folderDragType, noteDragType } from "@/shared/lib/drag-data";
+import { notesRootKey } from "@/shared/lib/query-keys";
 import { cn } from "@/shared/lib/utils";
 import { Button } from "@/shared/ui/button";
 import {
@@ -21,7 +22,6 @@ import {
 import { Skeleton } from "@/shared/ui/skeleton";
 
 import { ancestorIds, flattenVisible } from "../folder-tree-model";
-import { notesRootKey } from "../hooks/folder-keys";
 import {
   useCreateFolder,
   useFolderTree,

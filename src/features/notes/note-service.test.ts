@@ -13,6 +13,12 @@ import type {
 import { NotFoundError, ValidationError } from "@/shared/lib/errors";
 
 interface MockNoteRepository {
+  attachTag: Mock<(userId: string, objectId: string, tagId: string) => Promise<void>>;
+  detachTag: Mock<(userId: string, objectId: string, tagId: string) => Promise<void>>;
+  findOrCreateTag: Mock<(userId: string, name: string) => Promise<{ id: string; name: string }>>;
+  getTagsForObjects: Mock<
+    (userId: string, ids: string[]) => Promise<Map<string, { id: string; name: string }[]>>
+  >;
   createDailyNote: Mock<
     (userId: string, input: CreateNoteRecordInput) => Promise<NoteRecord | null>
   >;
@@ -51,6 +57,10 @@ const noteRecord: NoteRecord = {
 
 function createRepositoryMock(): MockNoteRepository {
   return {
+    attachTag: vi.fn().mockResolvedValue(undefined),
+    detachTag: vi.fn().mockResolvedValue(undefined),
+    findOrCreateTag: vi.fn(),
+    getTagsForObjects: vi.fn().mockResolvedValue(new Map()),
     createDailyNote: vi.fn(),
     getDailyNote: vi.fn(),
     createNote: vi.fn(),
@@ -682,4 +692,62 @@ describe("NoteService.getOrCreateDailyNote", () => {
       expect(repository.getDailyNote).not.toHaveBeenCalled();
     },
   );
+});
+
+describe("NoteService tagging (TAG-01)", () => {
+  const noteId = "11111111-1111-4111-8111-111111111111";
+  const tagId = "22222222-2222-4222-8222-222222222222";
+  let repository: MockNoteRepository;
+  let service: NoteService;
+
+  beforeEach(() => {
+    repository = createRepositoryMock();
+    repository.getNote.mockResolvedValue({
+      ...noteRecord,
+      id: noteId,
+      tags: [{ id: tagId, name: "Research" }],
+    });
+    repository.findOrCreateTag.mockResolvedValue({ id: tagId, name: "Research" });
+    service = new NoteService(repository);
+  });
+
+  it("creates-or-reuses the tag by normalized name and attaches it", async () => {
+    await expect(service.addTag("user-id", noteId, "  #research ")).resolves.toEqual(
+      expect.objectContaining({ tags: [{ id: tagId, name: "Research" }] }),
+    );
+    expect(repository.findOrCreateTag).toHaveBeenCalledWith("user-id", "research");
+    expect(repository.attachTag).toHaveBeenCalledWith("user-id", noteId, tagId);
+  });
+
+  it.each(["", "   ", "#", "x".repeat(65)])("rejects tag name %j", async (name) => {
+    await expect(service.addTag("user-id", noteId, name)).rejects.toBeInstanceOf(ValidationError);
+    expect(repository.findOrCreateTag).not.toHaveBeenCalled();
+  });
+
+  it("refuses to tag a missing or trashed note", async () => {
+    repository.getNote.mockResolvedValue({ ...noteRecord, deletedAt: "2026-09-01T00:00:00Z" });
+
+    await expect(service.addTag("user-id", noteId, "x")).rejects.toBeInstanceOf(NotFoundError);
+    expect(repository.attachTag).not.toHaveBeenCalled();
+  });
+
+  it("detaches a tag and returns the note; a malformed tag id is a no-op", async () => {
+    await service.removeTag("user-id", noteId, tagId);
+    expect(repository.detachTag).toHaveBeenCalledWith("user-id", noteId, tagId);
+
+    repository.detachTag.mockClear();
+    await service.removeTag("user-id", noteId, "not-a-uuid");
+    expect(repository.detachTag).not.toHaveBeenCalled();
+  });
+
+  it("returns the note's tags from update (the RPC result carries none)", async () => {
+    repository.updateNote.mockResolvedValue({ ...noteRecord, id: noteId });
+    repository.getTagsForObjects.mockResolvedValue(
+      new Map([[noteId, [{ id: tagId, name: "Research" }]]]),
+    );
+
+    await expect(service.update("user-id", noteId, { body: "b" })).resolves.toEqual(
+      expect.objectContaining({ tags: [{ id: tagId, name: "Research" }] }),
+    );
+  });
 });

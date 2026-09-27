@@ -27,6 +27,9 @@ const expectedRecord = {
   updatedAt: "2026-07-23T00:00:00.000Z",
 };
 
+// Table reads embed the tag join; RPC writes do not.
+const expectedQueryRecord = { ...expectedRecord, tags: [] };
+
 function createFluentBuilder(result: { data: unknown; error: unknown }) {
   const builder = {
     eq: vi.fn(),
@@ -129,7 +132,7 @@ describe("NoteRepository", () => {
       error: null,
     });
 
-    await expect(repository.getNote("user-id", "note-id")).resolves.toEqual(expectedRecord);
+    await expect(repository.getNote("user-id", "note-id")).resolves.toEqual(expectedQueryRecord);
     expect(from).toHaveBeenCalledWith("knowledge_objects");
     expect(builder.eq).toHaveBeenNthCalledWith(1, "id", "note-id");
     expect(builder.eq).toHaveBeenNthCalledWith(2, "owner_id", "user-id");
@@ -208,7 +211,7 @@ describe("NoteRepository", () => {
         },
         limit: 51,
       }),
-    ).resolves.toEqual([expectedRecord]);
+    ).resolves.toEqual([expectedQueryRecord]);
 
     expect(builder.eq).toHaveBeenCalledWith("owner_id", "user-id");
     expect(builder.eq).toHaveBeenCalledWith("type", "note");
@@ -277,7 +280,7 @@ describe("NoteRepository", () => {
     await expect(
       repository.restoreNote("user-id", "note-id", restoredAt, windowStart),
     ).resolves.toEqual({
-      ...expectedRecord,
+      ...expectedQueryRecord,
       updatedAt: restoredAt,
     });
     expect(builder.update).toHaveBeenCalledWith({
@@ -311,7 +314,7 @@ describe("NoteRepository", () => {
       }),
     ).resolves.toEqual([
       {
-        ...expectedRecord,
+        ...expectedQueryRecord,
         deletedAt: "2026-07-24T00:00:00.000Z",
         folderId: null,
         updatedAt: "2026-07-24T00:00:00.000Z",
@@ -373,5 +376,64 @@ describe("NoteRepository", () => {
         title: "2026-09-27",
       }),
     ).rejects.toThrow("Unable to create note");
+  });
+
+  it("maps embedded tags onto read records, sorted by name", async () => {
+    const { repository } = createTableRepository({
+      data: {
+        ...{
+          created_at: "2026-07-23T00:00:00.000Z",
+          deleted_at: null,
+          id: "note-id",
+          owner_id: "user-id",
+          title: "Repository note",
+          updated_at: "2026-07-23T00:00:00.000Z",
+        },
+        knowledge_object_tags: [
+          { tags: { id: "t2", name: "zeta" } },
+          { tags: [{ id: "t1", name: "Alpha" }] },
+          { tags: null },
+        ],
+        notes: { body: "Repository body", daily_note_date: null, folder_id: "folder-id" },
+      },
+      error: null,
+    });
+
+    const record = await repository.getNote("user-id", "note-id");
+
+    expect(record?.tags).toEqual([
+      { id: "t1", name: "Alpha" },
+      { id: "t2", name: "zeta" },
+    ]);
+  });
+
+  it("finds an existing tag case-insensitively with LIKE wildcards escaped", async () => {
+    const { builder, repository } = createTableRepository({
+      data: { id: "t1", name: "Res_earch" },
+      error: null,
+    });
+    const ilike = vi.fn().mockReturnValue(builder);
+    const insert = vi.fn();
+    Object.assign(builder, { ilike, insert });
+
+    await expect(repository.findOrCreateTag("user-id", "res_earch%")).resolves.toEqual({
+      id: "t1",
+      name: "Res_earch",
+    });
+    expect(ilike).toHaveBeenCalledWith("name", "res\\_earch\\%");
+    expect(insert).not.toHaveBeenCalled();
+  });
+
+  it("treats attaching an already-attached tag as a no-op", async () => {
+    const insert = vi.fn().mockResolvedValue({ error: { code: "23505" } });
+    const from = vi.fn().mockReturnValue({ insert });
+    const repository = new NoteRepository({ from } as unknown as SupabaseClient);
+
+    await expect(repository.attachTag("user-id", "note-id", "t1")).resolves.toBeUndefined();
+    expect(insert).toHaveBeenCalledWith({
+      knowledge_object_id: "note-id",
+      owner_id: "user-id",
+      tag_id: "t1",
+    });
   });
 });
