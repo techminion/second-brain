@@ -4,8 +4,8 @@
  * schema supports — `detectUnsupportedMarkdown` must stay empty for each —
  * and the suite asserts the three durability properties over all of them:
  * canonical fixed point, document-model preservation, and edit-save-reload
- * survival. Constructs the schema cannot hold yet (tables, task lists, raw
- * HTML) are exercised in markdown-round-trip.test.ts via the detector instead.
+ * survival. Constructs the schema cannot hold yet (tables, ordered task
+ * items, raw HTML) are exercised in markdown-round-trip.test.ts via the detector instead.
  */
 export interface CorpusDocument {
   name: string;
@@ -13,6 +13,20 @@ export interface CorpusDocument {
 }
 
 export const roundTripCorpus: CorpusDocument[] = [
+  {
+    name: "project checklist with nested task lists",
+    markdown: [
+      "# Launch checklist",
+      "",
+      "- [x] Write the [[Launch Plan]]",
+      "- [ ] Review **security** items",
+      "  - [x] RLS audit",
+      "  - [ ] XSS corpus `EDIT-16`",
+      "- [ ] Announce",
+      "",
+      "Notes after the list.",
+    ].join("\n"),
+  },
   {
     name: "meeting note with wiki links",
     markdown: [
