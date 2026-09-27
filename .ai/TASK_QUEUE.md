@@ -63,6 +63,13 @@ Promoted 2026-09-27 after Sprint 5's implementation rows went In Review. User di
 | GRAPH-02 | `GraphService.getLocalGraph` — FR-GRAPH-4 | P1 | M | GRAPH-01 | Claude | In Review | M2 | Bidirectional BFS, depth 1–3, missing/trashed → 404 |
 | GRAPH-03 | Graph API routes + hooks | P1 | S | GRAPH-01/02 | Claude | In Review | M2 | `GET /api/graph`, `GET /api/notes/[id]/graph` (hooks land with the UI) |
 | GRAPH-18 | Graph service tests | P1 | S | GRAPH-01/02 | Claude | In Review | M2 | Filters, subtree, depth clamp, trashed-node/edge exclusion |
+| LINK-05 | Editor wiki-link rendering | P0 | L | EDIT-02, LINK-02 | Claude | In Review | M2 | `WikiLinks` Tiptap extension: decorations only (markdown untouched), `primary` accent, skipped in code; host `WikiLinkController` supplies resolution from the note's local graph |
+| LINK-06 | `[[` autocomplete popup — FR-LINK-3 | P1 | L | LINK-05, SRCH-06 | Claude | In Review | M2 | Fixed-position ARIA listbox (textbox gets `aria-controls/expanded/activedescendant`), ↑/↓, Enter/Tab inserts `Title]]`, Esc dismisses; stale responses dropped |
+| LINK-07 | Unresolved links dashed + create-on-click — FR-LINK-4 | P1 | M | LINK-05, NOTE-02 | Claude | In Review | M2 | Dashed underline; click finds an exact-title note or creates it, then navigates (autosave flushed first) |
+| LINK-09 | Link navigation | P1 | S | LINK-05, NOTE-10 | Claude | In Review | M2 | Click, or **Mod+Enter** with the cursor in a link (keyboard path) |
+| BACK-03 | Backlinks panel in right sidebar | P0 | M | BACK-02, SHELL-02 | Claude | In Review | M2 | `BacklinksPanel` via the shell's new `contextPanel` slot; count, snippets |
+| BACK-04 | Backlink click → navigate | P1 | S | BACK-03 | Claude | In Review | M2 | Each backlink is a link to its source note |
+| BACK-05 | Empty backlinks state | P2 | S | BACK-03, SHELL-09 | Claude | In Review | M2 | Teaches typing `[[` in another note; off-note pages explain the panel |
 
 ## Current Sprint: Sprint 5 — Note-Taking End-to-End (M1)
 

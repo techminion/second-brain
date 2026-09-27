@@ -18,3 +18,8 @@ export function fetchObjectsByTag(
     `/api/tags/${encodeURIComponent(tagId)}/objects${query ? `?${query}` : ""}`,
   );
 }
+
+export function fetchTitleSuggestions(query: string, limit = 8): Promise<KnowledgeObjectSummary[]> {
+  const params = new URLSearchParams({ limit: String(limit), q: query });
+  return requestJson<KnowledgeObjectSummary[]>(`/api/search/titles?${params.toString()}`);
+}

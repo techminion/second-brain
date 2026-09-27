@@ -37,6 +37,14 @@ vi.mock("@/features/editor", () => ({
   ),
 }));
 
+vi.mock("../hooks/use-wiki-link-controller", () => ({
+  useWikiLinkController: () => ({
+    isResolved: () => true,
+    open: vi.fn(),
+    resolutionKey: "",
+    suggest: vi.fn(),
+  }),
+}));
 vi.mock("./note-tags", () => ({
   NoteTags: ({ tags }: { tags: { name: string }[] }) => (
     <ul aria-label="Tags">

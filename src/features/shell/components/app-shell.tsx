@@ -19,10 +19,13 @@ interface AppShellProps {
   sidebarFolders?: ReactNode;
   /** Sidebar tags section, injected at the app layer. */
   sidebarTags?: ReactNode;
+  /** Right context panel content (backlinks, BACK-03), injected at the app layer. */
+  contextPanel?: ReactNode;
 }
 
 function AppShell({
   children,
+  contextPanel,
   sidebarDaily,
   sidebarFolders,
   sidebarNotes,
@@ -44,7 +47,9 @@ function AppShell({
             />
           </ShellPanel>
           <main className="min-w-0 flex-1 overflow-auto">{children}</main>
-          <ShellPanel label="Context panel" side="right" />
+          <ShellPanel label="Context panel" side="right">
+            {contextPanel}
+          </ShellPanel>
         </div>
       </ShellPanelsProvider>
     </ShortcutProvider>
