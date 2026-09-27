@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 
 import { MarkdownEditor } from "@/features/editor";
+import { FolderPicker } from "@/features/folders";
 import type { Note, UpdateNoteInput } from "@/features/notes/types";
 import { Input } from "@/shared/ui/input";
 
@@ -94,6 +95,15 @@ export function NoteEditor({ note }: Readonly<{ note: Note }>) {
           />
         </div>
       </div>
+      <FolderPicker
+        onChange={(folderId) =>
+          mutate(
+            { id: note.id, input: { folderId } },
+            { onError: () => toast.error("Could not move your note.") },
+          )
+        }
+        value={note.folderId}
+      />
       {title.trim() === "" ? (
         <p className="text-destructive text-sm">Add a title to save this note’s name.</p>
       ) : null}

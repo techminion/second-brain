@@ -15,9 +15,16 @@ interface AppShellProps {
   sidebarNotes?: ReactNode;
   /** Sidebar daily-note section, injected at the app layer like `sidebarNotes`. */
   sidebarDaily?: ReactNode;
+  /** Sidebar folder tree, injected at the app layer. */
+  sidebarFolders?: ReactNode;
 }
 
-function AppShell({ children, sidebarDaily, sidebarNotes }: Readonly<AppShellProps>) {
+function AppShell({
+  children,
+  sidebarDaily,
+  sidebarFolders,
+  sidebarNotes,
+}: Readonly<AppShellProps>) {
   return (
     <ShortcutProvider>
       <ShellPanelsProvider>
@@ -27,6 +34,7 @@ function AppShell({ children, sidebarDaily, sidebarNotes }: Readonly<AppShellPro
           <ShellPanel label="Application sidebar" side="left">
             <SidebarNavigation
               dailySlot={sidebarDaily}
+              foldersSlot={sidebarFolders}
               notesSlot={sidebarNotes}
               signOutAction={signOut}
             />

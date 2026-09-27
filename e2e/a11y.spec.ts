@@ -75,6 +75,16 @@ test("@a11y authenticated shell and settings have no WCAG 2.1 AA violations", as
 
     await expectNoViolations(page);
 
+    // FOLD-06..14 folder tree + folder page (empty-folder state).
+    const folder = await page.request.post("/api/folders", { data: { name: "Accessible" } });
+    expect(folder.ok()).toBeTruthy();
+    const { data: folderData } = (await folder.json()) as { data: { id: string } };
+
+    await page.goto(`/folders/${folderData.id}`);
+    await page.getByText("This folder is empty.").waitFor();
+
+    await expectNoViolations(page);
+
     // NOTE-12 trash view, with the note just seeded moved into it.
     const deleted = await page.request.delete(`/api/notes/${note.id}`);
     expect(deleted.ok()).toBeTruthy();

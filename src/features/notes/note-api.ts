@@ -5,47 +5,10 @@ import type {
   TrashedNote,
   UpdateNoteInput,
 } from "@/features/notes/types";
+import { requestJson } from "@/shared/lib/api-client";
 import type { Paginated, PaginationOptions } from "@/shared/types";
 
-/**
- * Client transport for the NOTE-07 note Web API. Unwraps the `{ data }`
- * envelope and turns a non-2xx `{ error: { code, message } }` response into a
- * typed `ApiError` the TanStack Query hooks (and their consumers) can branch on.
- */
-export class ApiError extends Error {
-  constructor(
-    readonly status: number,
-    readonly code: string,
-    message: string,
-  ) {
-    super(message);
-    this.name = "ApiError";
-  }
-}
-
-interface ErrorEnvelope {
-  error?: { code?: string; message?: string };
-}
-
-async function requestJson<T>(url: string, init?: RequestInit): Promise<T> {
-  const response = await fetch(url, {
-    ...init,
-    headers: { "content-type": "application/json", ...init?.headers },
-  });
-
-  const payload: unknown = await response.json().catch(() => null);
-
-  if (!response.ok) {
-    const envelope = (payload as ErrorEnvelope | null)?.error;
-    throw new ApiError(
-      response.status,
-      envelope?.code ?? "UNKNOWN",
-      envelope?.message ?? "Request failed",
-    );
-  }
-
-  return (payload as { data: T }).data;
-}
+export { ApiError } from "@/shared/lib/api-client";
 
 export function fetchNotesList(options: ListNotesOptions = {}): Promise<Paginated<Note>> {
   const params = new URLSearchParams();

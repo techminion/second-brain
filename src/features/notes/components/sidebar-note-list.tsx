@@ -4,6 +4,7 @@ import { Plus } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 
+import { noteDragType } from "@/shared/lib/drag-data";
 import { cn } from "@/shared/lib/utils";
 import { Button } from "@/shared/ui/button";
 import { Skeleton } from "@/shared/ui/skeleton";
@@ -77,6 +78,11 @@ export function SidebarNoteList() {
                     active && "bg-muted",
                   )}
                   href={`/notes/${note.id}`}
+                  onDragStart={(event) => {
+                    // Drop onto a sidebar folder to move the note (FOLD-08).
+                    event.dataTransfer.setData(noteDragType, note.id);
+                    event.dataTransfer.effectAllowed = "move";
+                  }}
                 >
                   <span className="truncate text-sm">{note.title || "Untitled"}</span>
                   <time

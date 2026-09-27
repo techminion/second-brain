@@ -18,6 +18,8 @@ interface SidebarNavigationProps {
   notesSlot?: ReactNode;
   /** Daily-note section slot (DAILY-03/04); the static heading renders without it. */
   dailySlot?: ReactNode;
+  /** Folder tree slot (FOLD-06); the static heading renders without it. */
+  foldersSlot?: ReactNode;
 }
 
 interface NavigationSectionProps {
@@ -46,6 +48,7 @@ function NavigationSection({ Icon, label }: Readonly<NavigationSectionProps>) {
  */
 export function SidebarNavigation({
   dailySlot,
+  foldersSlot,
   notesSlot,
   signOutAction,
 }: Readonly<SidebarNavigationProps>) {
@@ -53,7 +56,7 @@ export function SidebarNavigation({
     <div className="flex min-h-0 flex-1 flex-col">
       <nav aria-label="Knowledge navigation" className="flex flex-col gap-1 px-2 pt-2">
         {dailySlot ?? <NavigationSection Icon={CalendarDays} label="Daily note" />}
-        <NavigationSection Icon={Folder} label="Folders" />
+        {foldersSlot ?? <NavigationSection Icon={Folder} label="Folders" />}
         <NavigationSection Icon={Tags} label="Tags" />
       </nav>
       {notesSlot}

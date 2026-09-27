@@ -350,3 +350,13 @@ Future Revisit:
 **Tradeoffs:** The template is not user-editable in MVP. Restoring an old daily note surprises nobody but does resurrect content the user trashed.
 **Applied to specs:** [05_API §4](05_API.md#4-noteservice) behavioral note on `getOrCreateDailyNote`.
 **Future Revisit:** User-editable templates (settings) — needs a storage decision (profile column vs. a template note).
+
+## ADR-30 — FolderService composes NoteService for contained notes; folder deletes are ordered, not transactional
+
+**Decision:** `FolderService.delete`/`move` never write `notes` or `knowledge_objects`. Contained notes are relocated (`move_to_parent`) or trashed (`delete_contents`) through `NoteService.update`/`delete`, one note at a time, before the folder rows change; folder rows are then re-parented/soft-deleted through `FolderRepository`. There is no multi-table RPC. Cycle detection for `move` loads the owner's active folders and walks up from the destination. The Web API is `GET/POST /api/folders` (tree / create), `PATCH /api/folders/[id]` (`name` renames, `parentFolderId` moves; `null` = root) and `DELETE /api/folders/[id]?strategy=…` (no default).
+**Status:** Accepted (2026-09-27) — implementer decision within the existing contract; flagged for reviewer confirmation.
+**Context:** 05_API §12 rules 3–4 forbid FolderService from writing type-owned tables, and 04_DATABASE §4.3 makes NoteService the only writer of `notes`. A single `delete_folder` RPC would be atomic but would be a second writer of `notes`, and under ADR-10/CI-09 any new migration also needs the dev Cloud project migrated before the Cloud-drift CI check passes.
+**Options Considered:** (1) compose NoteService, ordered steps (chosen); (2) a `SECURITY INVOKER` `delete_folder` RPC touching folders + notes + envelope atomically.
+**Chosen Solution:** (1). Every step is idempotent and ordered so contents move before their container disappears: a partial failure leaves notes either still in the (still-visible) folder or already relocated/trashed (restorable), and retrying the same delete completes it. No note is ever orphaned in a hidden folder by a failure.
+**Tradeoffs:** Not atomic; N+1 requests for large folders (fine at MVP scale, bounded by a batch guard). A concurrent move could, in principle, race the cycle check (two simultaneous cross-moves) — accepted for a single-user MVP. Notes restored from trash whose folder was later trashed keep that `folder_id` and appear only in the flat note list until moved.
+**Future Revisit:** If folder operations show latency or partial-failure reports, move them into an RPC and amend the §4.3 single-writer rule accordingly.
