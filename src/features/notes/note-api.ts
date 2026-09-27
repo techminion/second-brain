@@ -1,4 +1,5 @@
 import type {
+  Backlink,
   CreateNoteInput,
   ListNotesOptions,
   Note,
@@ -79,4 +80,8 @@ export function removeTagRequest(noteId: string, tagId: string): Promise<Note> {
     `/api/notes/${encodeURIComponent(noteId)}/tags/${encodeURIComponent(tagId)}`,
     { method: "DELETE" },
   );
+}
+
+export function fetchBacklinks(noteId: string): Promise<Backlink[]> {
+  return requestJson<Backlink[]>(`/api/notes/${encodeURIComponent(noteId)}/backlinks`);
 }

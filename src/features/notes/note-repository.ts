@@ -1,6 +1,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 
 import type {
+  BacklinkRecord,
   CreateNoteRecordInput,
   ListNotesRecordOptions,
   ListTrashedNotesRecordOptions,
@@ -125,6 +126,7 @@ export class NoteRepository {
         p_body: input.body,
         p_daily_note_date: input.dailyNoteDate,
         p_folder_id: input.folderId,
+        p_link_titles: input.linkTitles ?? [],
         p_owner_id: userId,
         p_title: input.title,
       })
@@ -203,6 +205,7 @@ export class NoteRepository {
         p_body: input.body ?? null,
         p_folder_id: input.folderId ?? null,
         p_knowledge_object_id: noteId,
+        p_link_titles: input.body !== undefined ? (input.linkTitles ?? []) : null,
         p_owner_id: userId,
         p_title: input.title ?? null,
         p_update_body: input.body !== undefined,
@@ -284,6 +287,53 @@ export class NoteRepository {
     }
 
     return (data as NoteQueryRow[]).map(mapNoteQueryRow);
+  }
+
+  /**
+   * Active notes linking to `targetId` (FR-LINK-5), newest-edited first —
+   * the `target_object_id`-indexed lookup of 08_SEARCH §5. The source body is
+   * returned for snippet extraction.
+   */
+  async listBacklinks(userId: string, targetId: string): Promise<BacklinkRecord[]> {
+    const { data, error } = await this.client
+      .from("links")
+      .select(
+        "source:knowledge_objects!links_source_object_id_fkey!inner(id, type, title, created_at, updated_at, deleted_at, notes!inner(body), knowledge_object_tags(tags(id, name)))",
+      )
+      .eq("owner_id", userId)
+      .eq("target_object_id", targetId)
+      .is("source.deleted_at", null);
+
+    if (error) {
+      throw new Error("Unable to list backlinks", { cause: error });
+    }
+
+    interface BacklinkRow {
+      source: {
+        created_at: string;
+        id: string;
+        knowledge_object_tags: TagJoinRow[] | null;
+        notes: { body: string } | { body: string }[];
+        title: string;
+        type: "note";
+        updated_at: string;
+      } | null;
+    }
+
+    return (data as unknown as BacklinkRow[])
+      .flatMap((row) => (row.source ? [row.source] : []))
+      .map((source) => ({
+        body: Array.isArray(source.notes) ? (source.notes[0]?.body ?? "") : source.notes.body,
+        summary: {
+          createdAt: source.created_at,
+          id: source.id,
+          tags: mapTagJoinRows(source.knowledge_object_tags),
+          title: source.title,
+          type: source.type,
+          updatedAt: source.updated_at,
+        },
+      }))
+      .sort((a, b) => b.summary.updatedAt.localeCompare(a.summary.updatedAt));
   }
 
   /** Tags on the given objects, keyed by object id (for RPC results that lack them). */

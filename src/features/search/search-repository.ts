@@ -107,4 +107,32 @@ export class SearchRepository {
       updatedAt: row.updated_at,
     }));
   }
+
+  /** Trigram title suggestions via the `suggest_note_titles` RPC (SRCH-06). */
+  async suggestNoteTitles(
+    userId: string,
+    query: string,
+    limit: number,
+  ): Promise<KnowledgeObjectSummary[]> {
+    const { data, error } = await this.client.rpc("suggest_note_titles", {
+      p_limit: limit,
+      p_owner_id: userId,
+      p_query: query,
+    });
+
+    if (error) {
+      throw new Error("Unable to suggest note titles", { cause: error });
+    }
+
+    return (data as { created_at: string; id: string; title: string; updated_at: string }[]).map(
+      (row) => ({
+        createdAt: row.created_at,
+        id: row.id,
+        tags: [],
+        title: row.title,
+        type: "note" as const,
+        updatedAt: row.updated_at,
+      }),
+    );
+  }
 }

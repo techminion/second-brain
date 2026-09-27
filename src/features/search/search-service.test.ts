@@ -15,6 +15,7 @@ function setup() {
     getTag: vi.fn().mockResolvedValue({ id: tagId, name: "Research" }),
     listObjectsByTag: vi.fn().mockResolvedValue([]),
     listTags: vi.fn().mockResolvedValue([{ id: tagId, name: "Research" }]),
+    suggestNoteTitles: vi.fn().mockResolvedValue([]),
   };
   return { repository, service: new SearchService(repository) };
 }
@@ -52,5 +53,22 @@ describe("SearchService tag browsing (TAG-02)", () => {
     await expect(service.listByTag("user-id", tagId)).rejects.toBeInstanceOf(NotFoundError);
     await expect(service.listByTag("user-id", "nope")).rejects.toBeInstanceOf(NotFoundError);
     expect(repository.listObjectsByTag).not.toHaveBeenCalled();
+  });
+});
+
+describe("SearchService.suggestNoteTitles (SRCH-06)", () => {
+  it("trims the query and clamps the limit", async () => {
+    const { repository, service } = setup();
+
+    await service.suggestNoteTitles("user-id", "  plan ", 500);
+
+    expect(repository.suggestNoteTitles).toHaveBeenCalledWith("user-id", "plan", 50);
+  });
+
+  it("returns nothing for a blank query without touching data", async () => {
+    const { repository, service } = setup();
+
+    await expect(service.suggestNoteTitles("user-id", "   ")).resolves.toEqual([]);
+    expect(repository.suggestNoteTitles).not.toHaveBeenCalled();
   });
 });

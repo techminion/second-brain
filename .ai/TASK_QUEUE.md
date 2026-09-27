@@ -49,6 +49,20 @@ Promoted 2026-09-27 after Sprint 5's implementation rows went In Review. User di
 | TAG-08 | Service tests: dedupe, case-insensitivity, cross-type | P2 | S | TAG-01, ATT-03 | Claude | Blocked (ATT-03) | M1 | Dedupe/case-insensitivity/idempotency covered in TAG-01 tests; the cross-type (note + attachment) leg waits on AttachmentService |
 | TAG-09 | E2E: tag a note inline, browse by tag | P2 | S | TAG-05/06, CI-06 | Claude | In Review | M1 | `e2e/tags.spec.ts` (Cloud-gated; first run on CI-06); a11y sweep adds the tag page |
 | TAG-10 | Tag filter chips in note list | P2 | S | TAG-06, NOTE-09 | Claude | In Review | M1 | Interpreted as the tag browse view's chip row (`nav "Filter by tag"`) switching the filter; the flat sidebar note list is unchanged — **reviewer: confirm this reading** |
+| LINK-01 | Wiki-link markdown parser | P0 | M | SETUP-06 | Claude | In Review | M2 | `wiki-links.ts`: `[[Title]]` outside code spans/fences, case-insensitive dedupe, offsets, snippet helper; 21 cases (ADR-32) |
+| LINK-02 | Link resolution at save time — FR-LINK-2 | P0 | M | LINK-01, NOTE-01 | Claude | In Review | M2 | SQL `reconcile_note_links`: oldest active same-titled note, case-insensitive; no self/unresolved edges |
+| LINK-03 | Reconcile derived rows (diff-based) | P0 | M | DB-07, LINK-02 | Claude | In Review | M2 | Delete edges not in the resolved set, insert new ones (`on conflict do nothing`) — in SQL (ADR-32 option b) |
+| LINK-04 | Reconciliation in `NoteService.update`, same transaction — FR-LINK-6 | P0 | M | LINK-03, NOTE-04 | Claude | In Review | M2 | New migration: `create_note`/`update_note` gain `p_link_titles text[]`; service passes parsed titles on create and on body updates. **Migration not yet applied to dev Cloud** |
+| LINK-08 | Rename propagation — FR-NOTE-3 | P1 | M | LINK-02, EDIT-12 | Claude | In Review | M2 | Same RPC rewrites `[[old]]`→`[[new]]` (regex-escaped, case-insensitive) in active linking notes; client invalidates note details on rename |
+| LINK-10 | Reconciliation tests | P1 | M | LINK-04 | Claude | In Review | M2 | Unit (service args) + a local real-Postgres run covering dedupe, removal, rename with metacharacters/backslashes, dangling attach, duplicates, self-links, trashed sources, cross-user isolation. Replay guard (`replay-supabase-migrations.sh`) updated to the new signatures + new functions' invoker/grant checks |
+| SRCH-05 | `pg_trgm` migration + index on `notes.title` | P1 | S | DB-04 | Claude | In Review | M2 | `extensions.pg_trgm`, GIN `gin_trgm_ops` index. **Not yet applied to dev Cloud** |
+| SRCH-06 | `SearchService.suggestNoteTitles` | P1 | M | SRCH-05 | Claude | In Review | M2 | `suggest_note_titles` RPC (prefix → substring → fuzzy), trimmed query, limit 1–50, blank → `[]`; `GET /api/search/titles` |
+| BACK-01 | `NoteService.getBacklinks` — FR-LINK-5 | P0 | S | LINK-04 | Claude | In Review | M2 | `links` by `target_object_id` with the source envelope (FK-hinted inner embed), active sources only, snippets via the shared parser |
+| BACK-02 | Backlinks API route + hook with invalidation | P0 | S | BACK-01 | Claude | In Review | M2 | `GET /api/notes/[id]/backlinks`; `useBacklinks` (refetch on mount); every note save invalidates all backlink + graph caches |
+| GRAPH-01 | `GraphService.getGraph` | P1 | M | DB-07, LINK-04 | Claude | In Review | M2 | Active notes + edges between them; tag and folder-subtree filters (AND) |
+| GRAPH-02 | `GraphService.getLocalGraph` — FR-GRAPH-4 | P1 | M | GRAPH-01 | Claude | In Review | M2 | Bidirectional BFS, depth 1–3, missing/trashed → 404 |
+| GRAPH-03 | Graph API routes + hooks | P1 | S | GRAPH-01/02 | Claude | In Review | M2 | `GET /api/graph`, `GET /api/notes/[id]/graph` (hooks land with the UI) |
+| GRAPH-18 | Graph service tests | P1 | S | GRAPH-01/02 | Claude | In Review | M2 | Filters, subtree, depth clamp, trashed-node/edge exclusion |
 
 ## Current Sprint: Sprint 5 — Note-Taking End-to-End (M1)
 

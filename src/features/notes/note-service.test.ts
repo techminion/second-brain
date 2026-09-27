@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, type Mock, vi } from "vite
 
 import { dailyNoteTemplate, NoteService } from "@/features/notes/note-service";
 import type {
+  BacklinkRecord,
   CreateNoteInput,
   CreateNoteRecordInput,
   ListNotesRecordOptions,
@@ -16,6 +17,7 @@ interface MockNoteRepository {
   attachTag: Mock<(userId: string, objectId: string, tagId: string) => Promise<void>>;
   detachTag: Mock<(userId: string, objectId: string, tagId: string) => Promise<void>>;
   findOrCreateTag: Mock<(userId: string, name: string) => Promise<{ id: string; name: string }>>;
+  listBacklinks: Mock<(userId: string, targetId: string) => Promise<BacklinkRecord[]>>;
   getTagsForObjects: Mock<
     (userId: string, ids: string[]) => Promise<Map<string, { id: string; name: string }[]>>
   >;
@@ -61,6 +63,7 @@ function createRepositoryMock(): MockNoteRepository {
     detachTag: vi.fn().mockResolvedValue(undefined),
     findOrCreateTag: vi.fn(),
     getTagsForObjects: vi.fn().mockResolvedValue(new Map()),
+    listBacklinks: vi.fn().mockResolvedValue([]),
     createDailyNote: vi.fn(),
     getDailyNote: vi.fn(),
     createNote: vi.fn(),
@@ -106,6 +109,7 @@ describe("NoteService.create", () => {
       body: "Service body",
       dailyNoteDate: null,
       folderId: "folder-id",
+      linkTitles: [],
       title: "Service note",
     });
   });
@@ -123,6 +127,7 @@ describe("NoteService.create", () => {
       body: "",
       dailyNoteDate: null,
       folderId: null,
+      linkTitles: [],
       title: "Root note",
     });
   });
@@ -235,6 +240,7 @@ describe("NoteService.update", () => {
     expect(repository.updateNote).toHaveBeenCalledWith("user-id", "note-id", {
       body: "Updated body",
       folderId: undefined,
+      linkTitles: [],
       title: "Updated title",
     });
   });
@@ -749,5 +755,71 @@ describe("NoteService tagging (TAG-01)", () => {
     await expect(service.update("user-id", noteId, { body: "b" })).resolves.toEqual(
       expect.objectContaining({ tags: [{ id: tagId, name: "Research" }] }),
     );
+  });
+});
+
+describe("NoteService wiki links (LINK-02/04, BACK-01)", () => {
+  let repository: MockNoteRepository;
+  let service: NoteService;
+
+  beforeEach(() => {
+    repository = createRepositoryMock();
+    service = new NoteService(repository as never);
+  });
+
+  it("passes the body's parsed link titles to create", async () => {
+    repository.createNote.mockResolvedValue(noteRecord);
+
+    await service.create("user-id", { body: "See [[Alpha]], `[[code]]`, [[alpha]]", title: "T" });
+
+    expect(repository.createNote).toHaveBeenCalledWith(
+      "user-id",
+      expect.objectContaining({ linkTitles: ["Alpha"] }),
+    );
+  });
+
+  it("re-derives link titles only when the body is updated", async () => {
+    repository.updateNote.mockResolvedValue(noteRecord);
+
+    await service.update("user-id", "note-id", { body: "[[B]] and [[C]]" });
+    expect(repository.updateNote).toHaveBeenLastCalledWith(
+      "user-id",
+      "note-id",
+      expect.objectContaining({ linkTitles: ["B", "C"] }),
+    );
+
+    await service.update("user-id", "note-id", { title: "Renamed" });
+    expect(repository.updateNote).toHaveBeenLastCalledWith(
+      "user-id",
+      "note-id",
+      expect.objectContaining({ linkTitles: undefined, title: "Renamed" }),
+    );
+  });
+
+  it("returns backlinks with context snippets around the link", async () => {
+    repository.getNote.mockResolvedValue({ ...noteRecord, title: "Target" });
+    repository.listBacklinks.mockResolvedValue([
+      {
+        body: "Intro text then [[target]] and more.",
+        summary: { id: "s1", title: "Source" } as BacklinkRecord["summary"],
+      },
+      {
+        body: "Mentions [[Other]] only",
+        summary: { id: "s2", title: "Stale" } as BacklinkRecord["summary"],
+      },
+    ]);
+
+    await expect(service.getBacklinks("user-id", "note-id")).resolves.toEqual([
+      { object: { id: "s1", title: "Source" }, snippet: "Intro text then [[target]] and more." },
+      { object: { id: "s2", title: "Stale" }, snippet: "Mentions [[Other]] only" },
+    ]);
+    expect(repository.listBacklinks).toHaveBeenCalledWith("user-id", "note-id");
+  });
+
+  it("404s backlinks of a missing or trashed note", async () => {
+    repository.getNote.mockResolvedValue(null);
+
+    await expect(service.getBacklinks("user-id", "note-id")).rejects.toBeInstanceOf(NotFoundError);
+    expect(repository.listBacklinks).not.toHaveBeenCalled();
   });
 });

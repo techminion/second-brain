@@ -8,6 +8,8 @@ export interface CreateNoteInput {
 
 export interface CreateNoteRecordInput {
   body: string;
+  /** `[[titles]]` parsed from `body`; resolved and linked in the same transaction. */
+  linkTitles?: string[];
   dailyNoteDate: string | null;
   folderId: string | null;
   title: string;
@@ -78,6 +80,19 @@ export interface UpdateNoteInput {
 
 export interface UpdateNoteRecordInput {
   body?: string;
+  /** Required alongside `body`: the parsed `[[titles]]` to reconcile edges against. */
+  linkTitles?: string[];
   folderId?: string | null;
   title?: string;
+}
+
+/** A note that links to another, with the text around the link (05_API §4). */
+export interface Backlink {
+  object: KnowledgeObjectSummary;
+  snippet: string;
+}
+
+export interface BacklinkRecord {
+  body: string;
+  summary: KnowledgeObjectSummary;
 }

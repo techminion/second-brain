@@ -94,6 +94,7 @@ describe("NoteRepository", () => {
       p_body: "Repository body",
       p_daily_note_date: null,
       p_folder_id: "folder-id",
+      p_link_titles: [],
       p_owner_id: "user-id",
       p_title: "Repository note",
     });
@@ -170,6 +171,7 @@ describe("NoteRepository", () => {
       p_body: "Updated body",
       p_folder_id: null,
       p_knowledge_object_id: "note-id",
+      p_link_titles: [],
       p_owner_id: "user-id",
       p_title: null,
       p_update_body: true,

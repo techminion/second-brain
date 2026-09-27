@@ -4,3 +4,4 @@
 export const notesRootKey = ["notes"] as const;
 export const foldersRootKey = ["folders"] as const;
 export const tagsRootKey = ["tags"] as const;
+export const graphRootKey = ["graph"] as const;

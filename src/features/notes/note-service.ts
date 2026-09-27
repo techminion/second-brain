@@ -1,5 +1,6 @@
 import { NoteRepository } from "@/features/notes/note-repository";
 import type {
+  Backlink,
   CreateNoteInput,
   ListNotesKeyset,
   ListNotesOptions,
@@ -21,6 +22,7 @@ import { createServerActionSupabaseClient } from "@/shared/lib/supabase-server-a
 import type { Paginated, PaginationOptions } from "@/shared/types";
 
 import { isIsoDate } from "./daily-note-date";
+import { extractWikiLinkTitles, wikiLinkSnippet } from "./wiki-links";
 
 type NoteRepositoryContract = Pick<
   NoteRepository,
@@ -28,6 +30,7 @@ type NoteRepositoryContract = Pick<
   | "detachTag"
   | "findOrCreateTag"
   | "getTagsForObjects"
+  | "listBacklinks"
   | "createDailyNote"
   | "createNote"
   | "getDailyNote"
@@ -143,10 +146,12 @@ export class NoteService {
   async create(userId: string, input: CreateNoteInput): Promise<Note> {
     validateCreateInput(input);
 
+    const body = input.body ?? "";
     const record = await this.repository.createNote(userId, {
-      body: input.body ?? "",
+      body,
       dailyNoteDate: null,
       folderId: input.folderId ?? null,
+      linkTitles: extractWikiLinkTitles(body),
       title: input.title,
     });
 
@@ -166,9 +171,12 @@ export class NoteService {
   async update(userId: string, noteId: string, input: UpdateNoteInput): Promise<Note> {
     validateUpdateInput(input);
 
+    // Links are re-derived from the body in the same transaction as the save
+    // (FR-LINK-6); a title change also rewrites `[[old]]` in linking notes.
     const record = await this.repository.updateNote(userId, noteId, {
       body: input.body,
       folderId: input.folderId,
+      linkTitles: input.body === undefined ? undefined : extractWikiLinkTitles(input.body),
       title: input.title,
     });
 
@@ -293,6 +301,22 @@ export class NoteService {
     }
 
     return this.get(userId, noteId);
+  }
+
+  /**
+   * Notes linking to this one (FR-LINK-5) with the text around each link.
+   * Trashed sources are excluded; the snippet falls back to the body's start
+   * when the link text no longer matches the current title.
+   */
+  async getBacklinks(userId: string, noteId: string): Promise<Backlink[]> {
+    const target = await this.get(userId, noteId);
+    const records = await this.repository.listBacklinks(userId, target.id);
+
+    return records.map(({ body, summary }) => ({
+      object: summary,
+      snippet:
+        wikiLinkSnippet(body, target.title) || body.replace(/\s+/g, " ").trim().slice(0, 120),
+    }));
   }
 
   private async withTags(userId: string, record: NoteRecord): Promise<Note> {

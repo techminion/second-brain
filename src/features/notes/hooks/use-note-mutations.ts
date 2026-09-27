@@ -17,7 +17,7 @@ import {
   updateNoteRequest,
 } from "@/features/notes/note-api";
 import type { CreateNoteInput, Note, TrashedNote, UpdateNoteInput } from "@/features/notes/types";
-import { tagsRootKey } from "@/shared/lib/query-keys";
+import { graphRootKey, tagsRootKey } from "@/shared/lib/query-keys";
 import type { Paginated } from "@/shared/types";
 
 import { noteKeys } from "./note-keys";
@@ -134,9 +134,16 @@ export function useUpdateNote() {
     onSuccess: (note) => {
       queryClient.setQueryData(noteKeys.detail(note.id), note);
     },
-    onSettled: (_data, _error, { id }) => {
+    onSettled: (_data, _error, { id, input }) => {
       invalidateLists(queryClient);
       void queryClient.invalidateQueries({ queryKey: noteKeys.detail(id) });
+      // A save re-derives links (FR-LINK-6): backlinks and the graph change.
+      void queryClient.invalidateQueries({ queryKey: noteKeys.allBacklinks() });
+      void queryClient.invalidateQueries({ queryKey: graphRootKey });
+      if (input.title !== undefined) {
+        // Rename propagation rewrote `[[old]]` in linking notes' bodies.
+        void queryClient.invalidateQueries({ queryKey: noteKeys.details() });
+      }
     },
   });
 }

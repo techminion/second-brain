@@ -9,15 +9,45 @@ import {
 import { createServerActionSupabaseClient } from "@/shared/lib/supabase-server-action-client";
 import type { KnowledgeObjectSummary, Paginated, PaginationOptions, Tag } from "@/shared/types";
 
-type SearchRepositoryContract = Pick<SearchRepository, "getTag" | "listObjectsByTag" | "listTags">;
+type SearchRepositoryContract = Pick<
+  SearchRepository,
+  "getTag" | "listObjectsByTag" | "listTags" | "suggestNoteTitles"
+>;
+
+const defaultSuggestionLimit = 10;
+const maxSuggestionQueryLength = 200;
 
 /**
- * SearchService (05_API §6). This slice implements tag browsing
- * (TAG-02, FR-TAG-3); full-text/semantic search and title suggestions arrive
- * with the FTS/SEM/SRCH tasks.
+ * SearchService (05_API §6). Implemented so far: tag browsing (TAG-02,
+ * FR-TAG-3) and title suggestions (SRCH-06); full-text/semantic search arrive
+ * with the FTS/SEM tasks.
  */
 export class SearchService {
   constructor(private readonly repository: SearchRepositoryContract) {}
+
+  /**
+   * Title suggestions for `[[` autocomplete and quick-open (FR-LINK-3,
+   * 08_SEARCH §6): trigram match on active note titles only — prefix, then
+   * substring, then fuzzy. Declares no errors: a blank query returns nothing.
+   */
+  async suggestNoteTitles(
+    userId: string,
+    partialTitle: string,
+    limit: number = defaultSuggestionLimit,
+  ): Promise<KnowledgeObjectSummary[]> {
+    const query = typeof partialTitle === "string" ? partialTitle.trim() : "";
+
+    if (query.length === 0) {
+      return [];
+    }
+
+    const bounded = Number.isFinite(limit) ? Math.min(Math.max(Math.floor(limit), 1), 50) : 10;
+    return this.repository.suggestNoteTitles(
+      userId,
+      query.slice(0, maxSuggestionQueryLength),
+      bounded,
+    );
+  }
 
   /** Every tag the caller owns, by name. */
   async listTags(userId: string): Promise<Tag[]> {

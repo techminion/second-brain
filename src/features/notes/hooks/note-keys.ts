@@ -20,4 +20,6 @@ export const noteKeys = {
   details: () => [...noteKeys.all, "detail"] as const,
   detail: (id: string) => [...noteKeys.details(), id] as const,
   trash: () => [...noteKeys.all, "trash"] as const,
+  backlinks: (id: string) => [...noteKeys.all, "backlinks", id] as const,
+  allBacklinks: () => [...noteKeys.all, "backlinks"] as const,
 };
