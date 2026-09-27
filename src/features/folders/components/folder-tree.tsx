@@ -34,6 +34,27 @@ import { FolderNameInput } from "./folder-name-input";
 type Editing = { mode: "create"; parentId: string | null } | { mode: "rename"; id: string } | null;
 
 const rootDropId = "__root__";
+const expandedStorageKey = "second-brain:folder-tree-expanded";
+
+// Expanded branches survive reloads per browser — a viewer convenience only,
+// so storage failures (private mode, blocked) silently fall back to collapsed.
+function readExpanded(): Set<string> {
+  try {
+    const raw = window.localStorage.getItem(expandedStorageKey);
+    const parsed: unknown = raw ? JSON.parse(raw) : [];
+    return new Set(Array.isArray(parsed) ? parsed.filter((id) => typeof id === "string") : []);
+  } catch {
+    return new Set();
+  }
+}
+
+function writeExpanded(expanded: ReadonlySet<string>): void {
+  try {
+    window.localStorage.setItem(expandedStorageKey, JSON.stringify([...expanded]));
+  } catch {
+    // Ignore — persistence is best-effort.
+  }
+}
 
 function hasAppDrag(event: DragEvent): boolean {
   const types = Array.from(event.dataTransfer.types);
@@ -56,6 +77,20 @@ export function FolderTree() {
   const moveFolder = useMoveFolder();
 
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
+  const [restored, setRestored] = useState(false);
+
+  // Restore after mount (not in the initializer) so SSR and first client
+  // render agree; persist every change after that.
+  useEffect(() => {
+    setExpanded((current) => new Set([...readExpanded(), ...current]));
+    setRestored(true);
+  }, []);
+
+  useEffect(() => {
+    if (restored) {
+      writeExpanded(expanded);
+    }
+  }, [expanded, restored]);
   const [focusedId, setFocusedId] = useState<string | null>(null);
   const [editing, setEditing] = useState<Editing>(null);
   const [deleting, setDeleting] = useState<FolderTreeNode | null>(null);
