@@ -4,12 +4,12 @@
 
 ## Current Milestone
 
-**M1 — Collect** (active — core collect features merged; editor polish, attachments and NOTE-13/14/16 remain) and **M2 — Connect** (active — links, backlinks and graph service merged; graph canvas GRAPH-04..17 next). M0 — Foundations ✅ complete — — every M0-phase task Done (SETUP/DB/AUTH/SHELL/CI/OBS), including the shell-polish tail (SHELL-05/06/08/09) and the E2E/a11y test infra (CI-06/08). → **M1 — Collect** (active)
+**M1 — Collect** (active — core collect features merged; editor polish, attachments and NOTE-13/14/16 remain) and **M2 — Connect** (active — links, backlinks and the graph view merged (#130, #132); only the LINK-11/12 + BACK-06 acceptance tests remain, in review). M0 — Foundations ✅ complete — — every M0-phase task Done (SETUP/DB/AUTH/SHELL/CI/OBS), including the shell-polish tail (SHELL-05/06/08/09) and the E2E/a11y test infra (CI-06/08). → **M1 — Collect** (active)
 
 ## Current Sprint
 
-**Sprint 5 — Note-Taking End-to-End** (M1; promoted 2026-07-24; scope in [.ai/TASK_QUEUE.md](../.ai/TASK_QUEUE.md)) — the note-taking UI vertical slice: NOTE-07 (Web API) → NOTE-08 (Query hooks) → NOTE-09 (sidebar list) → NOTE-10 (editor-backed note page) → NOTE-11 (delete dialog), plus EDIT-04/05 (live formatting + lists). P2 stretch: NOTE-12 (trash) → NOTE-15 (E2E). Goal: create → open → edit → save → delete a note entirely in the UI. **Merged: NOTE-07 (#117), NOTE-08 (#118), NOTE-09 (#120), NOTE-10 (#119), EDIT-04 (#126), NOTE-11 (#127) — the full create → open → edit → save → delete UI loop is in. Remaining: EDIT-05.**
-Done: Sprint 0 (governance), Sprint 1 (repo & tooling — 21 tasks), Sprint 2 (schema, auth core & app shell), Sprint 3 (M0 closeout + note/editor foundation), Sprint 4 (note service + editor round-trip + M0 tail — M0 100% complete)
+**Sprint 8 — M2 Connect close-out** (M2; promoted 2026-09-28; scope in [.ai/TASK_QUEUE.md](../.ai/TASK_QUEUE.md)) — LINK-11/12 (PRD §5 link flows as E2E) and BACK-06 (FR-LINK-6 freshness test), all In Review. Sprints 5–7 merged via #130 (`3805f3e`) and #132 (`112c115`).
+Done: Sprint 0 (governance), Sprint 1 (repo & tooling — 21 tasks), Sprint 2 (schema, auth core & app shell), Sprint 3 (M0 closeout + note/editor foundation), Sprint 4 (note service + editor round-trip + M0 tail — M0 100% complete), Sprints 5–6 (note-taking UI, M1 collect, M2 backend — #130), Sprint 7 (graph view — #132)
 
 ## Overall Progress
 
@@ -17,7 +17,7 @@ Done: Sprint 0 (governance), Sprint 1 (repo & tooling — 21 tasks), Sprint 2 (s
 |---|---|
 | Engineering documentation (12 docs) | ✅ Complete, audited twice for consistency |
 | Governance layer (this file set) | ✅ Complete |
-| Implementation | 107 Done / 309 tasks ([12_TASKS.md](12_TASKS.md)) — 56 merged via PR #130 (`3805f3e`) on 2026-09-28, plus CI-09 |
+| Implementation | 121 Done / 309 tasks ([12_TASKS.md](12_TASKS.md)) — 56 merged via PR #130 (`3805f3e`), CI-09, and GRAPH-04..17 via PR #132 (`112c115`) on 2026-09-28; LINK-11/12 + BACK-06 in review |
 
 ## Completed
 

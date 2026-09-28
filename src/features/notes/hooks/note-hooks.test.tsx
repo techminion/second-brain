@@ -3,10 +3,12 @@ import { act, renderHook, waitFor } from "@testing-library/react";
 import type { ReactNode } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import type { Note, TrashedNote } from "@/features/notes/types";
+import type { Backlink, Note, TrashedNote } from "@/features/notes/types";
+import { graphRootKey } from "@/shared/lib/query-keys";
 import type { Paginated } from "@/shared/types";
 
 import { noteKeys } from "./note-keys";
+import { useBacklinks } from "./use-backlinks";
 import { useCreateNote, useDeleteNote, useRestoreNote, useUpdateNote } from "./use-note-mutations";
 import { useNoteQuery } from "./use-note-query";
 import { useNotesList } from "./use-notes-list";
@@ -15,6 +17,7 @@ import { useTrashList } from "./use-trash-list";
 const api = {
   createNoteRequest: vi.fn(),
   deleteNoteRequest: vi.fn(),
+  fetchBacklinks: vi.fn(),
   fetchNote: vi.fn(),
   fetchNotesList: vi.fn(),
   fetchTrashList: vi.fn(),
@@ -25,6 +28,7 @@ const api = {
 vi.mock("@/features/notes/note-api", () => ({
   createNoteRequest: (...args: unknown[]) => api.createNoteRequest(...args),
   deleteNoteRequest: (...args: unknown[]) => api.deleteNoteRequest(...args),
+  fetchBacklinks: (...args: unknown[]) => api.fetchBacklinks(...args),
   fetchNote: (...args: unknown[]) => api.fetchNote(...args),
   fetchNotesList: (...args: unknown[]) => api.fetchNotesList(...args),
   fetchTrashList: (...args: unknown[]) => api.fetchTrashList(...args),
@@ -151,6 +155,61 @@ describe("useUpdateNote", () => {
 
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
     expect(client.getQueryData<Note>(noteKeys.detail("n1"))?.body).toBe("server");
+  });
+});
+
+// BACK-06 (FR-LINK-6): a backlink appears on the target note without a manual
+// refresh once the linking note's save settles — the mounted backlinks query
+// refetches because every save invalidates all backlink caches.
+describe("backlink freshness (BACK-06)", () => {
+  const backlinkFrom = (note: Note): Backlink => ({
+    object: {
+      createdAt: note.createdAt,
+      id: note.id,
+      tags: [],
+      title: note.title,
+      type: "note",
+      updatedAt: note.updatedAt,
+    },
+    snippet: "Links to [[Target]]",
+  });
+
+  it("refetches a mounted backlinks query when another note's save settles", async () => {
+    const { wrapper } = setup();
+    const source = makeNote({ id: "source", title: "Source" });
+    api.fetchBacklinks.mockResolvedValueOnce([]).mockResolvedValue([backlinkFrom(source)]);
+    api.updateNoteRequest.mockResolvedValue({ ...source, body: "Links to [[Target]]" });
+
+    const { result } = renderHook(
+      () => ({ backlinks: useBacklinks("target"), update: useUpdateNote() }),
+      { wrapper },
+    );
+    await waitFor(() => expect(result.current.backlinks.data).toEqual([]));
+
+    act(() =>
+      result.current.update.mutate({ id: "source", input: { body: "Links to [[Target]]" } }),
+    );
+
+    await waitFor(() => expect(result.current.backlinks.data).toHaveLength(1));
+    expect(result.current.backlinks.data?.[0].object.title).toBe("Source");
+    expect(api.fetchBacklinks).toHaveBeenCalledTimes(2);
+    expect(api.fetchBacklinks).toHaveBeenLastCalledWith("target");
+  });
+
+  it("marks unmounted backlink and graph caches stale so the next visit refetches", async () => {
+    const { client, wrapper } = setup();
+    client.setQueryData(noteKeys.backlinks("target"), []);
+    client.setQueryData([...graphRootKey, "global"], { edges: [], nodes: [] });
+    api.updateNoteRequest.mockResolvedValue(makeNote({ id: "source" }));
+
+    const { result } = renderHook(() => useUpdateNote(), { wrapper });
+    act(() => result.current.mutate({ id: "source", input: { body: "[[Target]]" } }));
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+
+    await waitFor(() =>
+      expect(client.getQueryState(noteKeys.backlinks("target"))?.isInvalidated).toBe(true),
+    );
+    expect(client.getQueryState([...graphRootKey, "global"])?.isInvalidated).toBe(true);
   });
 });
 
