@@ -30,9 +30,15 @@ test("opens today's daily note by shortcut and navigates to a past date", async 
     await expect(page.getByLabel("Note title")).toHaveValue(today);
     await expect(page.getByRole("textbox", { name: "Note body" })).toContainText("Tasks");
 
-    // Idempotent: opening today again lands on the same note.
-    await page.getByRole("link", { name: /Today/ }).click();
+    // Idempotent: opening today again lands on the same note. Navigate to
+    // /daily directly (the sidebar "Today" link's target) so the wait covers
+    // the whole /daily → /daily/<today> → /notes/<id> redirect chain; clicking
+    // the link and waiting for todayUrl returned before the chain finished,
+    // letting its last redirect overtake the date-field navigation below.
+    await expect(page.getByRole("link", { name: /Today/ })).toHaveAttribute("href", "/daily");
+    await page.goto("/daily");
     await page.waitForURL(todayUrl);
+    await expect(page.getByLabel("Note title")).toHaveValue(today);
 
     await page.getByLabel("Open daily note for date").fill("2026-01-15");
     await expect(page.getByLabel("Note title")).toHaveValue("2026-01-15");

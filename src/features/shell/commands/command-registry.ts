@@ -1,4 +1,4 @@
-type CommandAction = "toggle-right-panel" | "toggle-sidebar";
+type CommandAction = "quick-open" | "toggle-right-panel" | "toggle-sidebar";
 
 interface Command {
   id: string;
@@ -12,7 +12,7 @@ interface Command {
 // Static registry — SHELL-04 MVP. Feature tasks add commands as routes are built.
 const COMMANDS: readonly Command[] = [
   { id: "new-note", label: "New note", shortcut: "⌘N", disabled: true },
-  { id: "quick-open", label: "Quick-open note", shortcut: "⌘P", disabled: true },
+  { id: "quick-open", label: "Quick-open note", shortcut: "⌘P", action: "quick-open" },
   { id: "daily-note", label: "Today's daily note", shortcut: "⌘D", href: "/daily" },
   { id: "daily-note-yesterday", label: "Yesterday's daily note", href: "/daily?offset=-1" },
   {
