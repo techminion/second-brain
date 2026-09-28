@@ -12,14 +12,19 @@
 
 ## Sprint 10 — M3 Full-text search (in progress)
 
-Promoted 2026-09-28 under the user's "continue with the next tasks" once the M1 tail (NOTE-13/14) merged; FTS-01 was the first dependency-ready search task. Branch `claude/gallant-ride-gl1fkf`. First PR: the backend (FTS-01/02/03 + FTS-10); next: API route + hook, results UI, ⇧⌘F, FTS-07 scoping E2E, empty states.
+Promoted 2026-09-28 under the user's "continue with the next tasks" once the M1 tail (NOTE-13/14) merged; FTS-01 was the first dependency-ready search task. Branch `claude/gallant-ride-gl1fkf`. First PR (#141, `f8a5416`): the backend (FTS-01/02/03 + FTS-10). Second PR: route + hook, results UI, ⇧⌘F, FTS-07 scoping E2E, empty states. Remaining: FTS-08 latency instrumentation.
 
 | ID | Title | Priority | Cx | Depends on | Owner | Status | Milestone | Acceptance criteria |
 |---|---|---|---|---|---|---|---|---|
-| FTS-01 | Full-text query builder: `websearch_to_tsquery` + `ts_rank_cd` | P0 | M | DB-04 | Claude | In Review | M3 | **ADR-36**: `search_notes` RPC (migration `20260928210000`), deterministic order (score, recency, id); verified locally: phrases, `-exclude`, `or`, stop-word-only → empty, trash excluded, cross-user isolated; applied to dev (24/24) |
-| FTS-02 | `ts_headline` snippets with term highlighting — FR-SEARCH-2 | P0 | M | FTS-01 | Claude | In Review | M3 | Page-only `ts_headline` over the body (title when empty), matches wrapped in U+0002/U+0003 markers — no HTML crosses the API (ADR-36) |
-| FTS-03 | `SearchService.search` v1: full-text, paginated — FR-SEARCH-1 | P0 | M | FTS-01, FTS-02 | Claude | In Review | M3 | Empty query → `ValidationError`; limit clamp; opaque offset cursor (forged → first page); tags enriched; `matchType: "fulltext"` |
-| FTS-10 | Service tests: phrase queries, exclusions, pagination stability | P1 | M | FTS-03 | Claude | In Review | M3 | Service + repository unit tests (query pass-through, cursor round-trip, forged cursors, clamps); SQL-level phrase/exclusion behavior verified in the migration scenario |
+| FTS-01 | Full-text query builder: `websearch_to_tsquery` + `ts_rank_cd` | P0 | M | DB-04 | Claude | Done (#141) | M3 | **ADR-36**: `search_notes` RPC (migration `20260928210000`), deterministic order (score, recency, id); verified locally: phrases, `-exclude`, `or`, stop-word-only → empty, trash excluded, cross-user isolated; applied to dev (24/24) |
+| FTS-02 | `ts_headline` snippets with term highlighting — FR-SEARCH-2 | P0 | M | FTS-01 | Claude | Done (#141) | M3 | Page-only `ts_headline` over the body (title when empty), matches wrapped in U+0002/U+0003 markers — no HTML crosses the API (ADR-36) |
+| FTS-03 | `SearchService.search` v1: full-text, paginated — FR-SEARCH-1 | P0 | M | FTS-01, FTS-02 | Claude | Done (#141) | M3 | Empty query → `ValidationError`; limit clamp; opaque offset cursor (forged → first page); tags enriched; `matchType: "fulltext"` |
+| FTS-04 | Search API route + hook | P0 | S | FTS-03 | Claude | In Review | M3 | `GET /api/search?q=&cursor=&limit=` (empty q → 400); `useSearch` infinite query keyed under the notes root (saves refresh results), previous results kept while typing |
+| FTS-05 | Search results UI: highlighted snippets, keyboard navigation | P0 | M | FTS-04, SHELL-02 | Claude | In Review | M3 | `/search?q=` page (URL-synced, linkable); markers → `<mark>` via `parseSnippet` (never HTML); ↓/↑/Esc between field and results, Enter opens; "Load more" paging; axe-clean (a11y sweep) |
+| FTS-06 | `⇧⌘F` global search + command palette | P1 | M | FTS-05, SHELL-04 | Claude | In Review | M3 | ⇧⌘F from anywhere (⌘F stays find-in-note); palette "Global search" enabled |
+| FTS-07 | Soft-deleted exclusion + owner-scoping tests — FR-SEARCH-3 | P0 | S | FTS-03, DB-14 | Claude | In Review | M3 | `e2e/search.spec.ts`: a trashed note and a second user's note with the same term never appear, via UI and API |
+| FTS-09 | Search empty/no-results states | P2 | S | FTS-05, SHELL-09 | Claude | In Review | M3 | Idle hint teaching the syntax, loading skeleton, error and no-results states |
+| FTS-10 | Service tests: phrase queries, exclusions, pagination stability | P1 | M | FTS-03 | Claude | Done (#141) | M3 | Service + repository unit tests (query pass-through, cursor round-trip, forged cursors, clamps); SQL-level phrase/exclusion behavior verified in the migration scenario |
 
 ## Sprint 9 — M1 editor polish (complete)
 

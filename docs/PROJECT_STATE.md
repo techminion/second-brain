@@ -8,7 +8,7 @@
 
 ## Current Sprint
 
-**Sprint 10 — M3 Full-text search** (promoted 2026-09-28; scope in [.ai/TASK_QUEUE.md](../.ai/TASK_QUEUE.md)) — backend in review: FTS-01/02/03/10 (`search_notes` RPC, marker snippets, `SearchService.search`, ADR-36). Next: route + hook (FTS-04), results UI (FTS-05), ⇧⌘F (FTS-06), scoping E2E (FTS-07), empty states (FTS-09). Sprint 9 (M1 editor polish + the M1 tail NOTE-13/14, SRCH-07) is complete.
+**Sprint 10 — M3 Full-text search** (promoted 2026-09-28; scope in [.ai/TASK_QUEUE.md](../.ai/TASK_QUEUE.md)) — backend merged (#141: `search_notes` RPC, marker snippets, `SearchService.search`, ADR-36). In review: route + hook, `/search` results page, ⇧⌘F, scoping E2E, empty states (FTS-04/05/06/07/09). Remaining: FTS-08 latency instrumentation. Sprint 9 (M1 editor polish + the M1 tail NOTE-13/14, SRCH-07) is complete.
 Done: Sprint 0 (governance), Sprint 1 (repo & tooling — 21 tasks), Sprint 2 (schema, auth core & app shell), Sprint 3 (M0 closeout + note/editor foundation), Sprint 4 (note service + editor round-trip + M0 tail — M0 100% complete), Sprints 5–6 (note-taking UI, M1 collect, M2 backend — #130), Sprint 7 (graph view — #132), Sprint 8 (M2 close-out — #133), Sprint 9 (editor polish + M1 tail — #134–#140)
 
 ## Overall Progress
@@ -17,7 +17,7 @@ Done: Sprint 0 (governance), Sprint 1 (repo & tooling — 21 tasks), Sprint 2 (s
 |---|---|
 | Engineering documentation (12 docs) | ✅ Complete, audited twice for consistency |
 | Governance layer (this file set) | ✅ Complete |
-| Implementation | 139 Done / 309 tasks ([12_TASKS.md](12_TASKS.md)) — 56 via PR #130 (`3805f3e`), CI-09, GRAPH-04..17 via #132 (`112c115`), LINK-11/12 + BACK-06 via #133 (`c6ee782`), EDIT-06/07/10/12/13/14 via #134 (`42f9820`), EDIT-08/09 via #135 (`747bc13`), EDIT-11/18 via #136 (`b83f2a5`), EDIT-15/17 via #137 (`ca4406a`), SRCH-07 via #138 (`2853245`), NOTE-13 via #139 (`ded7081`), NOTE-14 via #140 (`f8a69d4`); FTS-01/02/03/10 in review |
+| Implementation | 143 Done / 309 tasks ([12_TASKS.md](12_TASKS.md)) — 56 via PR #130 (`3805f3e`), CI-09, GRAPH-04..17 via #132 (`112c115`), LINK-11/12 + BACK-06 via #133 (`c6ee782`), EDIT-06/07/10/12/13/14 via #134 (`42f9820`), EDIT-08/09 via #135 (`747bc13`), EDIT-11/18 via #136 (`b83f2a5`), EDIT-15/17 via #137 (`ca4406a`), SRCH-07 via #138 (`2853245`), NOTE-13 via #139 (`ded7081`), NOTE-14 via #140 (`f8a69d4`), FTS-01/02/03/10 via #141 (`f8a5416`); FTS-04/05/06/07/09 in review |
 
 ## Completed
 

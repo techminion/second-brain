@@ -26,6 +26,9 @@ export function ShellShortcuts() {
     router.push("/graph"),
   );
   useShortcut({ inputPolicy: "allow", key: "p" }, () => quickOpen.setOpen(!quickOpen.isOpen));
+  // ⇧⌘F global search (FTS-06) from anywhere, the editor included — ⌘F
+  // without shift stays find-in-note there.
+  useShortcut({ inputPolicy: "allow", key: "f", shift: true }, () => router.push("/search"));
 
   return null;
 }
