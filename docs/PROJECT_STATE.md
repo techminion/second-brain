@@ -4,7 +4,7 @@
 
 ## Current Milestone
 
-**M1 — Collect** (active; nearly complete in review) and **M2 — Connect** (backend + editor links + backlinks in review; graph canvas pending). M0 — Foundations ✅ complete — — every M0-phase task Done (SETUP/DB/AUTH/SHELL/CI/OBS), including the shell-polish tail (SHELL-05/06/08/09) and the E2E/a11y test infra (CI-06/08). → **M1 — Collect** (active)
+**M1 — Collect** (active — core collect features merged; editor polish, attachments and NOTE-13/14/16 remain) and **M2 — Connect** (active — links, backlinks and graph service merged; graph canvas GRAPH-04..17 next). M0 — Foundations ✅ complete — — every M0-phase task Done (SETUP/DB/AUTH/SHELL/CI/OBS), including the shell-polish tail (SHELL-05/06/08/09) and the E2E/a11y test infra (CI-06/08). → **M1 — Collect** (active)
 
 ## Current Sprint
 
@@ -17,7 +17,7 @@ Done: Sprint 0 (governance), Sprint 1 (repo & tooling — 21 tasks), Sprint 2 (s
 |---|---|
 | Engineering documentation (12 docs) | ✅ Complete, audited twice for consistency |
 | Governance layer (this file set) | ✅ Complete |
-| Implementation | 50 Done + ~80 In Review (branch `claude/gallant-ride-gl1fkf`) / 309 tasks ([12_TASKS.md](12_TASKS.md)) |
+| Implementation | 107 Done / 309 tasks ([12_TASKS.md](12_TASKS.md)) — 56 merged via PR #130 (`3805f3e`) on 2026-09-28, plus CI-09 |
 
 ## Completed
 
@@ -78,13 +78,11 @@ Done: Sprint 0 (governance), Sprint 1 (repo & tooling — 21 tasks), Sprint 2 (s
 
 ## Current Sprint (updated)
 
-**Sprint 5** implementation is complete (EDIT-05, NOTE-12, NOTE-15 in review). **Sprint 6 — M1 Collect continuation + M2 Connect** is in review on `claude/gallant-ride-gl1fkf`: EDIT-16 (XSS corpus + image-src sanitization), DAILY-01..08, FOLD-01..14, TAG-01..07/09/10, LINK-01..10 (minus LINK-11/12 E2E), SRCH-05/06, BACK-01..05, GRAPH-01..03/18. See the Sprint 6 table in [.ai/TASK_QUEUE.md](../.ai/TASK_QUEUE.md).
+**Sprint 6 — M1 Collect continuation + M2 Connect** merged 2026-09-28 via PR #130 (`3805f3e`): Sprint 5 close-out (EDIT-05, NOTE-12, NOTE-15), EDIT-16, DAILY-01..08, FOLD-01..14, TAG-01..07/09/10, LINK-01..10, SRCH-05/06, BACK-01..05, GRAPH-01..03/18, plus high/critical dependency-advisory fixes. PR #129 (Codex EDIT-05) closed as superseded — its improvements are in #130.
 
 ## In Progress
 
-- **M2 graph canvas (GRAPH-04..17)**, LINK-11/12 and BACK-06 E2E — not started; backend/API is ready.
-- **Dev Cloud migrations owed:** `20260927220000_add_wiki_link_reconciliation` and `20260927220100_add_note_title_trigram_suggest` must be applied to the dev project (`zkzyfwclvquiargnwgtw`) per ADR-10 before the CI Cloud-drift check can pass; merging to `main` applies them to production via CI-09 (their first legitimate auto-apply — also CI-09's outstanding proof).
-- **CI-09 (Codex):** awaiting the next legitimate migration's auto-apply proof (the two above).
+- **Next:** GRAPH-04 (React Flow canvas) — needs an ADR for the `d3-force` layout dependency first; then GRAPH-05..17, LINK-11/12, BACK-06.
 
 ## Blocked
 
@@ -100,6 +98,10 @@ Done: Sprint 0 (governance), Sprint 1 (repo & tooling — 21 tasks), Sprint 2 (s
 
 ## Known Technical Debt
 
+- Supabase free plan allows 2 active projects: dev (`zkzyfwclvquiargnwgtw`) auto-pauses when idle, which takes CI's E2E/a11y/migration-drift checks down with it (happened 2026-09-27). `excalidraw-store` was paused to free a slot. Options (self-host / Pro) discussed with the user; no decision recorded yet.
+- Two moderate Next.js advisories remain; only fixable on Next 16 (documented stack is Next 15).
+- Auth "leaked password protection" is off on dev and production (Supabase security advisor WARN).
+
 - Folder deletes are ordered, not transactional (ADR-30); rename propagation's regex also rewrites `[[old]]` inside code blocks (ADR-32).
 - Orphaned tags persist (no tag management yet, ADR-31).
 
@@ -107,7 +109,7 @@ Done: Sprint 0 (governance), Sprint 1 (repo & tooling — 21 tasks), Sprint 2 (s
 - The `feature-boundaries` lint rule only catches `@/features/...` alias imports; relative-path imports bypass it. Follow-up hardening candidate.
 - `tsconfig.json` typechecks `src/**` only — `e2e/`, `tools/`, and config files are not typechecked.
 - Interim pointer-README in place; OBS-10 replaces it with the full public README at launch.
-- Production migration automation is live and prevents persistent drift: Supabase applies `main` migrations and Vercel blocks Production alias assignment on the resulting GitHub check. CI-09 remains In Progress only because ADR-27 requires the next legitimate pending migration to prove end-to-end automatic application; no synthetic migration will be created for that proof.
+- Production migration automation (CI-09, ADR-27) is **proven end to end**: PR #130's two migrations were auto-applied to production on merge (22/22).
 
 ## Architecture Decisions Pending
 
@@ -120,8 +122,8 @@ Done: Sprint 0 (governance), Sprint 1 (repo & tooling — 21 tasks), Sprint 2 (s
 
 ## Current Branch
 
-`claude/gallant-ride-gl1fkf`
+`claude/gallant-ride-gl1fkf` (restarted from `main` after #130 merged)
 
 ## Last Updated
 
-2026-09-27 — Claude session: Sprint 5 finished; M1 Collect (daily notes, folders, tags, trash, XSS hardening) and the M2 Connect backend plus editor wiki links/autocomplete/backlinks implemented, with ADR-28..32. Verified with 636 unit tests and the full Playwright suite (14/14) against a local Supabase Postgres 17 + PostgREST + GoTrue stack.
+2026-09-28 — PR #130 merged (`3805f3e`): 56 tasks Done across Sprint 5, M1 Collect and M2 Connect; CI-09 Done (first real production auto-apply); PR #129 closed as superseded. Next: GRAPH-04.
