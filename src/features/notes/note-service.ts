@@ -126,6 +126,16 @@ function validateUpdateInput(input: UpdateNoteInput): void {
   }
 }
 
+/**
+ * A malformed id can never name a note. Treat it exactly like a missing one
+ * (ADR-26) instead of letting Postgres reject the uuid cast as a 500.
+ */
+function requireNoteId(noteId: unknown): asserts noteId is string {
+  if (typeof noteId !== "string" || !uuidPattern.test(noteId)) {
+    throw new NotFoundError("Note not found");
+  }
+}
+
 function mapNote(record: NoteRecord): Note {
   return {
     body: record.body,
@@ -159,6 +169,7 @@ export class NoteService {
   }
 
   async get(userId: string, noteId: string): Promise<Note> {
+    requireNoteId(noteId);
     const record = await this.repository.getNote(userId, noteId);
 
     if (!record || record.deletedAt !== null) {
@@ -170,6 +181,7 @@ export class NoteService {
 
   async update(userId: string, noteId: string, input: UpdateNoteInput): Promise<Note> {
     validateUpdateInput(input);
+    requireNoteId(noteId);
 
     // Links are re-derived from the body in the same transaction as the save
     // (FR-LINK-6); a title change also rewrites `[[old]]` in linking notes.
@@ -190,6 +202,7 @@ export class NoteService {
   }
 
   async delete(userId: string, noteId: string): Promise<void> {
+    requireNoteId(noteId);
     const deleted = await this.repository.softDeleteNote(userId, noteId, new Date().toISOString());
 
     if (!deleted) {
@@ -347,6 +360,7 @@ export class NoteService {
   }
 
   async restore(userId: string, noteId: string): Promise<Note> {
+    requireNoteId(noteId);
     const now = new Date();
     const record = await this.repository.restoreNote(
       userId,

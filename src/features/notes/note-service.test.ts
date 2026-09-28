@@ -51,7 +51,7 @@ const noteRecord: NoteRecord = {
   dailyNoteDate: null,
   deletedAt: null,
   folderId: "folder-id",
-  id: "note-id",
+  id: "99999999-9999-4999-8999-999999999999",
   ownerId: "user-id",
   title: "Service note",
   updatedAt: "2026-07-23T05:00:00.000Z",
@@ -98,7 +98,7 @@ describe("NoteService.create", () => {
       createdAt: noteRecord.createdAt,
       dailyNoteDate: null,
       folderId: "folder-id",
-      id: "note-id",
+      id: "99999999-9999-4999-8999-999999999999",
       tags: [],
       title: "Service note",
       type: "note",
@@ -169,19 +169,22 @@ describe("NoteService.get", () => {
   it("returns a visible note through the RLS-scoped repository", async () => {
     repository.getNote.mockResolvedValue(noteRecord);
 
-    await expect(service.get("user-id", "note-id")).resolves.toEqual({
+    await expect(service.get("user-id", "99999999-9999-4999-8999-999999999999")).resolves.toEqual({
       body: "Service body",
       createdAt: noteRecord.createdAt,
       dailyNoteDate: null,
       folderId: "folder-id",
-      id: "note-id",
+      id: "99999999-9999-4999-8999-999999999999",
       tags: [],
       title: "Service note",
       type: "note",
       updatedAt: noteRecord.updatedAt,
     });
 
-    expect(repository.getNote).toHaveBeenCalledWith("user-id", "note-id");
+    expect(repository.getNote).toHaveBeenCalledWith(
+      "user-id",
+      "99999999-9999-4999-8999-999999999999",
+    );
   });
 
   it("returns NotFoundError when RLS or the requested id yields no note", async () => {
@@ -202,7 +205,9 @@ describe("NoteService.get", () => {
       deletedAt: "2026-07-23T06:00:00.000Z",
     });
 
-    await expect(service.get("user-id", "note-id")).rejects.toBeInstanceOf(NotFoundError);
+    await expect(
+      service.get("user-id", "99999999-9999-4999-8999-999999999999"),
+    ).rejects.toBeInstanceOf(NotFoundError);
   });
 });
 
@@ -224,51 +229,70 @@ describe("NoteService.update", () => {
     });
 
     await expect(
-      service.update("user-id", "note-id", { body: "Updated body", title: "Updated title" }),
+      service.update("user-id", "99999999-9999-4999-8999-999999999999", {
+        body: "Updated body",
+        title: "Updated title",
+      }),
     ).resolves.toEqual({
       body: "Updated body",
       createdAt: noteRecord.createdAt,
       dailyNoteDate: null,
       folderId: "folder-id",
-      id: "note-id",
+      id: "99999999-9999-4999-8999-999999999999",
       tags: [],
       title: "Updated title",
       type: "note",
       updatedAt: noteRecord.updatedAt,
     });
 
-    expect(repository.updateNote).toHaveBeenCalledWith("user-id", "note-id", {
-      body: "Updated body",
-      folderId: undefined,
-      linkTitles: [],
-      title: "Updated title",
-    });
+    expect(repository.updateNote).toHaveBeenCalledWith(
+      "user-id",
+      "99999999-9999-4999-8999-999999999999",
+      {
+        body: "Updated body",
+        folderId: undefined,
+        linkTitles: [],
+        title: "Updated title",
+      },
+    );
   });
 
   it("passes an explicit null folder through to move the note to root", async () => {
     repository.updateNote.mockResolvedValue({ ...noteRecord, folderId: null });
 
-    await service.update("user-id", "note-id", { folderId: null });
+    await service.update("user-id", "99999999-9999-4999-8999-999999999999", { folderId: null });
 
-    expect(repository.updateNote).toHaveBeenCalledWith("user-id", "note-id", {
-      body: undefined,
-      folderId: null,
-      title: undefined,
-    });
+    expect(repository.updateNote).toHaveBeenCalledWith(
+      "user-id",
+      "99999999-9999-4999-8999-999999999999",
+      {
+        body: undefined,
+        folderId: null,
+        title: undefined,
+      },
+    );
   });
 
   it("leaves omitted fields undefined so the repository does not touch them", async () => {
-    await service.update("user-id", "note-id", { title: "Only the title" });
-
-    expect(repository.updateNote).toHaveBeenCalledWith("user-id", "note-id", {
-      body: undefined,
-      folderId: undefined,
+    await service.update("user-id", "99999999-9999-4999-8999-999999999999", {
       title: "Only the title",
     });
+
+    expect(repository.updateNote).toHaveBeenCalledWith(
+      "user-id",
+      "99999999-9999-4999-8999-999999999999",
+      {
+        body: undefined,
+        folderId: undefined,
+        title: "Only the title",
+      },
+    );
   });
 
   it("rejects an empty title before data access", async () => {
-    await expect(service.update("user-id", "note-id", { title: "" })).rejects.toEqual(
+    await expect(
+      service.update("user-id", "99999999-9999-4999-8999-999999999999", { title: "" }),
+    ).rejects.toEqual(
       expect.objectContaining({
         code: "VALIDATION_ERROR",
         message: "Title must not be empty",
@@ -285,7 +309,11 @@ describe("NoteService.update", () => {
     ["folder id", { folderId: 7 }],
   ])("rejects a non-string %s before data access", async (_field, invalidInput) => {
     await expect(
-      service.update("user-id", "note-id", invalidInput as unknown as UpdateNoteInput),
+      service.update(
+        "user-id",
+        "99999999-9999-4999-8999-999999999999",
+        invalidInput as unknown as UpdateNoteInput,
+      ),
     ).rejects.toBeInstanceOf(ValidationError);
 
     expect(repository.updateNote).not.toHaveBeenCalled();
@@ -294,7 +322,9 @@ describe("NoteService.update", () => {
   it("returns NotFoundError when the target is nonexistent, foreign-owned, or soft-deleted", async () => {
     repository.updateNote.mockResolvedValue(null);
 
-    await expect(service.update("user-id", "note-id", { title: "New" })).rejects.toEqual(
+    await expect(
+      service.update("user-id", "99999999-9999-4999-8999-999999999999", { title: "New" }),
+    ).rejects.toEqual(
       expect.objectContaining({
         code: "NOT_FOUND",
         message: "Note not found",
@@ -309,9 +339,9 @@ describe("NoteService.update", () => {
       deletedAt: "2026-07-23T06:00:00.000Z",
     });
 
-    await expect(service.update("user-id", "note-id", { title: "New" })).rejects.toBeInstanceOf(
-      NotFoundError,
-    );
+    await expect(
+      service.update("user-id", "99999999-9999-4999-8999-999999999999", { title: "New" }),
+    ).rejects.toBeInstanceOf(NotFoundError);
   });
 });
 
@@ -333,11 +363,13 @@ describe("NoteService.delete", () => {
   it("soft-deletes through the repository with the current timestamp", async () => {
     repository.softDeleteNote.mockResolvedValue(true);
 
-    await expect(service.delete("user-id", "note-id")).resolves.toBeUndefined();
+    await expect(
+      service.delete("user-id", "99999999-9999-4999-8999-999999999999"),
+    ).resolves.toBeUndefined();
 
     expect(repository.softDeleteNote).toHaveBeenCalledWith(
       "user-id",
-      "note-id",
+      "99999999-9999-4999-8999-999999999999",
       "2026-07-24T12:00:00.000Z",
     );
   });
@@ -345,7 +377,7 @@ describe("NoteService.delete", () => {
   it("returns NotFoundError when the target is nonexistent, foreign-owned, or already deleted", async () => {
     repository.softDeleteNote.mockResolvedValue(false);
 
-    await expect(service.delete("user-id", "note-id")).rejects.toEqual(
+    await expect(service.delete("user-id", "99999999-9999-4999-8999-999999999999")).rejects.toEqual(
       expect.objectContaining({
         code: "NOT_FOUND",
         message: "Note not found",
@@ -373,12 +405,14 @@ describe("NoteService.restore", () => {
   it("restores a trashed note within the 30-day retention window", async () => {
     repository.restoreNote.mockResolvedValue(noteRecord);
 
-    await expect(service.restore("user-id", "note-id")).resolves.toEqual({
+    await expect(
+      service.restore("user-id", "99999999-9999-4999-8999-999999999999"),
+    ).resolves.toEqual({
       body: "Service body",
       createdAt: noteRecord.createdAt,
       dailyNoteDate: null,
       folderId: "folder-id",
-      id: "note-id",
+      id: "99999999-9999-4999-8999-999999999999",
       tags: [],
       title: "Service note",
       type: "note",
@@ -387,7 +421,7 @@ describe("NoteService.restore", () => {
 
     expect(repository.restoreNote).toHaveBeenCalledWith(
       "user-id",
-      "note-id",
+      "99999999-9999-4999-8999-999999999999",
       "2026-07-24T12:00:00.000Z",
       "2026-06-24T12:00:00.000Z",
     );
@@ -396,7 +430,9 @@ describe("NoteService.restore", () => {
   it("returns NotFoundError for active notes and trash outside the retention window", async () => {
     repository.restoreNote.mockResolvedValue(null);
 
-    await expect(service.restore("user-id", "note-id")).rejects.toEqual(
+    await expect(
+      service.restore("user-id", "99999999-9999-4999-8999-999999999999"),
+    ).rejects.toEqual(
       expect.objectContaining({
         code: "NOT_FOUND",
         message: "Note not found",
@@ -642,7 +678,10 @@ describe("NoteService.getOrCreateDailyNote", () => {
     repository.getDailyNote.mockResolvedValue(daily);
 
     await expect(service.getOrCreateDailyNote("user-id", "2026-09-27")).resolves.toEqual(
-      expect.objectContaining({ dailyNoteDate: "2026-09-27", id: "note-id" }),
+      expect.objectContaining({
+        dailyNoteDate: "2026-09-27",
+        id: "99999999-9999-4999-8999-999999999999",
+      }),
     );
     expect(repository.getDailyNote).toHaveBeenCalledWith("user-id", "2026-09-27");
     expect(repository.createDailyNote).not.toHaveBeenCalled();
@@ -668,7 +707,7 @@ describe("NoteService.getOrCreateDailyNote", () => {
     repository.createDailyNote.mockResolvedValue(null);
 
     await expect(service.getOrCreateDailyNote("user-id", "2026-09-27")).resolves.toEqual(
-      expect.objectContaining({ id: "note-id" }),
+      expect.objectContaining({ id: "99999999-9999-4999-8999-999999999999" }),
     );
     expect(repository.getDailyNote).toHaveBeenCalledTimes(2);
   });
@@ -678,11 +717,11 @@ describe("NoteService.getOrCreateDailyNote", () => {
     repository.restoreNote.mockResolvedValue(daily);
 
     await expect(service.getOrCreateDailyNote("user-id", "2026-09-27")).resolves.toEqual(
-      expect.objectContaining({ id: "note-id" }),
+      expect.objectContaining({ id: "99999999-9999-4999-8999-999999999999" }),
     );
     expect(repository.restoreNote).toHaveBeenCalledWith(
       "user-id",
-      "note-id",
+      "99999999-9999-4999-8999-999999999999",
       expect.any(String),
       "1970-01-01T00:00:00.000Z",
     );
@@ -781,17 +820,19 @@ describe("NoteService wiki links (LINK-02/04, BACK-01)", () => {
   it("re-derives link titles only when the body is updated", async () => {
     repository.updateNote.mockResolvedValue(noteRecord);
 
-    await service.update("user-id", "note-id", { body: "[[B]] and [[C]]" });
+    await service.update("user-id", "99999999-9999-4999-8999-999999999999", {
+      body: "[[B]] and [[C]]",
+    });
     expect(repository.updateNote).toHaveBeenLastCalledWith(
       "user-id",
-      "note-id",
+      "99999999-9999-4999-8999-999999999999",
       expect.objectContaining({ linkTitles: ["B", "C"] }),
     );
 
-    await service.update("user-id", "note-id", { title: "Renamed" });
+    await service.update("user-id", "99999999-9999-4999-8999-999999999999", { title: "Renamed" });
     expect(repository.updateNote).toHaveBeenLastCalledWith(
       "user-id",
-      "note-id",
+      "99999999-9999-4999-8999-999999999999",
       expect.objectContaining({ linkTitles: undefined, title: "Renamed" }),
     );
   });
@@ -809,17 +850,56 @@ describe("NoteService wiki links (LINK-02/04, BACK-01)", () => {
       },
     ]);
 
-    await expect(service.getBacklinks("user-id", "note-id")).resolves.toEqual([
+    await expect(
+      service.getBacklinks("user-id", "99999999-9999-4999-8999-999999999999"),
+    ).resolves.toEqual([
       { object: { id: "s1", title: "Source" }, snippet: "Intro text then [[target]] and more." },
       { object: { id: "s2", title: "Stale" }, snippet: "Mentions [[Other]] only" },
     ]);
-    expect(repository.listBacklinks).toHaveBeenCalledWith("user-id", "note-id");
+    expect(repository.listBacklinks).toHaveBeenCalledWith(
+      "user-id",
+      "99999999-9999-4999-8999-999999999999",
+    );
   });
 
   it("404s backlinks of a missing or trashed note", async () => {
     repository.getNote.mockResolvedValue(null);
 
-    await expect(service.getBacklinks("user-id", "note-id")).rejects.toBeInstanceOf(NotFoundError);
+    await expect(
+      service.getBacklinks("user-id", "99999999-9999-4999-8999-999999999999"),
+    ).rejects.toBeInstanceOf(NotFoundError);
     expect(repository.listBacklinks).not.toHaveBeenCalled();
+  });
+});
+
+describe("NoteService malformed ids (ADR-26)", () => {
+  it.each(["graph", "", "not-a-uuid", "99999999-9999-4999-8999-99999999999"])(
+    "maps %j to NotFoundError without touching data",
+    async (badId) => {
+      const repository = createRepositoryMock();
+      const service = new NoteService(repository as never);
+
+      await expect(service.get("user-id", badId)).rejects.toBeInstanceOf(NotFoundError);
+      await expect(service.update("user-id", badId, { body: "x" })).rejects.toBeInstanceOf(
+        NotFoundError,
+      );
+      await expect(service.delete("user-id", badId)).rejects.toBeInstanceOf(NotFoundError);
+      await expect(service.restore("user-id", badId)).rejects.toBeInstanceOf(NotFoundError);
+      await expect(service.getBacklinks("user-id", badId)).rejects.toBeInstanceOf(NotFoundError);
+      await expect(service.addTag("user-id", badId, "tag")).rejects.toBeInstanceOf(NotFoundError);
+
+      expect(repository.getNote).not.toHaveBeenCalled();
+      expect(repository.updateNote).not.toHaveBeenCalled();
+      expect(repository.softDeleteNote).not.toHaveBeenCalled();
+      expect(repository.restoreNote).not.toHaveBeenCalled();
+    },
+  );
+
+  it("still reports invalid input before an invalid id on update", async () => {
+    const service = new NoteService(createRepositoryMock() as never);
+
+    await expect(service.update("user-id", "bad", { title: "" })).rejects.toBeInstanceOf(
+      ValidationError,
+    );
   });
 });

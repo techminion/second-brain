@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 
@@ -88,6 +89,13 @@ export function NoteEditor({ note }: Readonly<{ note: Note }>) {
         />
         <div className="flex shrink-0 items-center gap-3">
           {note.dailyNoteDate ? <DailyNotePager date={note.dailyNoteDate} /> : null}
+          <Link
+            aria-label="Open local graph"
+            className="text-muted-foreground hover:text-foreground text-sm underline"
+            href={`/graph?note=${note.id}`}
+          >
+            Graph
+          </Link>
           <span aria-live="polite" className="text-muted-foreground text-sm" role="status">
             {status}
           </span>

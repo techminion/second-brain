@@ -24,7 +24,7 @@ const COMMANDS: readonly Command[] = [
   { id: "toggle-sidebar", label: "Toggle sidebar", shortcut: "⌘\\", action: "toggle-sidebar" },
   { id: "search-note", label: "Search in current note", shortcut: "⌘F", disabled: true },
   { id: "global-search", label: "Global search", shortcut: "⇧⌘F", disabled: true },
-  { id: "graph-view", label: "Graph view", shortcut: "⇧⌘G", disabled: true },
+  { id: "graph-view", label: "Graph view", shortcut: "⇧⌘G", href: "/graph" },
   { id: "open-settings", label: "Open settings", href: "/settings" },
 ];
 

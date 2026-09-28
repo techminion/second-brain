@@ -76,6 +76,14 @@ describe("AppShell", () => {
     expect(push).toHaveBeenCalledWith("/daily");
   });
 
+  it("opens the graph with ⇧⌘G (GRAPH-12)", () => {
+    render(<AppShell>Workspace content</AppShell>);
+
+    fireEvent.keyDown(document, { key: "G", metaKey: true, shiftKey: true });
+
+    expect(push).toHaveBeenCalledWith("/graph");
+  });
+
   it("collapses and expands the context panel independently", () => {
     render(<AppShell>Workspace content</AppShell>);
 

@@ -82,7 +82,7 @@ Done: Sprint 0 (governance), Sprint 1 (repo & tooling — 21 tasks), Sprint 2 (s
 
 ## In Progress
 
-- **Next:** GRAPH-04 (React Flow canvas) — needs an ADR for the `d3-force` layout dependency first; then GRAPH-05..17, LINK-11/12, BACK-06.
+- **Sprint 7 — M2 graph view (GRAPH-04..17):** in review on `claude/gallant-ride-gl1fkf` (ADR-33). Also fixes the malformed note id → 500 bug (now 404, ADR-26). Then LINK-11/12 and BACK-06 finish M2.
 
 ## Blocked
 
@@ -126,4 +126,4 @@ Done: Sprint 0 (governance), Sprint 1 (repo & tooling — 21 tasks), Sprint 2 (s
 
 ## Last Updated
 
-2026-09-28 — PR #130 merged (`3805f3e`): 56 tasks Done across Sprint 5, M1 Collect and M2 Connect; CI-09 Done (first real production auto-apply); PR #129 closed as superseded. Next: GRAPH-04.
+2026-09-28 — #131 merged (`cb9b2f7`). Graph view (GRAPH-04..17, ADR-33) implemented and verified end to end against a local Supabase stack (graph + a11y specs green, light/dark screenshots); in review.

@@ -6,12 +6,17 @@ All notable changes to Second Brain are documented here, following [Keep a Chang
 
 ## [Unreleased]
 
+### Fixed
+- **2026-09-28** — Requesting a note with a malformed id (e.g. `/api/notes/graph`) now returns 404 like any missing note, instead of a 500 from the database (ADR-26).
+- **2026-09-28** — The tag chips on an open note are now announced as "Note tags", so screen readers no longer hear two different lists both named "Tags" (the note's and the sidebar's).
+
 ### Security
 - **2026-09-27** — Upgraded the Tiptap editor family 3.28 → 3.31.3 (GHSA-cp6q-959q-f8rh `__proto__` attribute injection; GHSA-j95f-988m-3j2f markdown ReDoS), Next.js 15.5.21 → 15.5.26 (critical image-optimization RCE advisory reduced to a moderate one that only Next 16 fixes), and the `sharp` (^0.35.4), `nanoid` (^3.3.18), and dev-only `undici` (^7.30.0, via jsdom) and `brace-expansion` (^5.0.12, via eslint) overrides. `npm audit --audit-level=high` is clean; two moderate Next.js advisories remain pending a Next 16 decision.
 - **2026-09-27** — Editor XSS hardening (09_SECURITY §9 T4): a hostile-markdown test corpus now proves note bodies render with no scripts, event handlers, or executable link schemes; images only load from `http(s)` or same-origin paths — `javascript:`/`data:`/protocol-relative image sources render blank while the note text itself is preserved untouched (EDIT-16).
 - **2026-07-22** — Pinned `sharp` to `^0.35.3` via an npm `overrides` entry, clearing the high-severity libvips advisories (CVE-2026-33327/33328/35590/35591) that Next.js 15 pulled in transitively through `sharp@0.34.x`. Unblocks the `Dependency audit` gate without changing the documented Next.js 15 pin (SEC-07).
 
 ### Added
+- **2026-09-28** — Graph view: press ⇧⌘G (or use the palette) to see your notes as a knowledge graph, with links as edges. More-connected notes are drawn larger and unlinked notes are muted. Hover a note to highlight its connections, click it to open, and filter by tag or folder. Every note has a **Graph** link that opens its local graph, with the depth adjustable from 1 to 3. A notes list beside the canvas gives full keyboard and screen-reader access (GRAPH-04..17, FR-GRAPH-1..4, ADR-33).
 - **2026-09-27** — Wiki links in the editor: `[[Title]]` renders as a link (dashed when the note doesn’t exist yet — clicking creates it), opens on click or ⌘/Ctrl+Enter, and typing `[[` offers keyboard-navigable title suggestions. The right panel (⌘E) now shows the open note’s backlinks with context snippets (LINK-05..07/09, BACK-03..05).
 - **2026-09-27** — Wiki links (backend): `[[Note Title]]` links are now resolved and stored as graph edges every time a note is saved, renaming a note rewrites `[[old title]]` in every note that links to it, and notes that mention a title before it exists are linked the moment it is created. New endpoints serve backlinks with context snippets, fuzzy title suggestions, and the global/local knowledge graph (LINK-01..04/08/10, SRCH-05/06, BACK-01/02, GRAPH-01..03/18, ADR-32). **Requires two new database migrations.**
 - **2026-09-27** — Tags: type a tag on any note (suggestions appear as you type; new tags are created on the spot, case-insensitively matched to existing ones), remove it from its chip, and browse everything carrying a tag from the sidebar **Tags** section, with chips to switch between tags (TAG-01..07/09/10, FR-TAG-1..3, ADR-31).
