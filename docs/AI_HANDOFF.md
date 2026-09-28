@@ -21,6 +21,23 @@ Estimated Context Needed:
 
 ---
 
+## 2026-09-28 — Claude — NoteService contract tests (NOTE-14)
+
+**Session Date:** 2026-09-28
+**Agent:** Claude
+**Objective:** Merge #139, confirm production picked up the migration, then NOTE-14.
+**#139:** merged green. CI-09 applied `20260928200000_add_note_audit_writes` to production. Verified read-only: 23 migrations, and `delete_note`, `restore_note` and `write_note_audit` all present.
+**NOTE-14:** a new "§4 contract — declared errors" suite in `note-service.test.ts` walks the 05_API §4 table row by row:
+- **ValidationError:** every invalid-input branch of create and update, raised before any data access.
+- **NotFoundError:** raised from the data layer for get, update, delete, restore, getBacklinks, addTag and removeTag.
+- **Daily notes:** invalid dates are rejected.
+- **No-error methods:** list and listTrash normalize odd options instead of rejecting them.
+- **Infrastructure failures:** they propagate unchanged, never as NotFoundError or ValidationError.
+No bugs found; the service already honors the contract.
+**Suggested Next Task:** FTS-01 (full-text query builder). It is the first search-milestone task with all dependencies Done.
+
+---
+
 ## 2026-09-28 — Claude — Audit log writes (NOTE-13, ADR-35)
 
 **Session Date:** 2026-09-28

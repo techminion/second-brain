@@ -903,3 +903,120 @@ describe("NoteService malformed ids (ADR-26)", () => {
     );
   });
 });
+
+// NOTE-14: the 05_API §4 contract table, row by row — every declared error is
+// raised for its documented cause (and before any data access where the input
+// alone decides it), methods that declare no errors never raise one for odd
+// input, and infrastructure failures are never disguised as domain errors.
+describe("NoteService §4 contract — declared errors (NOTE-14)", () => {
+  const noteId = "33333333-3333-4333-8333-333333333333";
+  let repository: MockNoteRepository;
+  let service: NoteService;
+
+  beforeEach(() => {
+    repository = createRepositoryMock();
+    service = new NoteService(repository);
+  });
+
+  const invalidCreates: [string, unknown][] = [
+    ["a non-string title", { title: 42 }],
+    ["an empty title", { title: "" }],
+    ["a non-string body", { body: 7, title: "T" }],
+    ["a non-string folderId", { folderId: 9, title: "T" }],
+  ];
+
+  it.each(invalidCreates)(
+    "create: ValidationError for %s, before data access",
+    async (_, input) => {
+      await expect(service.create("user-id", input as CreateNoteInput)).rejects.toBeInstanceOf(
+        ValidationError,
+      );
+      expect(repository.createNote).not.toHaveBeenCalled();
+    },
+  );
+
+  const invalidUpdates: [string, unknown][] = [
+    ["a non-string title", { title: 1 }],
+    ["an empty title", { title: "" }],
+    ["a non-string body", { body: false }],
+    ["a folderId that is neither string nor null", { folderId: 3 }],
+  ];
+
+  it.each(invalidUpdates)(
+    "update: ValidationError for %s, before data access",
+    async (_, input) => {
+      await expect(
+        service.update("user-id", noteId, input as UpdateNoteInput),
+      ).rejects.toBeInstanceOf(ValidationError);
+      expect(repository.updateNote).not.toHaveBeenCalled();
+    },
+  );
+
+  it("get / update / delete / restore / getBacklinks: NotFoundError when the data layer finds nothing", async () => {
+    repository.getNote.mockResolvedValue(null);
+    repository.updateNote.mockResolvedValue(null);
+    repository.softDeleteNote.mockResolvedValue(false);
+    repository.restoreNote.mockResolvedValue(null);
+
+    await expect(service.get("user-id", noteId)).rejects.toBeInstanceOf(NotFoundError);
+    await expect(service.update("user-id", noteId, { body: "x" })).rejects.toBeInstanceOf(
+      NotFoundError,
+    );
+    await expect(service.delete("user-id", noteId)).rejects.toBeInstanceOf(NotFoundError);
+    await expect(service.restore("user-id", noteId)).rejects.toBeInstanceOf(NotFoundError);
+    await expect(service.getBacklinks("user-id", noteId)).rejects.toBeInstanceOf(NotFoundError);
+  });
+
+  it("addTag / removeTag: NotFoundError for a missing note, without touching tags", async () => {
+    repository.getNote.mockResolvedValue(null);
+
+    await expect(service.addTag("user-id", noteId, "research")).rejects.toBeInstanceOf(
+      NotFoundError,
+    );
+    await expect(
+      service.removeTag("user-id", noteId, "22222222-2222-4222-8222-222222222222"),
+    ).rejects.toBeInstanceOf(NotFoundError);
+    expect(repository.findOrCreateTag).not.toHaveBeenCalled();
+    expect(repository.attachTag).not.toHaveBeenCalled();
+    expect(repository.detachTag).not.toHaveBeenCalled();
+  });
+
+  it.each(["2026-02-30", "2026-13-01", "26-01-01", "2026-1-1", "today", ""])(
+    "getOrCreateDailyNote: ValidationError for date %j, before data access",
+    async (date) => {
+      await expect(service.getOrCreateDailyNote("user-id", date)).rejects.toBeInstanceOf(
+        ValidationError,
+      );
+      expect(repository.getDailyNote).not.toHaveBeenCalled();
+      expect(repository.createDailyNote).not.toHaveBeenCalled();
+    },
+  );
+
+  it("list / listTrash: declare no errors — odd options are normalized, never rejected", async () => {
+    repository.listNotes.mockResolvedValue([]);
+    repository.listTrashedNotes.mockResolvedValue([]);
+
+    for (const options of [{ limit: -5 }, { limit: 10_000 }, { cursor: "%%%" }, {}]) {
+      await expect(service.list("user-id", options)).resolves.toEqual({ items: [] });
+      await expect(service.listTrash("user-id", options)).resolves.toEqual({ items: [] });
+    }
+  });
+
+  it("never disguises an infrastructure failure as a domain error", async () => {
+    const outage = new Error("Unable to read note");
+    repository.getNote.mockRejectedValue(outage);
+    repository.updateNote.mockRejectedValue(outage);
+    repository.softDeleteNote.mockRejectedValue(outage);
+
+    for (const call of [
+      () => service.get("user-id", noteId),
+      () => service.update("user-id", noteId, { body: "x" }),
+      () => service.delete("user-id", noteId),
+    ]) {
+      const error = await call().catch((caught: unknown) => caught);
+      expect(error).toBe(outage);
+      expect(error).not.toBeInstanceOf(NotFoundError);
+      expect(error).not.toBeInstanceOf(ValidationError);
+    }
+  });
+});
