@@ -1,9 +1,12 @@
+import { CodeBlockLowlight } from "@tiptap/extension-code-block-lowlight";
 import { Image } from "@tiptap/extension-image";
 import { TaskItem, TaskList } from "@tiptap/extension-list";
+import { renderTableToMarkdown, Table, TableKit } from "@tiptap/extension-table";
 import { Markdown } from "@tiptap/markdown";
 import type { Node as ProseMirrorNode } from "@tiptap/pm/model";
 import StarterKit from "@tiptap/starter-kit";
 
+import { codeLowlight } from "./code-languages";
 import { MarkdownMarkerVisibility } from "./markdown-marker-visibility";
 import { isSafeImageSrc } from "./safe-image-src";
 
@@ -25,6 +28,22 @@ const SafeImage = Image.extend({
   },
 });
 
+// EDIT-07: Tiptap's GFM table serializer has two defects this override fixes.
+// A literal `|` inside a cell is written unescaped, which splits the cell on
+// the next load (silent content loss, FR-NOTE-2); and the table is wrapped in
+// newlines that open a stray blank line at the start of a document. Escaping
+// is also correct inside code spans — GFM requires `\|` there within tables.
+const escapeCellPipes = (markdown: string) => markdown.replaceAll("|", "\\|");
+
+const MarkdownSafeTable = Table.extend({
+  renderMarkdown: (node, helpers) =>
+    renderTableToMarkdown(node, {
+      ...helpers,
+      renderChildren: (nodes, separator) =>
+        escapeCellPipes(helpers.renderChildren(nodes, separator)),
+    }).trim(),
+});
+
 // The checkbox announces its own checked state, so the label carries only the
 // task text — from the item's own paragraph, since `textContent` would also
 // concatenate every nested sub-task (adopted from PR #129). Tiptap computes
@@ -40,8 +59,16 @@ function taskCheckboxLabel(node: ProseMirrorNode): string {
 // TaskItem (EDIT-05) hold GFM `- [ ]` / `- [x]` checkboxes; nesting is on so
 // indented sub-tasks survive, and each checkbox is labelled with its task
 // text so a screen reader announces more than "checkbox".
+// EDIT-07: blockquotes and horizontal rules come from StarterKit; GFM tables
+// come from TableKit (header row + body cells, no column resizing — widths
+// have no markdown form).
 export const markdownEditorExtensions = [
-  StarterKit.configure({ underline: false }),
+  StarterKit.configure({ codeBlock: false, underline: false }),
+  // EDIT-06: fences keep their info string (```ts) in the markdown; lowlight
+  // highlighting is decoration-only and token-colored (markdown-editor.module.css).
+  CodeBlockLowlight.configure({ defaultLanguage: null, lowlight: codeLowlight }),
+  MarkdownSafeTable.configure({ resizable: false }),
+  TableKit.configure({ table: false }),
   SafeImage,
   TaskList,
   TaskItem.configure({

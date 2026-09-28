@@ -3,7 +3,7 @@ import { Editor as TiptapEditor } from "@tiptap/react";
 
 import { markdownEditorExtensions } from "./markdown-editor-extensions";
 
-export type UnsupportedMarkdownReason = "html" | "table" | "task-list";
+export type UnsupportedMarkdownReason = "html" | "task-list";
 
 // `[[wiki links]]` are plain text to the editor model, so the markdown
 // serializer escapes their brackets. That escaping would corrupt the graph's
@@ -41,10 +41,16 @@ export function normalizeMarkdown(markdown: string): string {
   }
 }
 
+// GFM tables round-trip since EDIT-07. A table cell holding several
+// paragraphs serializes them joined by `<br>`, which the table parser reads
+// back as paragraphs — so `<br>` on a table row is table syntax, not HTML.
+const tableRowLineBreak = /^(\s*\|.*)$/gm;
+
+function withoutTableRowBreaks(markdown: string): string {
+  return markdown.replace(tableRowLineBreak, (row) => row.replace(/<br\s*\/?>/gi, " "));
+}
+
 const unsupportedPatterns: readonly [UnsupportedMarkdownReason, RegExp][] = [
-  // A table delimiter row (`|---|---|`) marks GFM table structure the editor
-  // flattens today; tables arrive with EDIT-07.
-  ["table", /^\s*\|?(\s*:?-{2,}:?\s*\|)+\s*:?-{0,}:?\s*\|?\s*$/m],
   // Bullet task lists round-trip since EDIT-05, but a checkbox inside an
   // *ordered* item (`1. [ ] x`, valid GFM) is still escaped to literal text.
   ["task-list", /^\s*\d+[.)]\s+\[[ xX]\]\s/m],
@@ -58,10 +64,11 @@ const unsupportedPatterns: readonly [UnsupportedMarkdownReason, RegExp][] = [
  * without loss. Callers that persist editor output (autosave, note routes)
  * must treat a non-empty result as "do not round-trip this body through the
  * rich editor" and fall back to plain-text editing — this is the FR-NOTE-2
- * loss guard until EDIT-07 and follow-ups close the construct gaps.
+ * loss guard for the constructs the schema still cannot hold.
  */
 export function detectUnsupportedMarkdown(markdown: string): UnsupportedMarkdownReason[] {
+  const candidate = withoutTableRowBreaks(markdown);
   return unsupportedPatterns
-    .filter(([, pattern]) => pattern.test(markdown))
+    .filter(([, pattern]) => pattern.test(candidate))
     .map(([reason]) => reason);
 }

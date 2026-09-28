@@ -4,8 +4,8 @@
  * schema supports — `detectUnsupportedMarkdown` must stay empty for each —
  * and the suite asserts the three durability properties over all of them:
  * canonical fixed point, document-model preservation, and edit-save-reload
- * survival. Constructs the schema cannot hold yet (tables, ordered task
- * items, raw HTML) are exercised in markdown-round-trip.test.ts via the detector instead.
+ * survival. Constructs the schema cannot hold yet (ordered task items, raw
+ * HTML) are exercised in markdown-round-trip.test.ts via the detector instead.
  */
 export interface CorpusDocument {
   name: string;
@@ -170,6 +170,48 @@ export const roundTripCorpus: CorpusDocument[] = [
       "![architecture diagram](https://example.com/arch.png)",
       "",
       "*Caption in italics under the image.*",
+    ].join("\n"),
+  },
+  {
+    name: "comparison table with inline formatting and escaped pipes (EDIT-07)",
+    markdown: [
+      "Options considered:",
+      "",
+      "| Option | Cost | Notes |",
+      "| --- | --- | --- |",
+      "| **Postgres** | Low | Uses `a \\| b` syntax |",
+      "| [[Vector DB]] | High | *Second* service |",
+      "",
+      "Decision below.",
+    ].join("\n"),
+  },
+  {
+    name: "code blocks in several languages (EDIT-06)",
+    markdown: [
+      "```ts",
+      "export const answer: number = 42;",
+      "```",
+      "",
+      "```python",
+      "def greet(name):",
+      '    return f"hi {name}"',
+      "```",
+      "",
+      "```",
+      "no language here",
+      "```",
+    ].join("\n"),
+  },
+  {
+    name: "blockquote, horizontal rule and nested quote (EDIT-07)",
+    markdown: [
+      "> A quote with **bold**",
+      ">",
+      "> > and a nested reply",
+      "",
+      "---",
+      "",
+      "After the rule.",
     ].join("\n"),
   },
 ];

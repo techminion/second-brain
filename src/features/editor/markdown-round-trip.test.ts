@@ -123,8 +123,13 @@ describe("editor schema conformance", () => {
 });
 
 describe("detectUnsupportedMarkdown", () => {
-  it("flags GFM tables", () => {
-    expect(detectUnsupportedMarkdown("| a | b |\n|---|---|\n| 1 | 2 |")).toEqual(["table"]);
+  it("accepts GFM tables (EDIT-07), including `<br>` line breaks inside cells", () => {
+    expect(detectUnsupportedMarkdown("| a | b |\n|---|---|\n| 1 | 2 |")).toEqual([]);
+    expect(detectUnsupportedMarkdown("| H |\n| --- |\n| one<br>two |")).toEqual([]);
+  });
+
+  it("still flags `<br>` outside a table row", () => {
+    expect(detectUnsupportedMarkdown("line one<br>line two")).toEqual(["html"]);
   });
 
   it("accepts bullet task lists (EDIT-05)", () => {
@@ -146,7 +151,6 @@ describe("detectUnsupportedMarkdown", () => {
 
   it("reports multiple reasons together", () => {
     expect(detectUnsupportedMarkdown("|---|---|\n1. [ ] todo\n<b>bold</b>")).toEqual([
-      "table",
       "task-list",
       "html",
     ]);
