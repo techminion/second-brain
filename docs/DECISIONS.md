@@ -425,3 +425,33 @@ GFM tables (EDIT-07) use **`@tiptap/extension-table`** (header row + cells, no c
 
 **Future Revisit:** PERF-06 (bundle audit / editor lazy loading) — load `highlight.js` and the grammars on first code block instead of with the editor; add languages on demand if users ask.
 
+## ADR-35 — Audit rows are written inside the note RPCs, in the mutation's transaction
+
+**Decision:** NOTE-13's audit log writes (04_DATABASE §8) happen **inside the database RPCs that perform each note mutation**, in the same transaction:
+- `create_note` and `update_note` gain `p_actor text default 'user'`.
+- Soft delete and restore move from plain `knowledge_objects` updates into new RPCs, `delete_note` and `restore_note`, so they are audited atomically too.
+- A shared `write_note_audit` helper builds the row.
+- **Metadata:** `{"fields": [...]}` holds only the names of fields whose value actually changed; an update that changes nothing writes no row. There is never any content.
+- **Rename propagation:** its rewrites of linking notes are recorded as `actor = 'system'`, with `{"cause": "rename_propagation", "source_object_id": …}`.
+- **Actor source:** `NoteRepository` takes the actor at construction (`"user"` for the web app). Future MCP/AI entry points construct theirs with their own actor.
+- All functions stay SECURITY INVOKER with an empty `search_path`; RLS (`audit_log_insert_own`) remains the floor.
+
+**Status:** Accepted (2026-09-28) by the user, choosing "Inside note RPCs (Recommended)" when asked.
+
+**Context:** 04_DATABASE §8 defines what is captured (actor, action, target, changed fields; append-only) but not where rows are written. Create and update already ran through RPCs, while delete and restore did not.
+
+**Options Considered:**
+- **(1) Inside the note RPCs** (chosen).
+- **(2) Row triggers on `knowledge_objects`/`notes`.** Atomic and path-independent, but the actor needs a per-transaction setting, and every internal write (propagation, link bookkeeping) would log implicitly.
+- **(3) Service-layer inserts after each mutation.** Not atomic: an audit row can be lost after a committed change.
+
+**Chosen Solution:** (1). Atomic, with explicit attribution at the call site and no hidden write paths.
+
+**Tradeoffs:**
+- Every new mutating note path must go through an audited RPC; the replay guard asserts the functions exist.
+- `actor` is supplied by the caller. A user with their own session could call the RPC directly with another actor value, or insert audit rows directly, which the existing insert policy already allows. Attribution is therefore trustworthy for writes made through the app's service layer, and forgery can only mislead the user's own log.
+
+**Applied to specs:** [04_DATABASE §8](04_DATABASE.md#8-audit-strategy) gains a "How it's written" row.
+
+**Future Revisit:** When MCP or AI writes land, decide whether their actor must be enforced server-side (e.g. a SECURITY DEFINER audit writer that derives the actor from the JWT) rather than passed as a parameter.
+

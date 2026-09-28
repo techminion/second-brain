@@ -300,6 +300,7 @@ A minimal, append-only log (`audit_log`, §4.13) of mutating actions — not a f
 |---|---|
 | What's captured | Actor (user/AI/system), action type, target object, small structured metadata (e.g., which fields changed). |
 | What's *not* captured | Full before/after content snapshots — that's version history's job, deliberately deferred. |
+| How it's written | In the same transaction as the mutation, by the RPC that performs it (`create_note`, `update_note`, `delete_note`, `restore_note`), with the actor passed explicitly; system-initiated side effects (rename propagation) are logged as `system` (ADR-35, [DECISIONS.md](DECISIONS.md)). |
 | Why it exists now, not later | It's the audit trail behind [01_PRODUCT §8](01_PRODUCT.md#8-self-organizing-knowledge)'s self-organizing-knowledge guardrail: even though autonomous AI writes are out of MVP scope, every AI-initiated write in *any* future milestone needs to be attributable and reviewable from day one, not retrofitted once it matters. |
 | Who can read it | Only the owning user, over their own `owner_id` (§7) — there is no admin/support read path defined in this schema. |
 | Retention | Indefinite in MVP; no purge job. Revisit if row volume becomes a storage cost concern. |

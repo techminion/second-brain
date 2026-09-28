@@ -66,9 +66,9 @@ begin
     raise exception 'Supabase Storage operation helpers are missing';
   end if;
 
-  if to_regprocedure('public.create_note(uuid,text,text,uuid,date,text[])') is null
+  if to_regprocedure('public.create_note(uuid,text,text,uuid,date,text[],text)') is null
     or to_regprocedure(
-      'public.update_note(uuid,uuid,text,text,uuid,boolean,boolean,boolean,text[])'
+      'public.update_note(uuid,uuid,text,text,uuid,boolean,boolean,boolean,text[],text)'
     ) is null then
     raise exception 'Transactional note functions are missing';
   end if;
@@ -77,9 +77,9 @@ begin
     select 1
     from pg_proc
     where oid in (
-      to_regprocedure('public.create_note(uuid,text,text,uuid,date,text[])'),
+      to_regprocedure('public.create_note(uuid,text,text,uuid,date,text[],text)'),
       to_regprocedure(
-        'public.update_note(uuid,uuid,text,text,uuid,boolean,boolean,boolean,text[])'
+        'public.update_note(uuid,uuid,text,text,uuid,boolean,boolean,boolean,text[],text)'
       )
     )
       and prosecdef
@@ -89,32 +89,32 @@ begin
 
   if not has_function_privilege(
     'authenticated',
-    'public.create_note(uuid,text,text,uuid,date,text[])',
+    'public.create_note(uuid,text,text,uuid,date,text[],text)',
     'EXECUTE'
   )
     or not has_function_privilege(
       'authenticated',
-      'public.update_note(uuid,uuid,text,text,uuid,boolean,boolean,boolean,text[])',
+      'public.update_note(uuid,uuid,text,text,uuid,boolean,boolean,boolean,text[],text)',
       'EXECUTE'
     )
     or has_function_privilege(
       'anon',
-      'public.create_note(uuid,text,text,uuid,date,text[])',
+      'public.create_note(uuid,text,text,uuid,date,text[],text)',
       'EXECUTE'
     )
     or has_function_privilege(
       'anon',
-      'public.update_note(uuid,uuid,text,text,uuid,boolean,boolean,boolean,text[])',
+      'public.update_note(uuid,uuid,text,text,uuid,boolean,boolean,boolean,text[],text)',
       'EXECUTE'
     )
     or has_function_privilege(
       'service_role',
-      'public.create_note(uuid,text,text,uuid,date,text[])',
+      'public.create_note(uuid,text,text,uuid,date,text[],text)',
       'EXECUTE'
     )
     or has_function_privilege(
       'service_role',
-      'public.update_note(uuid,uuid,text,text,uuid,boolean,boolean,boolean,text[])',
+      'public.update_note(uuid,uuid,text,text,uuid,boolean,boolean,boolean,text[],text)',
       'EXECUTE'
     ) then
     raise exception 'Transactional note function grants violate least privilege';
@@ -128,7 +128,11 @@ begin
       'public.escape_regex_literal(text)',
       'public.reconcile_note_links(uuid,uuid,text[])',
       'public.attach_dangling_note_links(uuid,uuid)',
-      'public.suggest_note_titles(uuid,text,integer)'
+      'public.suggest_note_titles(uuid,text,integer)',
+      -- ADR-35 audited note writes (NOTE-13).
+      'public.write_note_audit(uuid,text,text,uuid,text[],jsonb)',
+      'public.delete_note(uuid,uuid,timestamptz,text)',
+      'public.restore_note(uuid,uuid,timestamptz,timestamptz,text)'
     ]) as required(signature)
     where to_regprocedure(required.signature) is null
       or (select prosecdef from pg_proc where oid = to_regprocedure(required.signature))
@@ -136,7 +140,7 @@ begin
       or has_function_privilege('anon', required.signature, 'EXECUTE')
       or has_function_privilege('service_role', required.signature, 'EXECUTE')
   ) then
-    raise exception 'Wiki-link/suggest functions are missing, SECURITY DEFINER, or over-granted';
+    raise exception 'Wiki-link/suggest/audited-write functions are missing, SECURITY DEFINER, or over-granted';
   end if;
 
   if not exists (
