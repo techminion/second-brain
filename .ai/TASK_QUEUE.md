@@ -10,26 +10,36 @@
 - **Priorities:** `P0` — on the critical path of the current sprint; `P1` — this sprint, parallelizable; `P2` — next in line, claimable if idle.
 - When the sprint's queue empties, the architect role promotes the next dependency-ready wave from [docs/12_TASKS.md](../docs/12_TASKS.md).
 
-## Sprint 7 — M2 Graph View (in progress)
+## Sprint 8 — M2 Connect close-out (in progress)
 
-Promoted 2026-09-28 by the user ("yes please" to GRAPH-04 as next). Branch `claude/gallant-ride-gl1fkf`.
+Promoted 2026-09-28 by the user ("after merging, continue with the next tasks"). Branch `claude/gallant-ride-gl1fkf`. The M2 link/backlink acceptance tail: the two PRD §5 link flows as E2E, and the FR-LINK-6 freshness test.
 
 | ID | Title | Priority | Cx | Depends on | Owner | Status | Milestone | Acceptance criteria |
 |---|---|---|---|---|---|---|---|---|
-| GRAPH-04 | React Flow canvas with force-directed layout — FR-GRAPH-1 | P0 | L | GRAPH-03 | Claude | In Review | M2 | **ADR-33**: `@xyflow/react` + precomputed `d3-force` layout (pure `graph-layout.ts`), `/graph` route |
-| GRAPH-05 | Node click → open note — FR-GRAPH-2 | P0 | S | GRAPH-04 | Claude | In Review | M2 | Click on the node element; nodes carry `nopan` (a pan otherwise swallowed the click, found via E2E) |
-| GRAPH-06 | Hover: highlight connections, fade rest | P1 | M | GRAPH-04 | Claude | In Review | M2 | Neighborhood highlight, `primary` edges, others at 0.1–0.2 opacity; reduced-motion respected |
-| GRAPH-07 | Zoom/pan controls + touch | P1 | S | GRAPH-04 | Claude | In Review | M2 | React Flow Controls (zoom in/out/fit), wheel/pinch zoom, background pan |
-| GRAPH-08 | Visual encoding: degree size, current highlight, orphan muting | P1 | M | GRAPH-04 | Claude | In Review | M2 | Log-scaled diameter 12–32px, `primary` current note, muted orphans |
-| GRAPH-09 | Tag/folder filter chips over canvas — FR-GRAPH-3 | P1 | M | GRAPH-04, TAG-02 | Claude | In Review | M2 | `aria-pressed` chips; folder chip includes subfolders (GraphService) |
-| GRAPH-10 | Local-graph mode from note view + global toggle — FR-GRAPH-4 | P1 | M | GRAPH-02/04 | Claude | In Review | M2 | "Graph" link on every note → `/graph?note=`, depth 1–3 links, "Whole graph" link |
-| GRAPH-11 | Synchronized focusable node list | P1 | M | GRAPH-04 | Claude | In Review | M2 | "Notes in graph" nav: degree-sorted buttons; focus/hover drives the canvas highlight; Enter opens |
-| GRAPH-12 | `⇧⌘G` shortcut + graph route | P1 | S | GRAPH-04, SHELL-05 | Claude | In Review | M2 | Shortcut (blocked only in the editor) + palette entry enabled |
-| GRAPH-13 | Performance test: 2,000-node NFR | P1 | M | GRAPH-08 | Claude | In Review | M2 | Unit perf test: cold 2,000-node layout < 3s (≈1.2s measured in jsdom) |
-| GRAPH-14 | Theme-aware graph tokens | P2 | S | GRAPH-04 | Claude | In Review | M2 | CSS module maps React Flow variables to design tokens; verified light + dark screenshots |
-| GRAPH-15 | Graph empty/sparse state | P2 | S | GRAPH-04, SHELL-09 | Claude | In Review | M2 | Empty graph teaches `[[`; "no links yet" hint; filtered-empty message |
-| GRAPH-16 | E2E: open graph, click node, apply filter | P1 | M | GRAPH-09, CI-06 | Claude | In Review | M2 | `e2e/graph.spec.ts` (⇧⌘G → list/degrees → tag filter → node click → local graph); a11y sweep adds `/graph` |
-| GRAPH-17 | Layout caching | P2 | M | GRAPH-04 | Claude | In Review | M2 | `sessionStorage` positions; warm start with a fraction of the ticks |
+| LINK-11 | E2E: PRD flow "create a note and link it" | P0 | M | LINK-06, BACK-03, CI-06 | Claude | In Review | M2 | `e2e/wiki-links.spec.ts`: A's empty backlinks shown → new note B links A via the `[[` autocomplete → resolved link opens A → A's backlinks list B with its snippet; no reload after the flow starts |
+| LINK-12 | E2E: PRD flow "rename a linked note" | P0 | M | LINK-08, CI-06 | Claude | In Review | M2 | Same spec: rename A → B shows `[[A2]]` as a resolved link opening A; B's stored markdown is byte-identical except the rename |
+| BACK-06 | Freshness test: backlink appears without manual refresh — FR-LINK-6 | P1 | M | BACK-02, LINK-04 | Claude | In Review | M2 | Hook test: a mounted `useBacklinks` refetches when another note's save settles; unmounted backlink + graph caches are invalidated. E2E coverage via LINK-11 |
+
+## Sprint 7 — M2 Graph View (complete)
+
+Promoted 2026-09-28 by the user ("yes please" to GRAPH-04 as next). Merged via PR #132 (`112c115`).
+
+| ID | Title | Priority | Cx | Depends on | Owner | Status | Milestone | Acceptance criteria |
+|---|---|---|---|---|---|---|---|---|
+| GRAPH-04 | React Flow canvas with force-directed layout — FR-GRAPH-1 | P0 | L | GRAPH-03 | Claude | Done (#132) | M2 | **ADR-33**: `@xyflow/react` + precomputed `d3-force` layout (pure `graph-layout.ts`), `/graph` route |
+| GRAPH-05 | Node click → open note — FR-GRAPH-2 | P0 | S | GRAPH-04 | Claude | Done (#132) | M2 | Click on the node element; nodes carry `nopan` (a pan otherwise swallowed the click, found via E2E) |
+| GRAPH-06 | Hover: highlight connections, fade rest | P1 | M | GRAPH-04 | Claude | Done (#132) | M2 | Neighborhood highlight, `primary` edges, others at 0.1–0.2 opacity; reduced-motion respected |
+| GRAPH-07 | Zoom/pan controls + touch | P1 | S | GRAPH-04 | Claude | Done (#132) | M2 | React Flow Controls (zoom in/out/fit), wheel/pinch zoom, background pan |
+| GRAPH-08 | Visual encoding: degree size, current highlight, orphan muting | P1 | M | GRAPH-04 | Claude | Done (#132) | M2 | Log-scaled diameter 12–32px, `primary` current note, muted orphans |
+| GRAPH-09 | Tag/folder filter chips over canvas — FR-GRAPH-3 | P1 | M | GRAPH-04, TAG-02 | Claude | Done (#132) | M2 | `aria-pressed` chips; folder chip includes subfolders (GraphService) |
+| GRAPH-10 | Local-graph mode from note view + global toggle — FR-GRAPH-4 | P1 | M | GRAPH-02/04 | Claude | Done (#132) | M2 | "Graph" link on every note → `/graph?note=`, depth 1–3 links, "Whole graph" link |
+| GRAPH-11 | Synchronized focusable node list | P1 | M | GRAPH-04 | Claude | Done (#132) | M2 | "Notes in graph" nav: degree-sorted buttons; focus/hover drives the canvas highlight; Enter opens |
+| GRAPH-12 | `⇧⌘G` shortcut + graph route | P1 | S | GRAPH-04, SHELL-05 | Claude | Done (#132) | M2 | Shortcut (blocked only in the editor) + palette entry enabled |
+| GRAPH-13 | Performance test: 2,000-node NFR | P1 | M | GRAPH-08 | Claude | Done (#132) | M2 | Unit perf test: cold 2,000-node layout < 3s (≈1.2s measured in jsdom) |
+| GRAPH-14 | Theme-aware graph tokens | P2 | S | GRAPH-04 | Claude | Done (#132) | M2 | CSS module maps React Flow variables to design tokens; verified light + dark screenshots |
+| GRAPH-15 | Graph empty/sparse state | P2 | S | GRAPH-04, SHELL-09 | Claude | Done (#132) | M2 | Empty graph teaches `[[`; "no links yet" hint; filtered-empty message |
+| GRAPH-16 | E2E: open graph, click node, apply filter | P1 | M | GRAPH-09, CI-06 | Claude | Done (#132) | M2 | `e2e/graph.spec.ts` (⇧⌘G → list/degrees → tag filter → node click → local graph); a11y sweep adds `/graph` |
+| GRAPH-17 | Layout caching | P2 | M | GRAPH-04 | Claude | Done (#132) | M2 | `sessionStorage` positions; warm start with a fraction of the ticks |
 
 ## Sprint 6 — M1 Collect Continuation + M2 Connect — ✅ Merged 2026-09-28 (PR #130)
 

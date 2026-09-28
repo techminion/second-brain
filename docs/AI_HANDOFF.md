@@ -21,6 +21,21 @@ Estimated Context Needed:
 
 ---
 
+## 2026-09-28 — Claude — M2 Connect close-out (LINK-11/12, BACK-06)
+
+**Session Date:** 2026-09-28
+**Agent:** Claude
+**Objective:** Merge #132 (graph view) and continue with the next dependency-ready M2 tasks, per the user.
+**#132 CI note:** E2E first failed with `ECONNRESET` + a coincident timeout (masking a real bug); the re-run exposed it — the note tag chips and the sidebar tag list were both lists named "Tags" (strict-mode violation once the sidebar showed the first tag). Fixed by naming the note's list "Note tags". Lesson: a transport error in one spec can hide a deterministic failure in the same run.
+**Files Added:** `e2e/wiki-links.spec.ts` (LINK-11 create-and-link with live backlink; LINK-12 rename keeps the link resolved and the stored markdown otherwise unchanged).
+**Files Modified:** `src/features/notes/hooks/note-hooks.test.tsx` (BACK-06 freshness: mounted backlinks refetch on another note's save; unmounted backlink/graph caches invalidated), `.ai/TASK_QUEUE.md` (Sprint 7 → Done #132; Sprint 8 opened), `docs/PROJECT_STATE.md`.
+**Architecture Decisions:** none.
+**Verification:** both new E2E specs green 3× against the local stack; notes hook tests 13/13; typecheck, lint, format clean.
+**Outstanding Work:** after merge, M2 Connect is complete. The remaining dependency-ready work is M1 editor polish (EDIT-06..14, EDIT-18), SRCH-07 `⌘P` quick-open, FTS-01, NOTE-13/14, and TAG-08 (blocked on ATT-03).
+**Suggested Next Task:** EDIT-10 audit (autosave already exists — verify against FR and close), then EDIT-06/07 (code blocks, blockquotes/rules/tables) and EDIT-08 slash menu.
+
+---
+
 ## 2026-09-28 — Claude — Graph view (GRAPH-04..17)
 
 **Session Date:** 2026-09-28
