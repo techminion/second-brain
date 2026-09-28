@@ -382,3 +382,27 @@ Future Revisit:
 **Tradeoffs:** Rename propagation also rewrites a matching `[[old]]` inside a code block. Dangling attachment scans the owner's note bodies on create/rename (bounded by the 10k-note NFR). Duplicate titles are legal; links pick the oldest.
 **Applied to specs:** [04_DATABASE §4.8](04_DATABASE.md#48-links) write-rule note; [05_API §4](05_API.md#4-noteservice) `getBacklinks` note; [08_SEARCH §6](08_SEARCH.md#6-wiki-links--autocomplete) ranking note.
 **Future Revisit:** Alias syntax (`[[Title|label]]`) and heading links (`[[Title#Heading]]`) if users ask; a dedicated wiki-link editor node.
+
+## ADR-33 — Graph canvas: React Flow (`@xyflow/react`) with a precomputed `d3-force` layout
+
+**Decision:** The graph view (GRAPH-04..17) renders with **`@xyflow/react` 12** (React Flow, already the documented renderer, 03_ARCHITECTURE §2.1 / 10_DESIGN §10). Layout comes from **`d3-force` 3** (ISC; 3 tiny deps), run **synchronously off-screen to a fixed tick budget** in a pure function (`features/graph/graph-layout.ts`); React Flow only renders the final positions. Details:
+- Graphs with more than 500 nodes get 120 ticks, cool faster so the layout still settles within that budget, and drop the collision force.
+- Warm starts reuse cached positions from `sessionStorage` (GRAPH-17).
+- Node diameter grows logarithmically with degree; orphans are muted.
+- Edges are straight lines from node center to node center.
+- Nodes are non-draggable and carry React Flow's `nopan` class. Without it, pressing a non-draggable node starts a canvas pan that captures the pointer and swallows the click.
+- Keyboard and screen-reader access goes through a synchronized notes list next to the canvas (GRAPH-11). Canvas nodes are not focusable.
+
+Routes: `/graph` shows the whole graph and `/graph?note=<id>&depth=1..3` a local graph; ⇧⌘G opens the graph.
+
+**Status:** Accepted (2026-09-28): the user approved the next step (GRAPH-04) and the dependency was flagged for review.
+
+**Context:** 10_DESIGN §10 requires a "force-directed layout" but names no layout engine, and React Flow ships none. There's also a 2,000-node interactivity requirement (GRAPH-13).
+
+**Options Considered:** (1) `d3-force`, precomputed (chosen); (2) hand-rolled Fruchterman–Reingold, which is O(n²) per tick and too slow at 2,000 nodes without a quadtree; (3) live animated simulation, which keeps the main thread busy while you interact; (4) ELK/dagre, which are hierarchical layouts, not force-directed.
+
+**Chosen Solution:** (1). Barnes–Hut repulsion keeps it fast: a cold layout of 2,000 nodes takes about 1.2s under jsdom in the unit test (budget 3s), and warm starts are about 4× cheaper. Doing it as a pure function keeps it testable and cacheable.
+
+**Tradeoffs:** Two runtime dependencies (`@xyflow/react` ≈1.2 MB unpacked, loaded only on `/graph`; `d3-force` ≈90 KB). The layout doesn't animate. Past a few hundred nodes, the local graph remains the intended way in (10_DESIGN §10).
+
+**Future Revisit:** Move the layout into a Web Worker if cold layouts on real 2k-node graphs are felt as jank.

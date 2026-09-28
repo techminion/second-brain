@@ -102,6 +102,12 @@ test("@a11y authenticated shell and settings have no WCAG 2.1 AA violations", as
 
     await expectNoViolations(page);
 
+    // GRAPH-04/11 graph canvas + synchronized notes list.
+    await page.goto("/graph");
+    await page.getByRole("navigation", { name: "Notes in graph" }).waitFor();
+
+    await expectNoViolations(page);
+
     // NOTE-12 trash view, with the note just seeded moved into it.
     const deleted = await page.request.delete(`/api/notes/${note.id}`);
     expect(deleted.ok()).toBeTruthy();

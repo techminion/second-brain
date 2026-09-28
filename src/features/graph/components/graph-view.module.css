@@ -1,0 +1,72 @@
+/* Theme-aware graph (GRAPH-14, 10_DESIGN §7/§10): tokens only; dark mode is a
+   token swap. React Flow's own CSS variables are pointed at the design tokens. */
+.canvas {
+  --xy-background-color: transparent;
+  --xy-edge-stroke: hsl(var(--border));
+  --xy-edge-stroke-width: 1.25;
+  --xy-controls-button-background-color: hsl(var(--background));
+  --xy-controls-button-background-color-hover: hsl(var(--muted));
+  --xy-controls-button-color: hsl(var(--foreground));
+  --xy-controls-button-border-color: hsl(var(--border));
+  position: relative;
+  min-height: 24rem;
+  flex: 1 1 auto;
+  border: 1px solid hsl(var(--border));
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+
+.node {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+  transition: opacity var(--motion-duration-micro, 120ms) ease-out;
+}
+
+.dot {
+  border-radius: 9999px;
+  background: hsl(var(--muted-foreground));
+  outline: 2px solid transparent;
+}
+
+.label {
+  max-width: 10rem;
+  overflow: hidden;
+  color: hsl(var(--foreground));
+  font-size: var(--text-xs);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.node[data-current="true"] .dot {
+  background: hsl(var(--primary));
+}
+
+.node[data-current="true"] .label {
+  font-weight: var(--font-weight-semibold);
+}
+
+/* Orphans: honestly muted — nothing links here yet (10_DESIGN §10). */
+.node[data-orphan="true"] .dot {
+  background: hsl(var(--border));
+}
+
+.node[data-orphan="true"] .label {
+  color: hsl(var(--muted-foreground));
+}
+
+.node[data-highlight="true"] .dot {
+  outline-color: hsl(var(--ring));
+  outline-offset: 2px;
+}
+
+.node[data-faded="true"] {
+  opacity: 0.2;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .node {
+    transition: none;
+  }
+}

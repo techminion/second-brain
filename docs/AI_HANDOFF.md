@@ -21,6 +21,23 @@ Estimated Context Needed:
 
 ---
 
+## 2026-09-28 — Claude — Graph view (GRAPH-04..17)
+
+**Session Date:** 2026-09-28
+**Agent:** Claude
+**Objective:** M2 graph canvas, per the user's go-ahead; also merged #131 (tracking reconciliation, `cb9b2f7`).
+**Architecture Decisions:** ADR-33: `@xyflow/react` plus a precomputed `d3-force` layout (pure, cached, scaled for >500 nodes); nodes are `nopan` with click handled on the node element; a synchronized notes list provides keyboard and screen-reader access.
+**Files Added:** `src/features/graph/{graph-layout.ts,graph-layout.test.ts,hooks/use-graph.ts,components/graph-view.tsx,components/graph-view.module.css,components/graph-view.test.tsx}`, `src/app/(app)/graph/page.tsx`, `e2e/graph.spec.ts`.
+**Files Modified:** shell shortcuts (⇧⌘G), command registry, note editor ("Graph" link), `note-service.ts` (malformed-id guard), a11y spec, docs.
+**Bugs found and fixed via real-browser E2E:**
+- **Canvas pan swallowed node clicks.** React Flow only marks draggable nodes `nopan`, so pressing a non-draggable node started a pan that captured the pointer and swallowed the click. Fixed by adding `nopan` to the nodes.
+- **Global mode fired an empty-id local-graph query**, which surfaced an older bug: `GET /api/notes/<non-uuid>` returned 500. `NoteService` now maps malformed ids to `NotFoundError` (ADR-26), and the local query is disabled in global mode.
+- **Curved default edges looped** oddly; replaced with straight center-to-center edges.
+**Verification:** 659 unit tests (including a 2,000-node layout perf test); typecheck, lint, format and audit clean; graph and a11y E2E green against the local stack; screenshots reviewed in light, hover and dark.
+**Local stack note (scratch only):** the `supabase/postgres` baseline ships the legacy `auth.uid()`, which reads only `request.jwt.claim.sub`. On Cloud, GoTrue's migrations upgrade it. When pre-marking GoTrue migrations locally, install the modern `auth.uid()/role()/email()` definitions too.
+**Outstanding Work:** LINK-11/12 and BACK-06 E2E; then the M1 tail.
+**Suggested Next Task:** LINK-11 (PRD flow "create a note and link it").
+
 ## 2026-09-28 — Claude — PR #130 merged; CI-09 proven; tracking reconciled
 
 **Session Date:** 2026-09-28
