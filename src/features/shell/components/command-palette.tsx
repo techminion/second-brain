@@ -7,6 +7,7 @@ import { useCallback, useEffect, useState } from "react";
 import { cn } from "@/shared/lib/utils";
 
 import { type Command, COMMANDS } from "../commands/command-registry";
+import { useQuickOpenState } from "../overlays/quick-open-state";
 import { useShortcut } from "../shortcuts/shortcut-manager";
 import styles from "./command-palette.module.css";
 import { useShellPanels } from "./shell-panels-context";
@@ -22,6 +23,7 @@ export function CommandPalette() {
   const [activeIndex, setActiveIndex] = useState(0);
   const router = useRouter();
   const { toggleLeft, toggleRight } = useShellPanels();
+  const quickOpen = useQuickOpenState();
 
   const filtered = COMMANDS.filter((cmd) => matchesQuery(cmd, query));
 
@@ -35,9 +37,11 @@ export function CommandPalette() {
         toggleLeft();
       } else if (command.action === "toggle-right-panel") {
         toggleRight();
+      } else if (command.action === "quick-open") {
+        quickOpen.setOpen(true);
       }
     },
-    [router, toggleLeft, toggleRight],
+    [quickOpen, router, toggleLeft, toggleRight],
   );
 
   // ⌘K opens from anywhere except a rich-text editor, which binds ⌘K itself.

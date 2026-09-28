@@ -1,6 +1,7 @@
 import { fireEvent, render, screen, within } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+import { QuickOpenStateProvider, useQuickOpenState } from "../overlays/quick-open-state";
 import { ShortcutProvider } from "../shortcuts/shortcut-manager";
 import { CommandPalette } from "./command-palette";
 import { ShellPanelsProvider, useShellPanels } from "./shell-panels-context";
@@ -17,8 +18,11 @@ Element.prototype.scrollIntoView = vi.fn();
 
 function PanelStateProbe() {
   const { isLeftExpanded, isRightExpanded } = useShellPanels();
+  const quickOpen = useQuickOpenState();
   return (
-    <output aria-label="panel state">{`left:${isLeftExpanded} right:${isRightExpanded}`}</output>
+    <output aria-label="panel state">
+      {`left:${isLeftExpanded} right:${isRightExpanded} quickOpen:${quickOpen.isOpen}`}
+    </output>
   );
 }
 
@@ -26,8 +30,10 @@ function renderPalette() {
   return render(
     <ShortcutProvider>
       <ShellPanelsProvider>
-        <PanelStateProbe />
-        <CommandPalette />
+        <QuickOpenStateProvider>
+          <PanelStateProbe />
+          <CommandPalette />
+        </QuickOpenStateProvider>
       </ShellPanelsProvider>
     </ShortcutProvider>,
   );
@@ -170,8 +176,10 @@ describe("CommandPalette", () => {
     render(
       <ShortcutProvider>
         <ShellPanelsProvider>
-          <div contentEditable id="editor" />
-          <CommandPalette />
+          <QuickOpenStateProvider>
+            <div contentEditable id="editor" />
+            <CommandPalette />
+          </QuickOpenStateProvider>
         </ShellPanelsProvider>
       </ShortcutProvider>,
     );
@@ -187,8 +195,10 @@ describe("CommandPalette", () => {
     render(
       <ShortcutProvider>
         <ShellPanelsProvider>
-          <input aria-label="search field" />
-          <CommandPalette />
+          <QuickOpenStateProvider>
+            <input aria-label="search field" />
+            <CommandPalette />
+          </QuickOpenStateProvider>
         </ShellPanelsProvider>
       </ShortcutProvider>,
     );
@@ -249,5 +259,16 @@ describe("CommandPalette", () => {
     openPalette();
 
     expect(screen.getByRole("combobox")).toHaveValue("");
+  });
+
+  it("opens quick-open through the Quick-open note command (SRCH-07)", () => {
+    renderPalette();
+    openPalette();
+
+    fireEvent.change(screen.getByRole("combobox"), { target: { value: "quick-open" } });
+    fireEvent.keyDown(screen.getByRole("combobox"), { key: "Enter" });
+
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    expect(screen.getByLabelText("panel state")).toHaveTextContent("quickOpen:true");
   });
 });

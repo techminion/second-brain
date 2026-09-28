@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 
 import { signOut } from "@/features/auth/sign-out";
 
+import { QuickOpenStateProvider } from "../overlays/quick-open-state";
 import { ShortcutProvider } from "../shortcuts/shortcut-manager";
 import { CommandPalette } from "./command-palette";
 import { ShellPanel } from "./shell-panel";
@@ -21,11 +22,14 @@ interface AppShellProps {
   sidebarTags?: ReactNode;
   /** Right context panel content (backlinks, BACK-03), injected at the app layer. */
   contextPanel?: ReactNode;
+  /** Feature dialogs driven by shell state (⌘P quick-open, SRCH-07), injected at the app layer. */
+  overlays?: ReactNode;
 }
 
 function AppShell({
   children,
   contextPanel,
+  overlays,
   sidebarDaily,
   sidebarFolders,
   sidebarNotes,
@@ -34,23 +38,26 @@ function AppShell({
   return (
     <ShortcutProvider>
       <ShellPanelsProvider>
-        <div className="bg-background flex min-h-svh w-full overflow-hidden">
-          <ShellShortcuts />
-          <CommandPalette />
-          <ShellPanel label="Application sidebar" side="left">
-            <SidebarNavigation
-              dailySlot={sidebarDaily}
-              foldersSlot={sidebarFolders}
-              notesSlot={sidebarNotes}
-              tagsSlot={sidebarTags}
-              signOutAction={signOut}
-            />
-          </ShellPanel>
-          <main className="min-w-0 flex-1 overflow-auto">{children}</main>
-          <ShellPanel label="Context panel" side="right">
-            {contextPanel}
-          </ShellPanel>
-        </div>
+        <QuickOpenStateProvider>
+          <div className="bg-background flex min-h-svh w-full overflow-hidden">
+            <ShellShortcuts />
+            <CommandPalette />
+            <ShellPanel label="Application sidebar" side="left">
+              <SidebarNavigation
+                dailySlot={sidebarDaily}
+                foldersSlot={sidebarFolders}
+                notesSlot={sidebarNotes}
+                tagsSlot={sidebarTags}
+                signOutAction={signOut}
+              />
+            </ShellPanel>
+            <main className="min-w-0 flex-1 overflow-auto">{children}</main>
+            <ShellPanel label="Context panel" side="right">
+              {contextPanel}
+            </ShellPanel>
+          </div>
+          {overlays}
+        </QuickOpenStateProvider>
       </ShellPanelsProvider>
     </ShortcutProvider>
   );

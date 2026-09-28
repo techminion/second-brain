@@ -21,6 +21,27 @@ Estimated Context Needed:
 
 ---
 
+## 2026-09-28 — Claude — ⌘P quick-open (SRCH-07); NOTE-13 needs a decision
+
+**Session Date:** 2026-09-28
+**Agent:** Claude
+**Objective:** Merge #137 (EDIT track complete), then the M1 tail.
+**Architecture Decisions:** none new. Quick-open follows the shell's injection model:
+- The **shell** owns *when* the dialog opens: `shell/overlays/quick-open-state.tsx`, the ⌘P shortcut and the palette command.
+- The **search feature** owns the dialog and its data (`search/components/quick-open.tsx`).
+- The app layout joins them through a new `AppShell` `overlays` slot.
+- Query keys sit under `notesRootKey`, so saves and renames refresh results.
+**Also fixed:** a race in `e2e/daily-note.spec.ts` (from #130). Clicking "Today" and then waiting for a URL that already matched returned before the `/daily` → `/daily/<today>` → `/notes/<id>` redirect chain finished, and the chain's last redirect overtook the date-field navigation. Reproduced 3/4 on a production build; now 6/6.
+**NOTE-13 — blocked on a decision (not implemented).** 04_DATABASE §8 defines *what* the audit log records (actor, action, target, changed fields; append-only) but not *where* rows are written. Create and update go through RPCs, while delete and restore are plain `knowledge_objects` updates. Options:
+- **(A) Inside the note RPCs.** New `delete_note`/`restore_note` RPCs plus a `p_actor` argument; atomic with the mutation, and the actor is explicit from the service layer.
+- **(B) Row triggers on `knowledge_objects`/`notes`.** Atomic and covers every write path, but the actor needs a per-transaction setting, and rename propagation's writes to linking notes would log too.
+- **(C) Service-layer inserts after each mutation.** Simplest, but not atomic, so an audit row can be lost.
+Recommendation: (A).
+**Verification:** unit tests; `quick-open` E2E (with axe); full E2E suite 24/24 twice against a local production build.
+**Suggested Next Task:** NOTE-13 once the mechanism is chosen; otherwise NOTE-14 (NoteService contract tests) and FTS-01.
+
+---
+
 ## 2026-09-28 — Claude — Editor a11y pass + component tests (EDIT-15/17)
 
 **Session Date:** 2026-09-28
