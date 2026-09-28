@@ -121,6 +121,7 @@ export function NoteEditor({ note }: Readonly<{ note: Note }>) {
       ) : null}
       <MarkdownEditor
         ariaLabel="Note body"
+        findShortcut
         onChange={handleBody}
         value={body}
         wikiLinks={wikiLinks}

@@ -8,6 +8,7 @@ import StarterKit from "@tiptap/starter-kit";
 
 import { codeLowlight } from "./code-languages";
 import { MarkdownMarkerVisibility } from "./markdown-marker-visibility";
+import { MarkdownPaste } from "./markdown-paste-extension";
 import { isSafeImageSrc } from "./safe-image-src";
 
 // EDIT-16 (09_SECURITY §9 T4): the stock Image node renders any `src` scheme.
@@ -80,4 +81,5 @@ export const markdownEditorExtensions = [
   }),
   Markdown,
   MarkdownMarkerVisibility,
+  MarkdownPaste,
 ];

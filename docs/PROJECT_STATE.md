@@ -8,7 +8,7 @@
 
 ## Current Sprint
 
-**Sprint 9 — M1 editor polish** (M1; promoted 2026-09-28; scope in [.ai/TASK_QUEUE.md](../.ai/TASK_QUEUE.md)) — merged: EDIT-06/07/14 + EDIT-10/12/13 (#134). In review: EDIT-08 slash menu, EDIT-09 selection toolbar. Next: EDIT-11 paste, EDIT-18 ⌘F, EDIT-15/17.
+**Sprint 9 — M1 editor polish** (M1; promoted 2026-09-28; scope in [.ai/TASK_QUEUE.md](../.ai/TASK_QUEUE.md)) — merged: EDIT-06/07/14 + EDIT-10/12/13 (#134), EDIT-08/09 (#135). In review: EDIT-11 paste, EDIT-18 ⌘F. Next: EDIT-15 a11y pass, EDIT-17 component tests.
 Done: Sprint 0 (governance), Sprint 1 (repo & tooling — 21 tasks), Sprint 2 (schema, auth core & app shell), Sprint 3 (M0 closeout + note/editor foundation), Sprint 4 (note service + editor round-trip + M0 tail — M0 100% complete), Sprints 5–6 (note-taking UI, M1 collect, M2 backend — #130), Sprint 7 (graph view — #132), Sprint 8 (M2 close-out — #133)
 
 ## Overall Progress
@@ -17,7 +17,7 @@ Done: Sprint 0 (governance), Sprint 1 (repo & tooling — 21 tasks), Sprint 2 (s
 |---|---|
 | Engineering documentation (12 docs) | ✅ Complete, audited twice for consistency |
 | Governance layer (this file set) | ✅ Complete |
-| Implementation | 130 Done / 309 tasks ([12_TASKS.md](12_TASKS.md)) — 56 via PR #130 (`3805f3e`), CI-09, GRAPH-04..17 via #132 (`112c115`), LINK-11/12 + BACK-06 via #133 (`c6ee782`), EDIT-06/07/10/12/13/14 via #134 (`42f9820`); EDIT-08/09 in review |
+| Implementation | 132 Done / 309 tasks ([12_TASKS.md](12_TASKS.md)) — 56 via PR #130 (`3805f3e`), CI-09, GRAPH-04..17 via #132 (`112c115`), LINK-11/12 + BACK-06 via #133 (`c6ee782`), EDIT-06/07/10/12/13/14 via #134 (`42f9820`), EDIT-08/09 via #135 (`747bc13`); EDIT-11/18 in review |
 
 ## Completed
 

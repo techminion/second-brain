@@ -21,6 +21,22 @@ Estimated Context Needed:
 
 ---
 
+## 2026-09-28 — Claude — Paste handling + find in note (EDIT-11/18)
+
+**Session Date:** 2026-09-28
+**Agent:** Claude
+**Objective:** Merge #135, then EDIT-11 and EDIT-18.
+**Architecture Decisions:** none new.
+- **Paste:** a `handlePaste` plugin, `markdown-paste-extension.ts`. It parses plain text as markdown only when `looksLikeMarkdown` is true. HTML is left to ProseMirror's schema-bound DOM parser, the same sanitization floor as load.
+- **Find:** a decoration plugin, `find-in-note-extension.ts`, with pure `findMatches` and commands `setFindQuery`, `stepFindMatch`, `selectCurrentFindMatch` and `clearFind`. The ⌘F binding is opt-in per editor (`findShortcut`), so the editor feature stays independent of the shell's shortcut manager; the note page's editor opts in.
+**Bug found via E2E:** Escape from the find bar left the editor's selection on the last *stepped* match instead of the current one, so typing replaced the wrong word. Closing now selects the current match (`selectCurrentFindMatch`).
+**Files Added:** `src/features/editor/{markdown-paste-extension.ts,markdown-paste.test.ts,find-in-note-extension.ts,find-in-note.test.ts,components/find-bar.tsx}`, `e2e/{editor-paste,editor-find}.spec.ts`.
+**Files Modified:** editor extensions and component (find bar, `findShortcut`), editor CSS, `note-editor.tsx` (opts into ⌘F), docs.
+**Verification:** 722 unit tests (paste detection table, paste routing, paste XSS, find matching and commands); paste and find E2E green locally; the find E2E includes an axe pass with the bar open.
+**Suggested Next Task:** EDIT-15 (editor a11y pass across the menus, toolbar and find bar), then EDIT-17 (component-test consolidation). After that the M1 tail: NOTE-13/14, SRCH-07 ⌘P, FTS-01.
+
+---
+
 ## 2026-09-28 — Claude — Slash menu + selection toolbar (EDIT-08/09)
 
 **Session Date:** 2026-09-28
