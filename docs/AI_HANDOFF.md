@@ -21,6 +21,20 @@ Estimated Context Needed:
 
 ---
 
+## 2026-09-28 — Claude — PR #130 merged; CI-09 proven; tracking reconciled
+
+**Session Date:** 2026-09-28
+**Agent:** Claude
+**Objective:** Merge the 2026-09-27 session's work and reconcile tracking.
+**What happened:** CI on #130 was blocked because the dev Supabase project had auto-paused. The free plan allows 2 active projects, so the user paused `excalidraw-store`, which let dev come back. Both new migrations were applied to dev through the Supabase connector with exact repo versions (22/22), then verified: SECURITY INVOKER, least-privilege grants, indexes, and no new advisor findings. Failed jobs were re-run, all required checks went green, and #130 was squash-merged as `3805f3e`. Production auto-applied both migrations (22/22, verified read-only), so **CI-09 is Done**. PR #129 was closed as superseded. During review, CI's dependency audit (red on `main` too) was fixed in #130: Tiptap 3.31.3, Next 15.5.26, and overrides for sharp, nanoid, undici and brace-expansion.
+**Files Modified:** `.ai/TASK_QUEUE.md` (56 rows + CI-09 → Done), `docs/PROJECT_STATE.md`, `docs/AI_HANDOFF.md`.
+**Architecture Decisions:** None. Hosting options (self-hosted Supabase vs. removing Supabase) were discussed with the user; nothing decided or recorded.
+**Outstanding Work:** GRAPH-04..17, LINK-11/12, BACK-06; the M1 tail; TAG-08 (blocked on ATT-03).
+**Known Bugs:** None.
+**Risks:** The dev project will auto-pause again after inactivity and take CI's E2E, a11y and drift checks down with it.
+**Suggested Next Task:** GRAPH-04, after an ADR for the `d3-force` dependency.
+**Estimated Context Needed:** This entry, ADR-32, `features/graph/*`.
+
 ## 2026-09-27 — Claude — Sprint 5 close-out, M1 Collect, M2 Connect (backend + editor links)
 
 **Session Date:** 2026-09-27
