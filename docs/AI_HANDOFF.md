@@ -21,6 +21,25 @@ Estimated Context Needed:
 
 ---
 
+## 2026-09-28 — Claude — Full-text search backend (FTS-01/02/03/10, ADR-36)
+
+**Session Date:** 2026-09-28
+**Agent:** Claude
+**Objective:** Merge #140 (NOTE-14), then start the M3 full-text search track.
+**Architecture Decisions:** ADR-36:
+- **Snippets:** U+0002/U+0003 markers instead of HTML highlight markup, so there is no XSS sink.
+- **Pagination:** an opaque offset cursor over a total order (score, updated_at, id), avoiding a float keyset.
+**Database:** migration `20260928210000_add_note_full_text_search.sql` creates the `search_notes` RPC (SECURITY INVOKER, `authenticated` only). It ranks and pages first, then runs `ts_headline` only on that page.
+- **Dev:** applied with its exact version (24/24).
+- **Production:** CI-09 applies it on merge.
+- **Replay guard:** asserts the function; 24 migrations green.
+**Verified locally (SQL, two authenticated users):** ranking and snippets, `"phrase"`, `-exclude`, `or`, a stop-word-only query (empty result, not an error), paging, trash excluded, cross-user results empty even when the other user's id is passed. XSS-shaped queries match nothing.
+**Files Added:** `src/shared/types/search-result.ts`, the migration.
+**Files Modified:** search repository and service, plus their tests; replay guard; docs.
+**Suggested Next Task:** FTS-04 (the `/api/search` route + hook) with FTS-07 scoping E2E, then FTS-05 (results UI rendering the markers as `<mark>`), FTS-06 (⇧⌘F) and FTS-09 (empty states).
+
+---
+
 ## 2026-09-28 — Claude — NoteService contract tests (NOTE-14)
 
 **Session Date:** 2026-09-28

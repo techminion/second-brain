@@ -455,3 +455,28 @@ GFM tables (EDIT-07) use **`@tiptap/extension-table`** (header row + cells, no c
 
 **Future Revisit:** When MCP or AI writes land, decide whether their actor must be enforced server-side (e.g. a SECURITY DEFINER audit writer that derives the actor from the JWT) rather than passed as a parameter.
 
+## ADR-36 — Full-text search: marker-delimited snippets and an offset cursor over a deterministic rank order
+
+**Decision:** Full-text search (FTS-01..03) runs in one SECURITY INVOKER SQL function, `search_notes`.
+- **Query parsing:** `websearch_to_tsquery('english')`, as 08_SEARCH §2 specifies.
+- **Ranking:** `ts_rank_cd` order, with ties broken by `updated_at desc, id desc`.
+- **Snippets:** `ts_headline`, computed only for the returned page.
+- **Match markers:** snippets wrap each match in the control characters U+0002/U+0003 rather than HTML. The client splits on them and renders its own `<mark>` elements.
+- **Pagination:** an opaque cursor over an **offset** into that deterministic order, capped at 10,000.
+
+**Status:** Accepted (2026-09-28) as an implementation-level decision within 08_SEARCH §2 and 05_API §6. No spec behavior changes.
+
+**Context:** `ts_headline` emits highlight markup around user content. Inserting it as HTML would make every result a stored-XSS sink (09_SECURITY T4). Ranked results also have no natural keyset: `ts_rank_cd` returns a `real`, and a float keyset that round-trips through JSON can skip or repeat rows.
+
+**Options Considered:**
+- **Snippets:** (a) HTML `<b>` from `ts_headline` rendered with `dangerouslySetInnerHTML`, or HTML-escaped server-side first; (b) sentinel markers split in the client (chosen).
+- **Pagination:** (a) a keyset on `(score, updated_at, id)`; (b) an offset cursor (chosen).
+
+**Chosen Solution:**
+- **Markers:** no markup crosses the API, and the renderer never parses HTML.
+- **Offset:** with a total order, pages are stable for an unchanged corpus (FTS-10). Offset cost is irrelevant at per-user result sizes.
+
+**Tradeoffs:** If notes change between page loads, an offset can shift a result by a position; that is acceptable for search. The snippet is plain markdown text, not rendered markdown.
+
+**Future Revisit:** SEM-04 (hybrid search). RRF merges ranks, not scores, so the cursor may need to encode the merged position.
+

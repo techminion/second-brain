@@ -10,9 +10,20 @@
 - **Priorities:** `P0` — on the critical path of the current sprint; `P1` — this sprint, parallelizable; `P2` — next in line, claimable if idle.
 - When the sprint's queue empties, the architect role promotes the next dependency-ready wave from [docs/12_TASKS.md](../docs/12_TASKS.md).
 
-## Sprint 9 — M1 editor polish (in progress)
+## Sprint 10 — M3 Full-text search (in progress)
 
-Promoted 2026-09-28 by the user's "continue with the next tasks" after M2 Connect closed. Branch `claude/gallant-ride-gl1fkf`. First PR (#134, `42f9820`): block types + reading column, and EDIT-10/12/13 closed with tests. Second PR (#135, `747bc13`): EDIT-08 slash menu + EDIT-09 selection toolbar. Third PR (#136, `b83f2a5`): EDIT-11 paste + EDIT-18 ⌘F. Fourth PR (#137, `ca4406a`): EDIT-15 a11y pass + EDIT-17 component tests — **the EDIT track is complete**. Then the M1 tail: SRCH-07 ⌘P (#138, `2853245`); NOTE-13 (#139, `ded7081`, ADR-35; production migrated 23/23); NOTE-14 in review.
+Promoted 2026-09-28 under the user's "continue with the next tasks" once the M1 tail (NOTE-13/14) merged; FTS-01 was the first dependency-ready search task. Branch `claude/gallant-ride-gl1fkf`. First PR: the backend (FTS-01/02/03 + FTS-10); next: API route + hook, results UI, ⇧⌘F, FTS-07 scoping E2E, empty states.
+
+| ID | Title | Priority | Cx | Depends on | Owner | Status | Milestone | Acceptance criteria |
+|---|---|---|---|---|---|---|---|---|
+| FTS-01 | Full-text query builder: `websearch_to_tsquery` + `ts_rank_cd` | P0 | M | DB-04 | Claude | In Review | M3 | **ADR-36**: `search_notes` RPC (migration `20260928210000`), deterministic order (score, recency, id); verified locally: phrases, `-exclude`, `or`, stop-word-only → empty, trash excluded, cross-user isolated; applied to dev (24/24) |
+| FTS-02 | `ts_headline` snippets with term highlighting — FR-SEARCH-2 | P0 | M | FTS-01 | Claude | In Review | M3 | Page-only `ts_headline` over the body (title when empty), matches wrapped in U+0002/U+0003 markers — no HTML crosses the API (ADR-36) |
+| FTS-03 | `SearchService.search` v1: full-text, paginated — FR-SEARCH-1 | P0 | M | FTS-01, FTS-02 | Claude | In Review | M3 | Empty query → `ValidationError`; limit clamp; opaque offset cursor (forged → first page); tags enriched; `matchType: "fulltext"` |
+| FTS-10 | Service tests: phrase queries, exclusions, pagination stability | P1 | M | FTS-03 | Claude | In Review | M3 | Service + repository unit tests (query pass-through, cursor round-trip, forged cursors, clamps); SQL-level phrase/exclusion behavior verified in the migration scenario |
+
+## Sprint 9 — M1 editor polish (complete)
+
+Promoted 2026-09-28 by the user's "continue with the next tasks" after M2 Connect closed. Branch `claude/gallant-ride-gl1fkf`. First PR (#134, `42f9820`): block types + reading column, and EDIT-10/12/13 closed with tests. Second PR (#135, `747bc13`): EDIT-08 slash menu + EDIT-09 selection toolbar. Third PR (#136, `b83f2a5`): EDIT-11 paste + EDIT-18 ⌘F. Fourth PR (#137, `ca4406a`): EDIT-15 a11y pass + EDIT-17 component tests — **the EDIT track is complete**. Then the M1 tail: SRCH-07 ⌘P (#138, `2853245`); NOTE-13 (#139, `ded7081`, ADR-35; production migrated 23/23); NOTE-14 (#140, `f8a69d4`).
 
 | ID | Title | Priority | Cx | Depends on | Owner | Status | Milestone | Acceptance criteria |
 |---|---|---|---|---|---|---|---|---|
@@ -29,7 +40,7 @@ Promoted 2026-09-28 by the user's "continue with the next tasks" after M2 Connec
 | EDIT-17 | Editor component tests: formatting, slash menu, autosave triggers | P2 | M | EDIT-08, EDIT-10 | Claude | Done (#137) | M1 | Ctrl+B/I/E serialize, undo/redo, Escape blur (MarkdownEditor); slash menu (`slash-menu.test.tsx`, #135); autosave debounce/blur/unmount (`use-autosave.test.ts`, `note-editor.test.tsx`) |
 | SRCH-07 | `⌘P` quick-open | P1 | S | SRCH-06, SHELL-05 | Claude | Done (#138) | M1 | `QuickOpen` dialog (search feature, injected via the shell's new `overlays` slot); open state owned by the shell (`shell/overlays/quick-open-state.tsx`) so ⌘P and the palette's now-enabled "Quick-open note" command share it; empty query → recent notes, typing → `suggestNoteTitles` (typo-tolerant); axe-clean; `e2e/quick-open.spec.ts` |
 | NOTE-13 | Audit log writes on note create/update/delete (`actor='user'`) | P1 | S | NOTE-02, DB-12 | Claude | Done (#139) | M1 | **ADR-35** (user decision: inside the note RPCs): migration `20260928200000_add_note_audit_writes.sql` — `create_note`/`update_note` + `p_actor`, new `delete_note`/`restore_note`, `write_note_audit`; changed-field names only; rename propagation logged as `system`. Applied to dev (23/23). Local SQL scenario + `e2e/note-audit.spec.ts` (UI lifecycle → create/update/delete/restore rows, actor `user`, no content) |
-| NOTE-14 | Service tests: full 05_API §4 contract incl. every declared error | P1 | M | NOTE-02..06 | Claude | In Review | M1 | Contract suite in `note-service.test.ts`: per-method declared errors (ValidationError before data access for every invalid-input branch, NotFoundError from the data layer incl. `removeTag`), invalid daily-note dates, no-error methods normalize odd options, infrastructure failures never disguised as domain errors. No bugs found |
+| NOTE-14 | Service tests: full 05_API §4 contract incl. every declared error | P1 | M | NOTE-02..06 | Claude | Done (#140) | M1 | Contract suite in `note-service.test.ts`: per-method declared errors (ValidationError before data access for every invalid-input branch, NotFoundError from the data layer incl. `removeTag`), invalid daily-note dates, no-error methods normalize odd options, infrastructure failures never disguised as domain errors. No bugs found |
 | EDIT-13 | Editor keyboard shortcuts (⌘B/⌘I, undo/redo) | P1 | S | EDIT-04, SHELL-05 | Claude | Done (#134) | M1 | StarterKit keymaps (Mod = ⌘ on macOS, Ctrl elsewhere); E2E proves ⌘B, ⌘I, ⌘Z, ⇧⌘Z and the live ```` ```lang ```` fence |
 
 ## Sprint 8 — M2 Connect close-out (complete)

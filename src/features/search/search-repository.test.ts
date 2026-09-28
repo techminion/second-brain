@@ -5,7 +5,7 @@ import { SearchRepository } from "@/features/search/search-repository";
 
 function setup(result: { data: unknown; error: unknown }) {
   const builder: Record<string, ReturnType<typeof vi.fn>> & { then?: unknown } = {};
-  for (const method of ["eq", "is", "limit", "or", "order", "select"]) {
+  for (const method of ["eq", "in", "is", "limit", "or", "order", "select"]) {
     builder[method] = vi.fn(() => builder);
   }
   builder.maybeSingle = vi.fn().mockResolvedValue(result);
@@ -53,5 +53,74 @@ describe("SearchRepository", () => {
       'updated_at.lt."2026-09-01T00:00:00Z",and(updated_at.eq."2026-09-01T00:00:00Z",id.lt."i")',
     );
     expect(builder.limit).toHaveBeenCalledWith(11);
+  });
+
+  it("searches through search_notes and maps the page (FTS-01)", async () => {
+    const rpc = vi.fn().mockResolvedValue({
+      data: [
+        {
+          created_at: "c",
+          id: "n1",
+          score: 0.2,
+          snippet: "the \u0002roadmap\u0003",
+          title: "Plan",
+          updated_at: "u",
+        },
+      ],
+      error: null,
+    });
+    const repository = new SearchRepository({ rpc } as unknown as SupabaseClient);
+
+    await expect(
+      repository.searchNotes("user-id", "roadmap", { limit: 11, offset: 20 }),
+    ).resolves.toEqual([
+      {
+        createdAt: "c",
+        id: "n1",
+        score: 0.2,
+        snippet: "the \u0002roadmap\u0003",
+        title: "Plan",
+        updatedAt: "u",
+      },
+    ]);
+    expect(rpc).toHaveBeenCalledWith("search_notes", {
+      p_limit: 11,
+      p_offset: 20,
+      p_owner_id: "user-id",
+      p_query: "roadmap",
+    });
+  });
+
+  it("surfaces search failures without leaking the database error", async () => {
+    const rpc = vi.fn().mockResolvedValue({ data: null, error: { message: "secret detail" } });
+    const repository = new SearchRepository({ rpc } as unknown as SupabaseClient);
+
+    await expect(repository.searchNotes("user-id", "x", { limit: 1, offset: 0 })).rejects.toThrow(
+      "Unable to search notes",
+    );
+  });
+
+  it("groups tags per object, sorted by name, with no query for an empty page", async () => {
+    const { builder, from, repository } = setup({
+      data: [
+        { knowledge_object_id: "n1", tags: { id: "t2", name: "b" } },
+        { knowledge_object_id: "n1", tags: { id: "t1", name: "a" } },
+        { knowledge_object_id: "n2", tags: { id: "t1", name: "a" } },
+      ],
+      error: null,
+    });
+
+    const tags = await repository.getTagsForObjects("user-id", ["n1", "n2"]);
+    expect(tags.get("n1")).toEqual([
+      { id: "t1", name: "a" },
+      { id: "t2", name: "b" },
+    ]);
+    expect(tags.get("n2")).toEqual([{ id: "t1", name: "a" }]);
+    expect(from).toHaveBeenCalledWith("knowledge_object_tags");
+    expect(builder.in).toHaveBeenCalledWith("knowledge_object_id", ["n1", "n2"]);
+
+    from.mockClear();
+    await expect(repository.getTagsForObjects("user-id", [])).resolves.toEqual(new Map());
+    expect(from).not.toHaveBeenCalled();
   });
 });
