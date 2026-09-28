@@ -7,6 +7,7 @@ All notable changes to Second Brain are documented here, following [Keep a Chang
 ## [Unreleased]
 
 ### Fixed
+- **2026-09-28** — Editor accessibility: the formatting toolbar is now reachable from the keyboard (Alt+F10, then ←/→; Escape returns to the text with the selection kept); Escape leaves the editor so Tab can move on even from inside a table or list; the `[[` and `/` menus no longer set an ARIA attribute screen readers reject on the text box, keep the highlighted option scrolled into view, and meet 4.5:1 contrast on the highlighted row (EDIT-15).
 - **2026-09-28** — The note title is shown at full heading size on desktop again; the shared input's small-text style had been overriding it above the `md` breakpoint (EDIT-12).
 - **2026-09-28** — Requesting a note with a malformed id (e.g. `/api/notes/graph`) now returns 404 like any missing note, instead of a 500 from the database (ADR-26).
 - **2026-09-28** — The tag chips on an open note are now announced as "Note tags", so screen readers no longer hear two different lists both named "Tags" (the note's and the sidebar's).

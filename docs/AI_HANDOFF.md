@@ -21,6 +21,26 @@ Estimated Context Needed:
 
 ---
 
+## 2026-09-28 — Claude — Editor a11y pass + component tests (EDIT-15/17)
+
+**Session Date:** 2026-09-28
+**Agent:** Claude
+**Objective:** Merge #136, then close the EDIT track with EDIT-15 and EDIT-17.
+**#136 CI note:** `editor-paste.spec.ts` failed on the preview. Reproduced 3/4 against a local `next start` production build; the dev server never showed it. Root cause was ProseMirror's asynchronous DOM→state selection sync: the paste landed at the pre-Ctrl+End cursor. The spec now polls the editor state. **Lesson: run new editor E2E against `next build && next start`, not only the dev server.** The session's scratch runner supports it via `PLAYWRIGHT_BASE_URL=http://localhost:3100`.
+**Found via axe with the menus open** (all predate this PR; the `[[` popup had the first since #130):
+- **`aria-expanded` on `role="textbox"`:** not allowed there. Removed; autocomplete, controls and activedescendant stay.
+- **Active-row hint contrast:** was 4.39:1. It now uses `foreground`.
+- **Scrollable listbox:** it wasn't focusable, and arrowing never scrolled the active option into view. Both fixed.
+**Added:**
+- **Toolbar keyboard model:** Alt+F10 enters the toolbar; it is one tab stop with ←/→/Home/End; Escape returns to the text.
+- **`EscapeFocus`:** priority 0, so open menus consume Escape first. Escape blurs the editor, removing the Tab trap in tables and lists.
+**Files Added:** `src/features/editor/escape-focus-extension.ts`, `e2e/editor-keyboard.spec.ts`.
+**Files Modified:** selection toolbar, suggestion list, markdown editor, editor CSS, the MarkdownEditor test suite (formatting, undo/redo, Escape), docs.
+**Verification:** unit tests; keyboard, menus and blocks E2E 3× against a local production build.
+**Suggested Next Task:** the M1 tail: NOTE-13 (audit log writes) and NOTE-14 (full NoteService contract tests), then SRCH-07 ⌘P quick-open and FTS-01.
+
+---
+
 ## 2026-09-28 — Claude — Paste handling + find in note (EDIT-11/18)
 
 **Session Date:** 2026-09-28

@@ -5,6 +5,7 @@ import { useCallback, useEffect, useId, useMemo, useRef, useState } from "react"
 
 import { cn } from "@/shared/lib/utils";
 
+import { EscapeFocus } from "../escape-focus-extension";
 import { FindInNote } from "../find-in-note-extension";
 import { markdownEditorExtensions } from "../markdown-editor-extensions";
 import { serializeEditorMarkdown } from "../markdown-round-trip";
@@ -89,6 +90,7 @@ export function MarkdownEditor({
         open: (title) => wikiLinksRef.current?.open(title),
       }),
       FindInNote,
+      EscapeFocus,
       SlashMenu.configure({
         onKeyDown: (event) => slashKeyHandlerRef.current(event),
         onTrigger: (next) => {
@@ -282,17 +284,13 @@ export function MarkdownEditor({
       return;
     }
     if (activeListboxId !== undefined) {
+      // `aria-expanded` is not allowed on role="textbox" (only on combobox);
+      // autocomplete + controls + activedescendant carry the relationship.
       dom.setAttribute("aria-autocomplete", "list");
       dom.setAttribute("aria-controls", activeListboxId);
-      dom.setAttribute("aria-expanded", "true");
       dom.setAttribute("aria-activedescendant", `${activeListboxId}-${activeOptionIndex ?? 0}`);
     } else {
-      for (const name of [
-        "aria-autocomplete",
-        "aria-controls",
-        "aria-expanded",
-        "aria-activedescendant",
-      ]) {
+      for (const name of ["aria-autocomplete", "aria-controls", "aria-activedescendant"]) {
         dom.removeAttribute(name);
       }
     }
