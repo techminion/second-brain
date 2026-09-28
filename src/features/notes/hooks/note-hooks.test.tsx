@@ -3,19 +3,22 @@ import { act, renderHook, waitFor } from "@testing-library/react";
 import type { ReactNode } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import type { Note } from "@/features/notes/types";
+import type { Note, TrashedNote } from "@/features/notes/types";
 import type { Paginated } from "@/shared/types";
 
 import { noteKeys } from "./note-keys";
-import { useCreateNote, useDeleteNote, useUpdateNote } from "./use-note-mutations";
+import { useCreateNote, useDeleteNote, useRestoreNote, useUpdateNote } from "./use-note-mutations";
 import { useNoteQuery } from "./use-note-query";
 import { useNotesList } from "./use-notes-list";
+import { useTrashList } from "./use-trash-list";
 
 const api = {
   createNoteRequest: vi.fn(),
   deleteNoteRequest: vi.fn(),
   fetchNote: vi.fn(),
   fetchNotesList: vi.fn(),
+  fetchTrashList: vi.fn(),
+  restoreNoteRequest: vi.fn(),
   updateNoteRequest: vi.fn(),
 };
 
@@ -24,6 +27,8 @@ vi.mock("@/features/notes/note-api", () => ({
   deleteNoteRequest: (...args: unknown[]) => api.deleteNoteRequest(...args),
   fetchNote: (...args: unknown[]) => api.fetchNote(...args),
   fetchNotesList: (...args: unknown[]) => api.fetchNotesList(...args),
+  fetchTrashList: (...args: unknown[]) => api.fetchTrashList(...args),
+  restoreNoteRequest: (...args: unknown[]) => api.restoreNoteRequest(...args),
   updateNoteRequest: (...args: unknown[]) => api.updateNoteRequest(...args),
 }));
 
@@ -172,5 +177,68 @@ describe("useDeleteNote", () => {
 
     await waitFor(() => expect(listItems(client).map((note) => note.id)).toEqual(["n2"]));
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
+  });
+});
+
+describe("useTrashList / useRestoreNote (NOTE-12)", () => {
+  function trashed(id: string): TrashedNote {
+    return { ...makeNote({ id, title: id }), deletedAt: "2026-07-25T00:00:00Z" };
+  }
+
+  function seedTrash(client: QueryClient, items: TrashedNote[]): void {
+    client.setQueryData<InfiniteData<Paginated<TrashedNote>>>(noteKeys.trash(), {
+      pageParams: [undefined],
+      pages: [{ items }],
+    });
+  }
+
+  function trashItems(client: QueryClient): TrashedNote[] {
+    return (
+      client.getQueryData<InfiniteData<Paginated<TrashedNote>>>(noteKeys.trash())?.pages[0].items ??
+      []
+    );
+  }
+
+  it("fetches the first page of trash", async () => {
+    const { wrapper } = setup();
+    api.fetchTrashList.mockResolvedValue({ items: [trashed("t1")] });
+
+    const { result } = renderHook(() => useTrashList(), { wrapper });
+
+    await waitFor(() => expect(result.current.isSuccess).toBe(true));
+    expect(result.current.data?.pages[0].items.map((note) => note.id)).toEqual(["t1"]);
+    expect(api.fetchTrashList).toHaveBeenCalledWith({ cursor: undefined });
+  });
+
+  it("optimistically removes the restored note and seeds its detail cache", async () => {
+    const { client, wrapper } = setup();
+    seedTrash(client, [trashed("t1"), trashed("t2")]);
+    const restored = makeNote({ id: "t1", title: "t1" });
+    api.restoreNoteRequest.mockResolvedValue(restored);
+    api.fetchTrashList.mockResolvedValue({ items: [trashed("t2")] });
+
+    const { result } = renderHook(() => useRestoreNote(), { wrapper });
+
+    await act(async () => {
+      await result.current.mutateAsync("t1");
+    });
+
+    expect(trashItems(client).map((note) => note.id)).toEqual(["t2"]);
+    expect(client.getQueryData(noteKeys.detail("t1"))).toEqual(restored);
+  });
+
+  it("rolls the trash back when restore fails", async () => {
+    const { client, wrapper } = setup();
+    seedTrash(client, [trashed("t1")]);
+    api.restoreNoteRequest.mockRejectedValue(new Error("expired"));
+    api.fetchTrashList.mockReturnValue(new Promise(() => undefined));
+
+    const { result } = renderHook(() => useRestoreNote(), { wrapper });
+
+    await act(async () => {
+      await result.current.mutateAsync("t1").catch(() => undefined);
+    });
+
+    expect(trashItems(client).map((note) => note.id)).toEqual(["t1"]);
   });
 });

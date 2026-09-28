@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 
 import { MarkdownEditor } from "./markdown-editor";
@@ -48,5 +48,34 @@ describe("MarkdownEditor", () => {
 
     expect(editor).toHaveAttribute("aria-disabled", "true");
     expect(editor).toHaveAttribute("contenteditable", "false");
+  });
+
+  it("renders task lists as labelled checkboxes and serializes a toggle (EDIT-05)", async () => {
+    const onChange = vi.fn();
+
+    render(<MarkdownEditor value={"- [ ] Draft\n- [x] Review"} onChange={onChange} />);
+
+    const open = await screen.findByRole("checkbox", { name: "Task: Draft" });
+    const done = screen.getByRole("checkbox", { name: "Task: Review" });
+
+    expect(open).not.toBeChecked();
+    expect(done).toBeChecked();
+
+    fireEvent.click(open);
+
+    // StarterKit's trailing-node plugin appends an empty paragraph after a
+    // final list, so compare the trimmed markdown.
+    await waitFor(() => {
+      expect(onChange).toHaveBeenCalled();
+    });
+    const lastMarkdown = String(onChange.mock.lastCall?.[0]);
+    expect(lastMarkdown.trim()).toBe("- [x] Draft\n- [x] Review");
+  });
+
+  it("names each task checkbox from its own text, not its nested sub-tasks", async () => {
+    render(<MarkdownEditor onChange={vi.fn()} value={"- [ ] Parent\n  - [x] Child"} />);
+
+    expect(await screen.findByRole("checkbox", { name: "Task: Parent" })).not.toBeChecked();
+    expect(screen.getByRole("checkbox", { name: "Task: Child" })).toBeChecked();
   });
 });

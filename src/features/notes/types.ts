@@ -1,4 +1,4 @@
-import type { KnowledgeObjectSummary } from "@/shared/types";
+import type { KnowledgeObjectSummary, Tag } from "@/shared/types";
 
 export interface CreateNoteInput {
   body?: string;
@@ -8,6 +8,8 @@ export interface CreateNoteInput {
 
 export interface CreateNoteRecordInput {
   body: string;
+  /** `[[titles]]` parsed from `body`; resolved and linked in the same transaction. */
+  linkTitles?: string[];
   dailyNoteDate: string | null;
   folderId: string | null;
   title: string;
@@ -21,6 +23,8 @@ export interface Note extends KnowledgeObjectSummary {
 
 export interface NoteRecord {
   body: string;
+  /** Present when the read embedded the note's tags; RPC writes omit it. */
+  tags?: Tag[];
   createdAt: string;
   dailyNoteDate: string | null;
   deletedAt: string | null;
@@ -42,6 +46,26 @@ export interface ListNotesKeyset {
   updatedAtBefore: string;
 }
 
+/**
+ * A soft-deleted note as the trash view sees it (ADR-28): the full `Note` plus
+ * when it was deleted, so the UI can show how long until the 30-day purge.
+ */
+export interface TrashedNote extends Note {
+  deletedAt: string;
+}
+
+export interface ListTrashedNotesKeyset {
+  deletedAtBefore: string;
+  idBefore: string;
+}
+
+export interface ListTrashedNotesRecordOptions {
+  keysetBefore?: ListTrashedNotesKeyset;
+  limit: number;
+  /** Only trash deleted at or after this instant is still restorable. */
+  windowStart: string;
+}
+
 export interface ListNotesRecordOptions {
   folderId?: string | null;
   keysetBefore?: ListNotesKeyset;
@@ -56,6 +80,19 @@ export interface UpdateNoteInput {
 
 export interface UpdateNoteRecordInput {
   body?: string;
+  /** Required alongside `body`: the parsed `[[titles]]` to reconcile edges against. */
+  linkTitles?: string[];
   folderId?: string | null;
   title?: string;
+}
+
+/** A note that links to another, with the text around the link (05_API §4). */
+export interface Backlink {
+  object: KnowledgeObjectSummary;
+  snippet: string;
+}
+
+export interface BacklinkRecord {
+  body: string;
+  summary: KnowledgeObjectSummary;
 }

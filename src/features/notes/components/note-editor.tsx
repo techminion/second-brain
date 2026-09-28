@@ -4,12 +4,16 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 
 import { MarkdownEditor } from "@/features/editor";
+import { FolderPicker } from "@/features/folders";
 import type { Note, UpdateNoteInput } from "@/features/notes/types";
 import { Input } from "@/shared/ui/input";
 
 import { useAutosave } from "../hooks/use-autosave";
 import { useUpdateNote } from "../hooks/use-note-mutations";
+import { useWikiLinkController } from "../hooks/use-wiki-link-controller";
+import { DailyNotePager } from "./daily-note-pager";
 import { DeleteNoteDialog } from "./delete-note-dialog";
+import { NoteTags } from "./note-tags";
 
 /**
  * The loaded note surface: an editable title + the markdown body editor, with
@@ -44,6 +48,7 @@ export function NoteEditor({ note }: Readonly<{ note: Note }>) {
   }, [mutate, note.id]);
 
   const { flush, schedule } = useAutosave(save);
+  const wikiLinks = useWikiLinkController(note.id, title, flush);
 
   // Clear the dirty flag once a save lands (while mounted); `save` itself never
   // touches state, so the unmount flush stays warning-free.
@@ -82,6 +87,7 @@ export function NoteEditor({ note }: Readonly<{ note: Note }>) {
           value={title}
         />
         <div className="flex shrink-0 items-center gap-3">
+          {note.dailyNoteDate ? <DailyNotePager date={note.dailyNoteDate} /> : null}
           <span aria-live="polite" className="text-muted-foreground text-sm" role="status">
             {status}
           </span>
@@ -92,10 +98,25 @@ export function NoteEditor({ note }: Readonly<{ note: Note }>) {
           />
         </div>
       </div>
+      <NoteTags noteId={note.id} tags={note.tags} />
+      <FolderPicker
+        onChange={(folderId) =>
+          mutate(
+            { id: note.id, input: { folderId } },
+            { onError: () => toast.error("Could not move your note.") },
+          )
+        }
+        value={note.folderId}
+      />
       {title.trim() === "" ? (
         <p className="text-destructive text-sm">Add a title to save this note’s name.</p>
       ) : null}
-      <MarkdownEditor ariaLabel="Note body" onChange={handleBody} value={body} />
+      <MarkdownEditor
+        ariaLabel="Note body"
+        onChange={handleBody}
+        value={body}
+        wikiLinks={wikiLinks}
+      />
     </article>
   );
 }

@@ -21,6 +21,22 @@ Estimated Context Needed:
 
 ---
 
+## 2026-09-27 — Claude — Sprint 5 close-out, M1 Collect, M2 Connect (backend + editor links)
+
+**Session Date:** 2026-09-27
+**Agent:** Claude (architect + implementation), user directive "implement the app end to end — go as far as possible"
+**Objective:** Finish Sprint 5, then continue down the backlog, stopping only at genuine decisions.
+**Decisions asked and answered by the user:** trash contract (ADR-28), daily-note title/template/trashed behavior (ADR-29), scope ("as far as possible").
+**Architecture Decisions:** ADR-28 (`listTrash`), ADR-29 (daily notes), ADR-30 (FolderService composes NoteService; ordered deletes), ADR-31 (`Tag` shape + tagging rules), ADR-32 (wiki-link syntax/resolution/transactional maintenance, trigram suggest, graph semantics). ADR-30/31/32 are implementer decisions flagged for reviewer confirmation.
+**Implemented (all In Review):** EDIT-05 (supersedes PR #129, folding in its improvements), NOTE-12/15, EDIT-16, DAILY-01..08, FOLD-01..14, TAG-01..07/09/10, LINK-01..10, SRCH-05/06, BACK-01..05, GRAPH-01..03/18. Shared extractions: `createServiceRoute`, `shared/lib/api-client`, `keyset-cursor`, `query-keys`, `drag-data`.
+**Migrations:** two new (wiki-link reconciliation; pg_trgm title suggest). Replayed from scratch (22/22) and exercised through the real services. **Not applied to dev Cloud** (Supabase MCP could not connect) — apply before merge or the Cloud-drift check fails. `tools/ci/replay-supabase-migrations.sh` guard updated to the new RPC signatures and new functions.
+**Verification performed:** typecheck/lint/format green; 636 unit tests; production build; full Playwright suite 14/14 and ad-hoc service integration runs against a throwaway local Supabase stack (Postgres 17.6 + PostgREST 12.2 + GoTrue 2.180 + a small gateway), including cross-user RLS isolation. That stack surfaced and fixed two real bugs (folder tree lost expansion on reload; task-item layout CSS never matched live NodeViews).
+**Outstanding Work:** GRAPH-04..17 (canvas), LINK-11/12 + BACK-06 E2E, M1 tail (EDIT-06+, NOTE-13/14/16, ATT-*), M3+.
+**Known Bugs:** None known. See PROJECT_STATE "Known Technical Debt" for accepted tradeoffs.
+**Risks:** Merging applies the two migrations to production (CI-09). `update_note`/`create_note` signatures changed (new optional `p_link_titles`); old callers remain compatible via the default.
+**Suggested Next Task:** GRAPH-04 (React Flow canvas) — record the `d3-force` dependency decision first.
+**Estimated Context Needed:** This entry, ADR-28..32, `.ai/TASK_QUEUE.md` Sprint 6 table.
+
 ## 2026-07-26 — Codex (Frontend) — NOTE-11 ready for review
 
 **Session Date:** 2026-07-26

@@ -4,7 +4,7 @@
 
 ## Current Milestone
 
-**M0 — Foundations** ✅ **complete** — every M0-phase task Done (SETUP/DB/AUTH/SHELL/CI/OBS), including the shell-polish tail (SHELL-05/06/08/09) and the E2E/a11y test infra (CI-06/08). → **M1 — Collect** (active)
+**M1 — Collect** (active; nearly complete in review) and **M2 — Connect** (backend + editor links + backlinks in review; graph canvas pending). M0 — Foundations ✅ complete — — every M0-phase task Done (SETUP/DB/AUTH/SHELL/CI/OBS), including the shell-polish tail (SHELL-05/06/08/09) and the E2E/a11y test infra (CI-06/08). → **M1 — Collect** (active)
 
 ## Current Sprint
 
@@ -17,7 +17,7 @@ Done: Sprint 0 (governance), Sprint 1 (repo & tooling — 21 tasks), Sprint 2 (s
 |---|---|
 | Engineering documentation (12 docs) | ✅ Complete, audited twice for consistency |
 | Governance layer (this file set) | ✅ Complete |
-| Implementation | 50 Done / 309 tasks ([12_TASKS.md](12_TASKS.md)) |
+| Implementation | 50 Done + ~80 In Review (branch `claude/gallant-ride-gl1fkf`) / 309 tasks ([12_TASKS.md](12_TASKS.md)) |
 
 ## Completed
 
@@ -78,24 +78,30 @@ Done: Sprint 0 (governance), Sprint 1 (repo & tooling — 21 tasks), Sprint 2 (s
 
 ## Current Sprint (updated)
 
-**Sprint 5 — Note-Taking End-to-End** (promoted 2026-07-24; scope in [.ai/TASK_QUEUE.md](../.ai/TASK_QUEUE.md)): NOTE-07..11 and EDIT-04 are merged (create → open → edit → save → delete). Remaining implementation is EDIT-05, with NOTE-12/15 as P2 stretch work.
+**Sprint 5** implementation is complete (EDIT-05, NOTE-12, NOTE-15 in review). **Sprint 6 — M1 Collect continuation + M2 Connect** is in review on `claude/gallant-ride-gl1fkf`: EDIT-16 (XSS corpus + image-src sanitization), DAILY-01..08, FOLD-01..14, TAG-01..07/09/10, LINK-01..10 (minus LINK-11/12 E2E), SRCH-05/06, BACK-01..05, GRAPH-01..03/18. See the Sprint 6 table in [.ai/TASK_QUEUE.md](../.ai/TASK_QUEUE.md).
 
 ## In Progress
 
-- **CI-09 (Codex):** production migration automation and ordering are live. The Supabase GitHub integration's empty production run succeeded at 20/20 parity with repository configuration skipped; Vercel now requires that Supabase GitHub check before assigning Production aliases. The configured gate was exercised successfully by an unchanged production redeploy. Only ADR-27's final end-to-end proof—automatic application of the next legitimate pending migration—remains before Done.
+- **M2 graph canvas (GRAPH-04..17)**, LINK-11/12 and BACK-06 E2E — not started; backend/API is ready.
+- **Dev Cloud migrations owed:** `20260927220000_add_wiki_link_reconciliation` and `20260927220100_add_note_title_trigram_suggest` must be applied to the dev project (`zkzyfwclvquiargnwgtw`) per ADR-10 before the CI Cloud-drift check can pass; merging to `main` applies them to production via CI-09 (their first legitimate auto-apply — also CI-09's outstanding proof).
+- **CI-09 (Codex):** awaiting the next legitimate migration's auto-apply proof (the two above).
 
 ## Blocked
 
-- None.
+- TAG-08 (cross-type tagging tests) — blocked on ATT-03 (AttachmentService).
 
 ## Upcoming
 
-- **After Sprint 5:** rest of EDIT formatting (EDIT-06+), NOTE-13/16, then FOLD/TAG/ATT/DAILY (the rest of M1 Collect). CRED-01 (MCP) tracks to M4; ADR-24/ADR-25 make EMB-01 the first AI task, in M3.
+- **Next:** GRAPH-04..17 (React Flow + d3-force layout, ADR pending), LINK-11/12, BACK-06; then the M1 tail (EDIT-06..15/17/18, NOTE-13/14/16, ATT-*) and M3 FTS. AI (EMB/SEM/AICH/VCH) waits on the ADR-25 spec ripples; MCP waits on the protocol-version pin.
+- **Earlier plan (after Sprint 5):** rest of EDIT formatting (EDIT-06+), NOTE-13/16, then FOLD/TAG/ATT/DAILY (the rest of M1 Collect). CRED-01 (MCP) tracks to M4; ADR-24/ADR-25 make EMB-01 the first AI task, in M3.
 - **Resolved 2026-07-24 (GOV-8):** `E2E (preview)` and `Accessibility` are now **required** branch-protection contexts (added via the GitHub API). A preview-lane flake now blocks merge until re-triggered — accepted tradeoff.
 - **Watch-item (reviewer flag):** EDIT-16 (XSS hardening test, 09_SECURITY §9 T4) is deferred, but the editor now renders user markdown incl. `@tiptap/extension-image` URLs — prioritize EDIT-16 before the editor reaches real users.
 - **AI is per-user gated (ADR-25, user decision):** EMB/SEM/AICH/VCH are built but ship off by default, enabled per user via a single `profiles.ai_enabled` flag an operator toggles in SQL — **no admin role/panel in MVP** (deferred to a future phase). Before those tasks are implemented, the spec ripples in ADR-25 must be applied (04_DATABASE `profiles.ai_enabled` + self-grant-proof column `REVOKE`/RLS + GOV-6 self-enable-denial test, 09_SECURITY operator-only gate note, 05_API `updateProfile` exclusion, 07_AI/08_SEARCH runtime gating, 12_TASKS gating criteria).
 
 ## Known Technical Debt
+
+- Folder deletes are ordered, not transactional (ADR-30); rename propagation's regex also rewrites `[[old]]` inside code blocks (ADR-32).
+- Orphaned tags persist (no tag management yet, ADR-31).
 
 - Harness residual flake: the DB-08 retry covers Auth user creation/sign-in, but the *first data request* after sign-in can still hit Cloud clock skew (1 failure seen in DB-13 review, rerun green). If it recurs, extend the retry/tolerance to first use of a fresh session.
 - The `feature-boundaries` lint rule only catches `@/features/...` alias imports; relative-path imports bypass it. Follow-up hardening candidate.
@@ -114,8 +120,8 @@ Done: Sprint 0 (governance), Sprint 1 (repo & tooling — 21 tasks), Sprint 2 (s
 
 ## Current Branch
 
-`feature/edit-04-live-formatting`
+`claude/gallant-ride-gl1fkf`
 
 ## Last Updated
 
-2026-07-26 — EDIT-04 (#126) and NOTE-11 (#127) merged, completing the Sprint 5 create → open → edit → save → delete UI loop: live Markdown formatting with cursor-local marker reveal, and a named delete confirmation with the 30-day trash window. Remaining Sprint 5 implementation is EDIT-05 (lists). CI-09 stays In Progress pending the next legitimate migration's auto-apply proof.
+2026-09-27 — Claude session: Sprint 5 finished; M1 Collect (daily notes, folders, tags, trash, XSS hardening) and the M2 Connect backend plus editor wiki links/autocomplete/backlinks implemented, with ADR-28..32. Verified with 636 unit tests and the full Playwright suite (14/14) against a local Supabase Postgres 17 + PostgREST + GoTrue stack.

@@ -27,6 +27,9 @@ const expectedRecord = {
   updatedAt: "2026-07-23T00:00:00.000Z",
 };
 
+// Table reads embed the tag join; RPC writes do not.
+const expectedQueryRecord = { ...expectedRecord, tags: [] };
+
 function createFluentBuilder(result: { data: unknown; error: unknown }) {
   const builder = {
     eq: vi.fn(),
@@ -91,6 +94,7 @@ describe("NoteRepository", () => {
       p_body: "Repository body",
       p_daily_note_date: null,
       p_folder_id: "folder-id",
+      p_link_titles: [],
       p_owner_id: "user-id",
       p_title: "Repository note",
     });
@@ -129,7 +133,7 @@ describe("NoteRepository", () => {
       error: null,
     });
 
-    await expect(repository.getNote("user-id", "note-id")).resolves.toEqual(expectedRecord);
+    await expect(repository.getNote("user-id", "note-id")).resolves.toEqual(expectedQueryRecord);
     expect(from).toHaveBeenCalledWith("knowledge_objects");
     expect(builder.eq).toHaveBeenNthCalledWith(1, "id", "note-id");
     expect(builder.eq).toHaveBeenNthCalledWith(2, "owner_id", "user-id");
@@ -167,6 +171,7 @@ describe("NoteRepository", () => {
       p_body: "Updated body",
       p_folder_id: null,
       p_knowledge_object_id: "note-id",
+      p_link_titles: [],
       p_owner_id: "user-id",
       p_title: null,
       p_update_body: true,
@@ -208,7 +213,7 @@ describe("NoteRepository", () => {
         },
         limit: 51,
       }),
-    ).resolves.toEqual([expectedRecord]);
+    ).resolves.toEqual([expectedQueryRecord]);
 
     expect(builder.eq).toHaveBeenCalledWith("owner_id", "user-id");
     expect(builder.eq).toHaveBeenCalledWith("type", "note");
@@ -277,7 +282,7 @@ describe("NoteRepository", () => {
     await expect(
       repository.restoreNote("user-id", "note-id", restoredAt, windowStart),
     ).resolves.toEqual({
-      ...expectedRecord,
+      ...expectedQueryRecord,
       updatedAt: restoredAt,
     });
     expect(builder.update).toHaveBeenCalledWith({
@@ -286,5 +291,151 @@ describe("NoteRepository", () => {
     });
     expect(builder.not).toHaveBeenCalledWith("deleted_at", "is", null);
     expect(builder.gte).toHaveBeenCalledWith("deleted_at", windowStart);
+  });
+
+  it("lists restorable trash newest-deleted first with a deleted_at keyset", async () => {
+    const trashedRow = {
+      created_at: "2026-07-23T00:00:00.000Z",
+      deleted_at: "2026-07-24T00:00:00.000Z",
+      id: "note-id",
+      notes: [{ body: "Repository body", daily_note_date: null, folder_id: null }],
+      owner_id: "user-id",
+      title: "Repository note",
+      updated_at: "2026-07-24T00:00:00.000Z",
+    };
+    const { builder, from, repository } = createTableRepository({
+      data: [trashedRow],
+      error: null,
+    });
+
+    await expect(
+      repository.listTrashedNotes("user-id", {
+        keysetBefore: { deletedAtBefore: "2026-07-25T00:00:00.000Z", idBefore: "cursor-id" },
+        limit: 11,
+        windowStart: "2026-06-25T00:00:00.000Z",
+      }),
+    ).resolves.toEqual([
+      {
+        ...expectedQueryRecord,
+        deletedAt: "2026-07-24T00:00:00.000Z",
+        folderId: null,
+        updatedAt: "2026-07-24T00:00:00.000Z",
+      },
+    ]);
+
+    expect(from).toHaveBeenCalledWith("knowledge_objects");
+    expect(builder.eq).toHaveBeenCalledWith("owner_id", "user-id");
+    expect(builder.eq).toHaveBeenCalledWith("type", "note");
+    expect(builder.not).toHaveBeenCalledWith("deleted_at", "is", null);
+    expect(builder.gte).toHaveBeenCalledWith("deleted_at", "2026-06-25T00:00:00.000Z");
+    expect(builder.or).toHaveBeenCalledWith(
+      'deleted_at.lt."2026-07-25T00:00:00.000Z",and(deleted_at.eq."2026-07-25T00:00:00.000Z",id.lt."cursor-id")',
+    );
+    expect(builder.order).toHaveBeenNthCalledWith(1, "deleted_at", { ascending: false });
+    expect(builder.order).toHaveBeenNthCalledWith(2, "id", { ascending: false });
+    expect(builder.limit).toHaveBeenCalledWith(11);
+  });
+
+  it("surfaces trash-listing failures without leaking the database error", async () => {
+    const { repository } = createTableRepository({ data: null, error: { message: "secret" } });
+
+    await expect(
+      repository.listTrashedNotes("user-id", { limit: 5, windowStart: "2026-06-25T00:00:00Z" }),
+    ).rejects.toThrow("Unable to list trashed notes");
+  });
+
+  it("reads a daily note by date in any deletion state", async () => {
+    const { builder, repository } = createTableRepository({ data: null, error: null });
+
+    await expect(repository.getDailyNote("user-id", "2026-09-27")).resolves.toBeNull();
+
+    expect(builder.eq).toHaveBeenCalledWith("owner_id", "user-id");
+    expect(builder.eq).toHaveBeenCalledWith("notes.daily_note_date", "2026-09-27");
+    expect(builder.is).not.toHaveBeenCalled();
+  });
+
+  it("returns null from createDailyNote on a unique-index conflict", async () => {
+    const { repository } = createRpcRepository({ data: null, error: { code: "23505" } });
+
+    await expect(
+      repository.createDailyNote("user-id", {
+        body: "",
+        dailyNoteDate: "2026-09-27",
+        folderId: null,
+        title: "2026-09-27",
+      }),
+    ).resolves.toBeNull();
+  });
+
+  it("rethrows non-conflict failures from createDailyNote", async () => {
+    const { repository } = createRpcRepository({ data: null, error: { code: "42501" } });
+
+    await expect(
+      repository.createDailyNote("user-id", {
+        body: "",
+        dailyNoteDate: "2026-09-27",
+        folderId: null,
+        title: "2026-09-27",
+      }),
+    ).rejects.toThrow("Unable to create note");
+  });
+
+  it("maps embedded tags onto read records, sorted by name", async () => {
+    const { repository } = createTableRepository({
+      data: {
+        ...{
+          created_at: "2026-07-23T00:00:00.000Z",
+          deleted_at: null,
+          id: "note-id",
+          owner_id: "user-id",
+          title: "Repository note",
+          updated_at: "2026-07-23T00:00:00.000Z",
+        },
+        knowledge_object_tags: [
+          { tags: { id: "t2", name: "zeta" } },
+          { tags: [{ id: "t1", name: "Alpha" }] },
+          { tags: null },
+        ],
+        notes: { body: "Repository body", daily_note_date: null, folder_id: "folder-id" },
+      },
+      error: null,
+    });
+
+    const record = await repository.getNote("user-id", "note-id");
+
+    expect(record?.tags).toEqual([
+      { id: "t1", name: "Alpha" },
+      { id: "t2", name: "zeta" },
+    ]);
+  });
+
+  it("finds an existing tag case-insensitively with LIKE wildcards escaped", async () => {
+    const { builder, repository } = createTableRepository({
+      data: { id: "t1", name: "Res_earch" },
+      error: null,
+    });
+    const ilike = vi.fn().mockReturnValue(builder);
+    const insert = vi.fn();
+    Object.assign(builder, { ilike, insert });
+
+    await expect(repository.findOrCreateTag("user-id", "res_earch%")).resolves.toEqual({
+      id: "t1",
+      name: "Res_earch",
+    });
+    expect(ilike).toHaveBeenCalledWith("name", "res\\_earch\\%");
+    expect(insert).not.toHaveBeenCalled();
+  });
+
+  it("treats attaching an already-attached tag as a no-op", async () => {
+    const insert = vi.fn().mockResolvedValue({ error: { code: "23505" } });
+    const from = vi.fn().mockReturnValue({ insert });
+    const repository = new NoteRepository({ from } as unknown as SupabaseClient);
+
+    await expect(repository.attachTag("user-id", "note-id", "t1")).resolves.toBeUndefined();
+    expect(insert).toHaveBeenCalledWith({
+      knowledge_object_id: "note-id",
+      owner_id: "user-id",
+      tag_id: "t1",
+    });
   });
 });

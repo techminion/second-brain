@@ -37,6 +37,42 @@ vi.mock("@/features/editor", () => ({
   ),
 }));
 
+vi.mock("../hooks/use-wiki-link-controller", () => ({
+  useWikiLinkController: () => ({
+    isResolved: () => true,
+    open: vi.fn(),
+    resolutionKey: "",
+    suggest: vi.fn(),
+  }),
+}));
+vi.mock("./note-tags", () => ({
+  NoteTags: ({ tags }: { tags: { name: string }[] }) => (
+    <ul aria-label="Tags">
+      {tags.map((tag) => (
+        <li key={tag.name}>{tag.name}</li>
+      ))}
+    </ul>
+  ),
+}));
+vi.mock("@/features/folders", () => ({
+  FolderPicker: ({
+    onChange,
+    value,
+  }: {
+    onChange: (folderId: string | null) => void;
+    value: string | null;
+  }) => (
+    <select
+      aria-label="Folder"
+      onChange={(event) => onChange(event.target.value || null)}
+      value={value ?? ""}
+    >
+      <option value="">No folder</option>
+      <option value="f1">Projects</option>
+    </select>
+  ),
+}));
+
 function makeNote(overrides: Partial<Note> = {}): Note {
   return {
     body: "Body",
@@ -117,5 +153,16 @@ describe("NoteEditor", () => {
     act(() => vi.advanceTimersByTime(800));
 
     expect(toastError).toHaveBeenCalledTimes(1);
+  });
+
+  it("moves the note to the folder chosen in the picker (FR-FOLDER-2)", () => {
+    render(<NoteEditor note={makeNote()} />);
+
+    fireEvent.change(screen.getByLabelText("Folder"), { target: { value: "f1" } });
+
+    expect(mutate).toHaveBeenCalledWith(
+      { id: "n1", input: { folderId: "f1" } },
+      expect.any(Object),
+    );
   });
 });

@@ -33,7 +33,8 @@ Referenced across multiple services below; full field-level definition lives in 
 
 | Type | Shape |
 |---|---|
-| `KnowledgeObjectSummary` | `{ id, type, title, tags, createdAt, updatedAt }` — the common envelope, used in list/search results |
+| `KnowledgeObjectSummary` | `{ id, type, title, tags: Tag[], createdAt, updatedAt }` — the common envelope, used in list/search results |
+| `Tag` | `{ id, name }` — tags sorted by name on an object ([ADR-31](DECISIONS.md)) |
 | `Note` | `KnowledgeObjectSummary & { body, folderId, dailyNoteDate }` |
 | `Folder` | `{ id, name, parentFolderId, createdAt, updatedAt }` |
 | `Attachment` | `KnowledgeObjectSummary & { mimeType, sizeBytes, url }` — `url` is a short-lived signed URL, generated per request, never stored |
@@ -70,16 +71,19 @@ A fixed, closed set — every service throws only from this list. No service inv
 | `delete` | `noteId` | `void` | `NotFoundError` |
 | `restore` | `noteId` | `Note` | `NotFoundError` (outside retention window) |
 | `list` | `{ folderId? } & PaginationOptions` | `Paginated<Note>` | — |
+| `listTrash` | `PaginationOptions` | `Paginated<Note & { deletedAt: string }>` — restorable trash only, most recently deleted first ([ADR-28](DECISIONS.md)) | — |
 | `getBacklinks` | `noteId` | `{ object: KnowledgeObjectSummary; snippet: string }[]` — snippet is the text surrounding the link in the source note, for the backlinks panel | `NotFoundError` |
 | `getOrCreateDailyNote` | `date` | `Note` | — |
 | `addTag` | `noteId, tagName` | `Note` | `NotFoundError` |
 | `removeTag` | `noteId, tagId` | `Note` | `NotFoundError` |
 
 **Behavioral notes:**
+- `listTrash` is the deliberate trash query [04_DATABASE.md §6](04_DATABASE.md#6-soft-deletes) allows: soft-deleted notes whose `deleted_at` is inside the 30-day retention window, keyset-paginated on `(deleted_at desc, id desc)`. Expired rows awaiting the purge worker are excluded, since `restore` would refuse them ([ADR-28](DECISIONS.md)).
 - `update` re-parses `[[wiki links]]` out of `body` and reconciles the `links` table (insert new, delete removed) in the same transaction as the note save — this is what makes FR-LINK-6 true without a separate reindex step ([04_DATABASE.md §4.8](04_DATABASE.md#48-links)).
+- `getBacklinks` returns only **active** linking notes, newest-edited first, with the snippet taken around the first `[[title]]` occurrence (falling back to the body's opening text); a trashed or missing target is `NotFoundError` ([ADR-32](DECISIONS.md)).
 - `update` writes `notes.title` and `knowledge_objects.title` together, always — `NoteService` is the schema's designated single writer for both ([04_DATABASE.md §4.3](04_DATABASE.md#43-notes)).
 - **Rename propagation (FR-NOTE-3):** when `title` changes, `update` uses the `links` table to find every note linking to this one and rewrites their `[[old title]]` occurrences to `[[new title]]` in the same transaction. Link *edges* are ID-based and unchanged — only display text in referencing bodies is updated. This keeps raw markdown human-readable (`[[title]]`, never opaque IDs), which is what makes export ([09_SECURITY.md §11](09_SECURITY.md#11-privacy--data-ownership)) portable without a translation step.
-- `getOrCreateDailyNote` is an upsert against the `(owner_id, daily_note_date)` unique constraint — it never races itself into a `ConflictError` under normal use.
+- `getOrCreateDailyNote` is an upsert against the `(owner_id, daily_note_date)` unique constraint — it never races itself into a `ConflictError` under normal use. `date` is the caller's local calendar day (`YYYY-MM-DD`, else `ValidationError`); a new note is titled with that date and seeded with the fixed MVP template, and a trashed daily note for the date is restored rather than duplicated ([ADR-29](DECISIONS.md)).
 - Neither `create` nor `update` calls `EmbeddingService` directly. Re-embedding is triggered by the database webhook described in [03_ARCHITECTURE.md §6.4](03_ARCHITECTURE.md#64-embedding-pipeline), not a synchronous service-to-service call — see §10.
 
 **Example — `create`:**

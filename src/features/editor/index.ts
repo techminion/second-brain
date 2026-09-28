@@ -3,4 +3,8 @@
 // feature-boundary rule is respected. The MarkdownEditor stays in this feature
 // because it is coupled to the editor-domain markdown logic (extensions +
 // round-trip serializer) it composes.
-export { MarkdownEditor, type MarkdownEditorProps } from "./components/markdown-editor";
+export {
+  MarkdownEditor,
+  type MarkdownEditorProps,
+  type WikiLinkController,
+} from "./components/markdown-editor";

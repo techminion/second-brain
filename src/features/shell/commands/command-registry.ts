@@ -13,7 +13,8 @@ interface Command {
 const COMMANDS: readonly Command[] = [
   { id: "new-note", label: "New note", shortcut: "⌘N", disabled: true },
   { id: "quick-open", label: "Quick-open note", shortcut: "⌘P", disabled: true },
-  { id: "daily-note", label: "Today's daily note", shortcut: "⌘D", disabled: true },
+  { id: "daily-note", label: "Today's daily note", shortcut: "⌘D", href: "/daily" },
+  { id: "daily-note-yesterday", label: "Yesterday's daily note", href: "/daily?offset=-1" },
   {
     id: "toggle-right-panel",
     label: "Toggle right panel",

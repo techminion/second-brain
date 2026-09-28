@@ -41,9 +41,9 @@ describe("normalizeMarkdown", () => {
       "- one\n- two\n  - two.a\n  - two.b\n- three",
     ],
     [
-      "ordered lists, nesting reindented",
+      "ordered lists, nesting preserved (Tiptap ≥3.31 keeps the 3-space indent)",
       "1. first\n2. second\n   1. nested\n3. third",
-      "1. first\n2. second\n  1. nested\n3. third",
+      "1. first\n2. second\n   1. nested\n3. third",
     ],
     [
       "fenced code with language",
@@ -59,6 +59,23 @@ describe("normalizeMarkdown", () => {
     ],
     ["setext headings canonicalized to ATX", "Title\n=====", "# Title"],
     ["underscore emphasis canonicalized", "_italic_ and __bold__", "*italic* and **bold**"],
+    ["task lists keep checked state", "- [ ] todo\n- [x] done", "- [ ] todo\n- [x] done"],
+    [
+      "nested task lists, uppercase X canonicalized",
+      "- [ ] parent\n  - [x] child\n- [X] shouted",
+      "- [ ] parent\n  - [x] child\n- [x] shouted",
+    ],
+    ["task list bullet marker canonicalized", "* [ ] star task", "- [ ] star task"],
+    [
+      "task items keep inline formatting and wiki links",
+      "- [ ] **ship** [[Second Brain]] `v1`",
+      "- [ ] **ship** [[Second Brain]] `v1`",
+    ],
+    [
+      "task list after a plain list stays a separate list",
+      "- plain\n- [ ] task",
+      "- plain\n\n- [ ] task",
+    ],
     [
       "wiki links survive unescaped",
       "[[Second Brain]] links to [[Another Note]]",
@@ -110,8 +127,12 @@ describe("detectUnsupportedMarkdown", () => {
     expect(detectUnsupportedMarkdown("| a | b |\n|---|---|\n| 1 | 2 |")).toEqual(["table"]);
   });
 
-  it("flags task-list checkboxes", () => {
-    expect(detectUnsupportedMarkdown("- [ ] todo\n- [x] done")).toEqual(["task-list"]);
+  it("accepts bullet task lists (EDIT-05)", () => {
+    expect(detectUnsupportedMarkdown("- [ ] todo\n- [x] done\n* [X] star")).toEqual([]);
+  });
+
+  it("flags checkboxes inside ordered list items", () => {
+    expect(detectUnsupportedMarkdown("1. [ ] todo\n2) [x] done")).toEqual(["task-list"]);
   });
 
   it("flags raw HTML tags", () => {
@@ -124,7 +145,7 @@ describe("detectUnsupportedMarkdown", () => {
   });
 
   it("reports multiple reasons together", () => {
-    expect(detectUnsupportedMarkdown("|---|---|\n- [ ] todo\n<b>bold</b>")).toEqual([
+    expect(detectUnsupportedMarkdown("|---|---|\n1. [ ] todo\n<b>bold</b>")).toEqual([
       "table",
       "task-list",
       "html",

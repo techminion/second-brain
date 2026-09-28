@@ -1,8 +1,10 @@
 import { fireEvent, render, screen, within } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 
+const push = vi.fn();
+
 vi.mock("next/navigation", () => ({
-  useRouter: () => ({ push: vi.fn() }),
+  useRouter: () => ({ push }),
 }));
 
 import { AppShell } from "./app-shell";
@@ -64,6 +66,14 @@ describe("AppShell", () => {
 
     fireEvent.keyDown(document, { key: "\\", metaKey: true });
     expect(sidebar).toHaveAttribute("data-state", "expanded");
+  });
+
+  it("opens today's daily note with ⌘D (DAILY-03)", () => {
+    render(<AppShell>Workspace content</AppShell>);
+
+    fireEvent.keyDown(document, { key: "d", metaKey: true });
+
+    expect(push).toHaveBeenCalledWith("/daily");
   });
 
   it("collapses and expands the context panel independently", () => {

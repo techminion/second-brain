@@ -176,7 +176,7 @@ Generic edges between Knowledge Objects (FR-KO-2). Wiki links (FR-LINK-1) are th
 
 **Indexes:** `source_object_id` — "what does this note link out to"; `target_object_id` — **critical for FR-LINK-5/6**, this is the backlinks-panel query, and it must stay index-backed as graphs grow toward the 10,000-object NFR ceiling ([02_PRD §6](02_PRD.md#6-non-functional-requirements)).
 
-**Write rule:** rows here are derived, not directly authored — `NoteService.update()` re-parses `[[wiki links]]` out of the saved body and reconciles this table's rows (insert new, delete removed) in the same transaction as the note save, which is what makes FR-LINK-6 ("backlinks update within one page load") true without a separate reindex step.
+**Write rule:** rows here are derived, not directly authored — `NoteService.update()` re-parses `[[wiki links]]` out of the saved body and reconciles this table's rows (insert new, delete removed) in the same transaction as the note save, which is what makes FR-LINK-6 ("backlinks update within one page load") true without a separate reindex step. Implementation (ADR-32): the service parses titles and passes them to the `create_note`/`update_note` RPCs, which call `reconcile_note_links` (resolution to the oldest active same-titled note), rename propagation, and `attach_dangling_note_links` in the same transaction; resolution is backed by a `notes (owner_id, lower(title))` index.
 
 ### 4.9 `embeddings`
 

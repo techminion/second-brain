@@ -1,10 +1,12 @@
 import { afterEach, beforeEach, describe, expect, it, type Mock, vi } from "vitest";
 
-import { NoteService } from "@/features/notes/note-service";
+import { dailyNoteTemplate, NoteService } from "@/features/notes/note-service";
 import type {
+  BacklinkRecord,
   CreateNoteInput,
   CreateNoteRecordInput,
   ListNotesRecordOptions,
+  ListTrashedNotesRecordOptions,
   NoteRecord,
   UpdateNoteInput,
   UpdateNoteRecordInput,
@@ -12,9 +14,23 @@ import type {
 import { NotFoundError, ValidationError } from "@/shared/lib/errors";
 
 interface MockNoteRepository {
+  attachTag: Mock<(userId: string, objectId: string, tagId: string) => Promise<void>>;
+  detachTag: Mock<(userId: string, objectId: string, tagId: string) => Promise<void>>;
+  findOrCreateTag: Mock<(userId: string, name: string) => Promise<{ id: string; name: string }>>;
+  listBacklinks: Mock<(userId: string, targetId: string) => Promise<BacklinkRecord[]>>;
+  getTagsForObjects: Mock<
+    (userId: string, ids: string[]) => Promise<Map<string, { id: string; name: string }[]>>
+  >;
+  createDailyNote: Mock<
+    (userId: string, input: CreateNoteRecordInput) => Promise<NoteRecord | null>
+  >;
+  getDailyNote: Mock<(userId: string, date: string) => Promise<NoteRecord | null>>;
   createNote: Mock<(userId: string, input: CreateNoteRecordInput) => Promise<NoteRecord>>;
   getNote: Mock<(userId: string, noteId: string) => Promise<NoteRecord | null>>;
   listNotes: Mock<(userId: string, options: ListNotesRecordOptions) => Promise<NoteRecord[]>>;
+  listTrashedNotes: Mock<
+    (userId: string, options: ListTrashedNotesRecordOptions) => Promise<NoteRecord[]>
+  >;
   restoreNote: Mock<
     (
       userId: string,
@@ -43,9 +59,17 @@ const noteRecord: NoteRecord = {
 
 function createRepositoryMock(): MockNoteRepository {
   return {
+    attachTag: vi.fn().mockResolvedValue(undefined),
+    detachTag: vi.fn().mockResolvedValue(undefined),
+    findOrCreateTag: vi.fn(),
+    getTagsForObjects: vi.fn().mockResolvedValue(new Map()),
+    listBacklinks: vi.fn().mockResolvedValue([]),
+    createDailyNote: vi.fn(),
+    getDailyNote: vi.fn(),
     createNote: vi.fn(),
     getNote: vi.fn(),
     listNotes: vi.fn(),
+    listTrashedNotes: vi.fn(),
     restoreNote: vi.fn(),
     softDeleteNote: vi.fn(),
     updateNote: vi.fn(),
@@ -85,6 +109,7 @@ describe("NoteService.create", () => {
       body: "Service body",
       dailyNoteDate: null,
       folderId: "folder-id",
+      linkTitles: [],
       title: "Service note",
     });
   });
@@ -102,6 +127,7 @@ describe("NoteService.create", () => {
       body: "",
       dailyNoteDate: null,
       folderId: null,
+      linkTitles: [],
       title: "Root note",
     });
   });
@@ -214,6 +240,7 @@ describe("NoteService.update", () => {
     expect(repository.updateNote).toHaveBeenCalledWith("user-id", "note-id", {
       body: "Updated body",
       folderId: undefined,
+      linkTitles: [],
       title: "Updated title",
     });
   });
@@ -506,5 +533,293 @@ describe("NoteService.list", () => {
       "user-id",
       expect.objectContaining({ folderId: null }),
     );
+  });
+});
+
+describe("NoteService.listTrash", () => {
+  let repository: MockNoteRepository;
+  let service: NoteService;
+
+  const trashed = (id: string, deletedAt: string): NoteRecord => ({
+    ...noteRecord,
+    deletedAt,
+    id,
+    updatedAt: deletedAt,
+  });
+
+  beforeEach(() => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2026-08-31T12:00:00.000Z"));
+    repository = createRepositoryMock();
+    service = new NoteService(repository);
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it("returns restorable trash with deletedAt, bounded by the 30-day window", async () => {
+    repository.listTrashedNotes.mockResolvedValue([
+      trashed("11111111-1111-4111-8111-111111111111", "2026-08-30T00:00:00.000Z"),
+    ]);
+
+    await expect(service.listTrash("user-id")).resolves.toEqual({
+      items: [
+        expect.objectContaining({
+          deletedAt: "2026-08-30T00:00:00.000Z",
+          id: "11111111-1111-4111-8111-111111111111",
+          type: "note",
+        }),
+      ],
+    });
+    expect(repository.listTrashedNotes).toHaveBeenCalledWith("user-id", {
+      keysetBefore: undefined,
+      limit: 51,
+      windowStart: "2026-08-01T12:00:00.000Z",
+    });
+  });
+
+  it("pages by (deleted_at, id) with an opaque cursor that round-trips", async () => {
+    const first = trashed("22222222-2222-4222-8222-222222222222", "2026-08-30T00:00:00.000Z");
+    const second = trashed("11111111-1111-4111-8111-111111111111", "2026-08-29T00:00:00.000Z");
+    repository.listTrashedNotes.mockResolvedValueOnce([first, second]);
+
+    const page = await service.listTrash("user-id", { limit: 1 });
+
+    expect(page.items.map((note) => note.id)).toEqual([first.id]);
+    expect(page.nextCursor).toEqual(expect.any(String));
+
+    repository.listTrashedNotes.mockResolvedValueOnce([second]);
+    await service.listTrash("user-id", { cursor: page.nextCursor, limit: 1 });
+
+    expect(repository.listTrashedNotes).toHaveBeenLastCalledWith(
+      "user-id",
+      expect.objectContaining({
+        keysetBefore: { deletedAtBefore: first.deletedAt, idBefore: first.id },
+      }),
+    );
+  });
+
+  it("treats a forged cursor as absent and clamps the limit", async () => {
+    repository.listTrashedNotes.mockResolvedValue([]);
+    const forged = Buffer.from(JSON.stringify({ i: "x),or(1.eq.1", u: "now" })).toString(
+      "base64url",
+    );
+
+    await service.listTrash("user-id", { cursor: forged, limit: 1000 });
+
+    expect(repository.listTrashedNotes).toHaveBeenCalledWith(
+      "user-id",
+      expect.objectContaining({ keysetBefore: undefined, limit: 101 }),
+    );
+  });
+
+  it("never surfaces a row the repository returned without a deletion marker", async () => {
+    repository.listTrashedNotes.mockResolvedValue([noteRecord]);
+
+    await expect(service.listTrash("user-id")).resolves.toEqual({ items: [] });
+  });
+});
+
+describe("NoteService.getOrCreateDailyNote", () => {
+  let repository: MockNoteRepository;
+  let service: NoteService;
+
+  const daily: NoteRecord = {
+    ...noteRecord,
+    body: dailyNoteTemplate,
+    dailyNoteDate: "2026-09-27",
+    folderId: null,
+    title: "2026-09-27",
+  };
+
+  beforeEach(() => {
+    repository = createRepositoryMock();
+    service = new NoteService(repository);
+  });
+
+  it("returns the existing active daily note without writing", async () => {
+    repository.getDailyNote.mockResolvedValue(daily);
+
+    await expect(service.getOrCreateDailyNote("user-id", "2026-09-27")).resolves.toEqual(
+      expect.objectContaining({ dailyNoteDate: "2026-09-27", id: "note-id" }),
+    );
+    expect(repository.getDailyNote).toHaveBeenCalledWith("user-id", "2026-09-27");
+    expect(repository.createDailyNote).not.toHaveBeenCalled();
+    expect(repository.restoreNote).not.toHaveBeenCalled();
+  });
+
+  it("creates the note with the ISO date title and the fixed template", async () => {
+    repository.getDailyNote.mockResolvedValue(null);
+    repository.createDailyNote.mockResolvedValue(daily);
+
+    await service.getOrCreateDailyNote("user-id", "2026-09-27");
+
+    expect(repository.createDailyNote).toHaveBeenCalledWith("user-id", {
+      body: "## Notes\n\n\n## Tasks\n\n- [ ] ",
+      dailyNoteDate: "2026-09-27",
+      folderId: null,
+      title: "2026-09-27",
+    });
+  });
+
+  it("re-reads the winner when a concurrent create takes the date first", async () => {
+    repository.getDailyNote.mockResolvedValueOnce(null).mockResolvedValueOnce(daily);
+    repository.createDailyNote.mockResolvedValue(null);
+
+    await expect(service.getOrCreateDailyNote("user-id", "2026-09-27")).resolves.toEqual(
+      expect.objectContaining({ id: "note-id" }),
+    );
+    expect(repository.getDailyNote).toHaveBeenCalledTimes(2);
+  });
+
+  it("auto-restores a trashed daily note regardless of the retention window", async () => {
+    repository.getDailyNote.mockResolvedValue({ ...daily, deletedAt: "2026-01-01T00:00:00.000Z" });
+    repository.restoreNote.mockResolvedValue(daily);
+
+    await expect(service.getOrCreateDailyNote("user-id", "2026-09-27")).resolves.toEqual(
+      expect.objectContaining({ id: "note-id" }),
+    );
+    expect(repository.restoreNote).toHaveBeenCalledWith(
+      "user-id",
+      "note-id",
+      expect.any(String),
+      "1970-01-01T00:00:00.000Z",
+    );
+    expect(repository.createDailyNote).not.toHaveBeenCalled();
+  });
+
+  it.each(["2026-02-30", "27/09/2026", "", "2026-09-27T00:00:00Z"])(
+    "rejects %j before touching data",
+    async (date) => {
+      await expect(service.getOrCreateDailyNote("user-id", date)).rejects.toBeInstanceOf(
+        ValidationError,
+      );
+      expect(repository.getDailyNote).not.toHaveBeenCalled();
+    },
+  );
+});
+
+describe("NoteService tagging (TAG-01)", () => {
+  const noteId = "11111111-1111-4111-8111-111111111111";
+  const tagId = "22222222-2222-4222-8222-222222222222";
+  let repository: MockNoteRepository;
+  let service: NoteService;
+
+  beforeEach(() => {
+    repository = createRepositoryMock();
+    repository.getNote.mockResolvedValue({
+      ...noteRecord,
+      id: noteId,
+      tags: [{ id: tagId, name: "Research" }],
+    });
+    repository.findOrCreateTag.mockResolvedValue({ id: tagId, name: "Research" });
+    service = new NoteService(repository);
+  });
+
+  it("creates-or-reuses the tag by normalized name and attaches it", async () => {
+    await expect(service.addTag("user-id", noteId, "  #research ")).resolves.toEqual(
+      expect.objectContaining({ tags: [{ id: tagId, name: "Research" }] }),
+    );
+    expect(repository.findOrCreateTag).toHaveBeenCalledWith("user-id", "research");
+    expect(repository.attachTag).toHaveBeenCalledWith("user-id", noteId, tagId);
+  });
+
+  it.each(["", "   ", "#", "x".repeat(65)])("rejects tag name %j", async (name) => {
+    await expect(service.addTag("user-id", noteId, name)).rejects.toBeInstanceOf(ValidationError);
+    expect(repository.findOrCreateTag).not.toHaveBeenCalled();
+  });
+
+  it("refuses to tag a missing or trashed note", async () => {
+    repository.getNote.mockResolvedValue({ ...noteRecord, deletedAt: "2026-09-01T00:00:00Z" });
+
+    await expect(service.addTag("user-id", noteId, "x")).rejects.toBeInstanceOf(NotFoundError);
+    expect(repository.attachTag).not.toHaveBeenCalled();
+  });
+
+  it("detaches a tag and returns the note; a malformed tag id is a no-op", async () => {
+    await service.removeTag("user-id", noteId, tagId);
+    expect(repository.detachTag).toHaveBeenCalledWith("user-id", noteId, tagId);
+
+    repository.detachTag.mockClear();
+    await service.removeTag("user-id", noteId, "not-a-uuid");
+    expect(repository.detachTag).not.toHaveBeenCalled();
+  });
+
+  it("returns the note's tags from update (the RPC result carries none)", async () => {
+    repository.updateNote.mockResolvedValue({ ...noteRecord, id: noteId });
+    repository.getTagsForObjects.mockResolvedValue(
+      new Map([[noteId, [{ id: tagId, name: "Research" }]]]),
+    );
+
+    await expect(service.update("user-id", noteId, { body: "b" })).resolves.toEqual(
+      expect.objectContaining({ tags: [{ id: tagId, name: "Research" }] }),
+    );
+  });
+});
+
+describe("NoteService wiki links (LINK-02/04, BACK-01)", () => {
+  let repository: MockNoteRepository;
+  let service: NoteService;
+
+  beforeEach(() => {
+    repository = createRepositoryMock();
+    service = new NoteService(repository as never);
+  });
+
+  it("passes the body's parsed link titles to create", async () => {
+    repository.createNote.mockResolvedValue(noteRecord);
+
+    await service.create("user-id", { body: "See [[Alpha]], `[[code]]`, [[alpha]]", title: "T" });
+
+    expect(repository.createNote).toHaveBeenCalledWith(
+      "user-id",
+      expect.objectContaining({ linkTitles: ["Alpha"] }),
+    );
+  });
+
+  it("re-derives link titles only when the body is updated", async () => {
+    repository.updateNote.mockResolvedValue(noteRecord);
+
+    await service.update("user-id", "note-id", { body: "[[B]] and [[C]]" });
+    expect(repository.updateNote).toHaveBeenLastCalledWith(
+      "user-id",
+      "note-id",
+      expect.objectContaining({ linkTitles: ["B", "C"] }),
+    );
+
+    await service.update("user-id", "note-id", { title: "Renamed" });
+    expect(repository.updateNote).toHaveBeenLastCalledWith(
+      "user-id",
+      "note-id",
+      expect.objectContaining({ linkTitles: undefined, title: "Renamed" }),
+    );
+  });
+
+  it("returns backlinks with context snippets around the link", async () => {
+    repository.getNote.mockResolvedValue({ ...noteRecord, title: "Target" });
+    repository.listBacklinks.mockResolvedValue([
+      {
+        body: "Intro text then [[target]] and more.",
+        summary: { id: "s1", title: "Source" } as BacklinkRecord["summary"],
+      },
+      {
+        body: "Mentions [[Other]] only",
+        summary: { id: "s2", title: "Stale" } as BacklinkRecord["summary"],
+      },
+    ]);
+
+    await expect(service.getBacklinks("user-id", "note-id")).resolves.toEqual([
+      { object: { id: "s1", title: "Source" }, snippet: "Intro text then [[target]] and more." },
+      { object: { id: "s2", title: "Stale" }, snippet: "Mentions [[Other]] only" },
+    ]);
+    expect(repository.listBacklinks).toHaveBeenCalledWith("user-id", "note-id");
+  });
+
+  it("404s backlinks of a missing or trashed note", async () => {
+    repository.getNote.mockResolvedValue(null);
+
+    await expect(service.getBacklinks("user-id", "note-id")).rejects.toBeInstanceOf(NotFoundError);
+    expect(repository.listBacklinks).not.toHaveBeenCalled();
   });
 });
