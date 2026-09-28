@@ -29,6 +29,24 @@ async function paste(page: Page, data: Record<string, string>): Promise<void> {
   }, data);
 }
 
+// ProseMirror syncs DOM selection changes asynchronously: after Ctrl+End the
+// caret moves at once but the editor's state follows a tick later, and a paste
+// in between lands at the old position (merging into that paragraph, as a
+// paste into a non-empty line should). Wait for the state to reach the end.
+async function waitForCursorAtEnd(page: Page): Promise<void> {
+  await expect
+    .poll(() =>
+      page.evaluate(() => {
+        const root = document.querySelector<HTMLElement & { editor?: unknown }>(".ProseMirror");
+        const editor = root?.editor as
+          | { state: { doc: { content: { size: number } }; selection: { from: number } } }
+          | undefined;
+        return editor ? editor.state.doc.content.size - editor.state.selection.from : -1;
+      }),
+    )
+    .toBe(1);
+}
+
 // EDIT-11: pasted markdown parses as markdown; pasted rich text converts to
 // markdown on save; hostile HTML never reaches the DOM.
 test("pastes markdown and rich text as structured content", async ({ page }) => {
@@ -50,6 +68,7 @@ test("pastes markdown and rich text as structured content", async ({ page }) => 
     await expect(editor.locator("blockquote")).toHaveText("note");
 
     await page.keyboard.press("ControlOrMeta+End");
+    await waitForCursorAtEnd(page);
     await paste(page, {
       "text/html":
         '<h3>From the web</h3><p>With <strong>bold</strong> and <a href="https://example.com">a link</a><img src=x onerror="alert(1)"></p><script>alert(1)</script>',
