@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import { type ReactNode, useEffect, useRef } from "react";
 
 import styles from "./markdown-editor.module.css";
 
@@ -30,13 +30,29 @@ export function SuggestionList<T>({
   position,
   renderItem,
 }: Readonly<SuggestionListProps<T>>) {
+  const listRef = useRef<HTMLUListElement>(null);
+
+  // Keyboard navigation happens in the editor (aria-activedescendant), so the
+  // list must scroll the active option into view itself.
+  useEffect(() => {
+    listRef.current
+      ?.querySelector<HTMLElement>(`[id="${id}-${activeIndex}"]`)
+      ?.scrollIntoView?.({ block: "nearest" });
+  }, [activeIndex, id]);
+
   return (
+    // A focusable scroll region (axe scrollable-region-focusable). It never
+    // becomes a stray tab stop: while the list is open the editor consumes Tab
+    // to pick an option, and a pointer press never moves focus off the editor.
     <ul
       aria-label={label}
       className={styles.suggestions}
       id={id}
+      onMouseDown={(event) => event.preventDefault()}
+      ref={listRef}
       role="listbox"
       style={{ left: position.left, top: position.bottom + 4 }}
+      tabIndex={0}
     >
       {items.map((item, index) => (
         <li

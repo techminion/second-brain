@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 
 import { MarkdownEditor } from "./markdown-editor";
@@ -77,5 +77,73 @@ describe("MarkdownEditor", () => {
 
     expect(await screen.findByRole("checkbox", { name: "Task: Parent" })).not.toBeChecked();
     expect(screen.getByRole("checkbox", { name: "Task: Child" })).toBeChecked();
+  });
+
+  // EDIT-17: formatting through the editor's own keymap, end to end through
+  // serialization (Mod = Ctrl outside macOS, as in jsdom).
+  it.each([
+    ["b", "**Plan**"],
+    ["i", "*Plan*"],
+    ["e", "`Plan`"],
+  ])("formats the selection with Ctrl+%s and serializes it", async (key, markdown) => {
+    const onChange = vi.fn();
+    const { container } = render(<MarkdownEditor onChange={onChange} value="Plan" />);
+    const editor = await screen.findByRole("textbox", { name: "Note body" });
+    const tiptap = await waitFor(() => {
+      const instance = (
+        container.querySelector(".ProseMirror") as HTMLElement & {
+          editor?: { commands: { focus: () => void; selectAll: () => void } };
+        }
+      ).editor;
+      expect(instance).toBeDefined();
+      return instance!;
+    });
+
+    act(() => {
+      editor.focus();
+      tiptap.commands.focus();
+      tiptap.commands.selectAll();
+    });
+    fireEvent.keyDown(editor, { ctrlKey: true, key });
+
+    await waitFor(() => expect(String(onChange.mock.lastCall?.[0]).trim()).toBe(markdown));
+  });
+
+  it("undoes and redoes with Ctrl+Z / Ctrl+Shift+Z", async () => {
+    const onChange = vi.fn();
+    const { container } = render(<MarkdownEditor onChange={onChange} value="Plan" />);
+    const editor = await screen.findByRole("textbox", { name: "Note body" });
+    const tiptap = await waitFor(() => {
+      const instance = (
+        container.querySelector(".ProseMirror") as HTMLElement & {
+          editor?: { commands: { focus: () => void; selectAll: () => void } };
+        }
+      ).editor;
+      expect(instance).toBeDefined();
+      return instance!;
+    });
+    act(() => {
+      editor.focus();
+      tiptap.commands.focus();
+      tiptap.commands.selectAll();
+    });
+    fireEvent.keyDown(editor, { ctrlKey: true, key: "b" });
+    await waitFor(() => expect(String(onChange.mock.lastCall?.[0]).trim()).toBe("**Plan**"));
+
+    fireEvent.keyDown(editor, { ctrlKey: true, key: "z" });
+    await waitFor(() => expect(String(onChange.mock.lastCall?.[0]).trim()).toBe("Plan"));
+    fireEvent.keyDown(editor, { ctrlKey: true, key: "z", shiftKey: true });
+    await waitFor(() => expect(String(onChange.mock.lastCall?.[0]).trim()).toBe("**Plan**"));
+  });
+
+  it("leaves the editor on Escape so Tab can move on (EDIT-15)", async () => {
+    render(<MarkdownEditor onChange={vi.fn()} value="Text" />);
+    const editor = await screen.findByRole("textbox", { name: "Note body" });
+    act(() => editor.focus());
+    expect(editor).toHaveFocus();
+
+    fireEvent.keyDown(editor, { key: "Escape" });
+
+    expect(editor).not.toHaveFocus();
   });
 });

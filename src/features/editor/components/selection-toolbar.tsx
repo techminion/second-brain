@@ -3,7 +3,7 @@
 import { type Editor, useEditorState } from "@tiptap/react";
 import { BubbleMenu } from "@tiptap/react/menus";
 import { Bold, Code, Italic, Link2, Unlink } from "lucide-react";
-import { type FormEvent, type KeyboardEvent, useState } from "react";
+import { type FormEvent, type KeyboardEvent, useEffect, useRef, useState } from "react";
 
 import { Button } from "@/shared/ui/button";
 import { Input } from "@/shared/ui/input";
@@ -25,13 +25,57 @@ export function normalizeLinkTarget(raw: string): string | null {
 
 /**
  * Floating formatting toolbar on a text selection (EDIT-09, 10_DESIGN §5):
- * bold, italic, code and link — no persistent toolbar row. Keyboard shortcuts
- * remain primary; the toolbar is the pointer path. Hidden inside code blocks,
- * where marks do not apply.
+ * bold, italic, code and link — no persistent toolbar row. Hidden inside code
+ * blocks, where marks do not apply.
+ *
+ * Keyboard (EDIT-15, WAI-ARIA toolbar pattern): Alt+F10 in the editor moves
+ * focus onto the toolbar (the convention of Google Docs and TinyMCE), which is
+ * one tab stop; ←/→/Home/End move between buttons and Escape returns to the
+ * text with the selection intact. Formatting shortcuts (⌘B, ⌘I…) still work
+ * without ever leaving the text.
  */
 export function SelectionToolbar({ editor }: Readonly<{ editor: Editor }>) {
   const [linkDraft, setLinkDraft] = useState<string | null>(null);
   const [linkError, setLinkError] = useState(false);
+  const toolbarRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const dom = editor.view.dom;
+    const onKeyDown = (event: globalThis.KeyboardEvent) => {
+      if (!event.altKey || event.key !== "F10") {
+        return;
+      }
+      const first = toolbarRef.current?.querySelector<HTMLButtonElement>("button");
+      if (first && toolbarRef.current?.isConnected && toolbarRef.current.offsetParent !== null) {
+        event.preventDefault();
+        first.focus();
+      }
+    };
+    dom.addEventListener("keydown", onKeyDown);
+    return () => dom.removeEventListener("keydown", onKeyDown);
+  }, [editor]);
+
+  const onToolbarKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
+    const buttons = [...event.currentTarget.querySelectorAll<HTMLButtonElement>("button")];
+    const index = buttons.indexOf(document.activeElement as HTMLButtonElement);
+    const target =
+      event.key === "ArrowRight"
+        ? buttons[(index + 1) % buttons.length]
+        : event.key === "ArrowLeft"
+          ? buttons[(index - 1 + buttons.length) % buttons.length]
+          : event.key === "Home"
+            ? buttons[0]
+            : event.key === "End"
+              ? buttons[buttons.length - 1]
+              : undefined;
+    if (target) {
+      event.preventDefault();
+      target.focus();
+    } else if (event.key === "Escape") {
+      event.preventDefault();
+      editor.commands.focus();
+    }
+  };
 
   const active = useEditorState({
     editor,
@@ -67,10 +111,17 @@ export function SelectionToolbar({ editor }: Readonly<{ editor: Editor }>) {
     }
   };
 
-  const markButton = (label: string, Icon: typeof Bold, pressed: boolean, toggle: () => void) => (
+  const markButton = (
+    label: string,
+    Icon: typeof Bold,
+    pressed: boolean,
+    toggle: () => void,
+    tabStop = false,
+  ) => (
     <Button
       aria-label={label}
       aria-pressed={pressed}
+      tabIndex={tabStop ? 0 : -1}
       className="aria-pressed:bg-muted aria-pressed:text-primary size-8"
       onClick={toggle}
       onMouseDown={(event) => event.preventDefault()}
@@ -96,9 +147,20 @@ export function SelectionToolbar({ editor }: Readonly<{ editor: Editor }>) {
       }
     >
       {linkDraft === null ? (
-        <div aria-label="Formatting" className="flex items-center gap-0.5" role="toolbar">
-          {markButton("Bold", Bold, active?.bold ?? false, () =>
-            editor.chain().focus().toggleBold().run(),
+        <div
+          aria-keyshortcuts="Alt+F10"
+          aria-label="Formatting"
+          className="flex items-center gap-0.5"
+          onKeyDown={onToolbarKeyDown}
+          ref={toolbarRef}
+          role="toolbar"
+        >
+          {markButton(
+            "Bold",
+            Bold,
+            active?.bold ?? false,
+            () => editor.chain().focus().toggleBold().run(),
+            true,
           )}
           {markButton("Italic", Italic, active?.italic ?? false, () =>
             editor.chain().focus().toggleItalic().run(),
