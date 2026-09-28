@@ -32,7 +32,7 @@ test("tags notes inline and browses by tag", async ({ page }) => {
     await page.goto(`/notes/${ids[1]}`);
     await page.getByRole("combobox", { name: "Add tag" }).fill("research");
     await page.getByRole("combobox", { name: "Add tag" }).press("Enter");
-    await expect(page.getByRole("list", { name: "Tags" })).toContainText("#Research");
+    await expect(page.getByRole("list", { name: "Note tags" })).toContainText("#Research");
 
     await page
       .getByRole("complementary", { name: "Application sidebar" })

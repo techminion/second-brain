@@ -47,7 +47,7 @@ vi.mock("../hooks/use-wiki-link-controller", () => ({
 }));
 vi.mock("./note-tags", () => ({
   NoteTags: ({ tags }: { tags: { name: string }[] }) => (
-    <ul aria-label="Tags">
+    <ul aria-label="Note tags">
       {tags.map((tag) => (
         <li key={tag.name}>{tag.name}</li>
       ))}

@@ -8,6 +8,7 @@ All notable changes to Second Brain are documented here, following [Keep a Chang
 
 ### Fixed
 - **2026-09-28** — Requesting a note with a malformed id (e.g. `/api/notes/graph`) now returns 404 like any missing note, instead of a 500 from the database (ADR-26).
+- **2026-09-28** — The tag chips on an open note are now announced as "Note tags", so screen readers no longer hear two different lists both named "Tags" (the note's and the sidebar's).
 
 ### Security
 - **2026-09-27** — Upgraded the Tiptap editor family 3.28 → 3.31.3 (GHSA-cp6q-959q-f8rh `__proto__` attribute injection; GHSA-j95f-988m-3j2f markdown ReDoS), Next.js 15.5.21 → 15.5.26 (critical image-optimization RCE advisory reduced to a moderate one that only Next 16 fixes), and the `sharp` (^0.35.4), `nanoid` (^3.3.18), and dev-only `undici` (^7.30.0, via jsdom) and `brace-expansion` (^5.0.12, via eslint) overrides. `npm audit --audit-level=high` is clean; two moderate Next.js advisories remain pending a Next 16 decision.

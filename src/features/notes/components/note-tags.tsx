@@ -64,7 +64,7 @@ export function NoteTags({ noteId, tags }: Readonly<{ noteId: string; tags: Tag[
   return (
     <div className="flex flex-wrap items-center gap-2">
       {tags.length > 0 ? (
-        <ul aria-label="Tags" className="flex flex-wrap gap-2">
+        <ul aria-label="Note tags" className="flex flex-wrap gap-2">
           {tags.map((tag) => (
             <li
               className="bg-muted flex items-center gap-1 rounded-full py-0.5 pr-1 pl-2.5 text-xs"
