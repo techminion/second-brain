@@ -5,11 +5,13 @@ import { useCallback, useEffect, useId, useMemo, useRef, useState } from "react"
 
 import { cn } from "@/shared/lib/utils";
 
+import { FindInNote } from "../find-in-note-extension";
 import { markdownEditorExtensions } from "../markdown-editor-extensions";
 import { serializeEditorMarkdown } from "../markdown-round-trip";
 import { filterSlashCommands, type SlashCommand } from "../slash-commands";
 import { SlashMenu, type SlashTrigger } from "../slash-menu-extension";
 import { wikiLinkRefreshMeta, WikiLinks, type WikiLinkSuggestion } from "../wiki-link-extension";
+import { FindBar } from "./find-bar";
 import styles from "./markdown-editor.module.css";
 import { SelectionToolbar } from "./selection-toolbar";
 import { handleSuggestionKey, SuggestionList } from "./suggestion-list";
@@ -33,6 +35,11 @@ export interface MarkdownEditorProps {
   ariaLabel?: string;
   className?: string;
   editable?: boolean;
+  /**
+   * Bind ⌘F / Ctrl+F page-wide to find within this document (EDIT-18). Only
+   * the page's primary editor should opt in.
+   */
+  findShortcut?: boolean;
 }
 
 export function MarkdownEditor({
@@ -41,6 +48,7 @@ export function MarkdownEditor({
   ariaLabel = "Note body",
   className,
   editable = true,
+  findShortcut = false,
   wikiLinks,
 }: MarkdownEditorProps) {
   const onChangeRef = useRef(onChange);
@@ -69,6 +77,8 @@ export function MarkdownEditor({
     slashTrigger !== null && slashDismissedAt !== slashTrigger.from && slashItems.length > 0;
   const slashKeyHandlerRef = useRef<(event: KeyboardEvent) => boolean>(() => false);
 
+  const [find, setFind] = useState<{ openedAt: number; initialQuery: string } | null>(null);
+
   const extensions = useMemo(
     () => [
       ...markdownEditorExtensions,
@@ -78,6 +88,7 @@ export function MarkdownEditor({
         onSuggestKeyDown: (event) => keyHandlerRef.current(event),
         open: (title) => wikiLinksRef.current?.open(title),
       }),
+      FindInNote,
       SlashMenu.configure({
         onKeyDown: (event) => slashKeyHandlerRef.current(event),
         onTrigger: (next) => {
@@ -143,6 +154,30 @@ export function MarkdownEditor({
       emitUpdate: false,
     });
   }, [editor, value]);
+
+  // ⌘F opens the find bar, seeded with a short single-line selection.
+  useEffect(() => {
+    if (!findShortcut || !editor) {
+      return;
+    }
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (
+        !(event.metaKey || event.ctrlKey) ||
+        event.shiftKey ||
+        event.altKey ||
+        event.key.toLowerCase() !== "f"
+      ) {
+        return;
+      }
+      event.preventDefault();
+      const { from, to } = editor.state.selection;
+      const selected = editor.state.doc.textBetween(from, to, " ");
+      const initialQuery = selected.length <= 100 && !selected.includes("\n") ? selected : "";
+      setFind({ initialQuery, openedAt: Date.now() });
+    };
+    document.addEventListener("keydown", onKeyDown);
+    return () => document.removeEventListener("keydown", onKeyDown);
+  }, [editor, findShortcut]);
 
   // Resolution changed (e.g. the note saved and its links re-resolved).
   const resolutionKey = wikiLinks?.resolutionKey;
@@ -265,6 +300,14 @@ export function MarkdownEditor({
 
   return (
     <div className={cn(styles.root, className)} data-disabled={String(!editable)}>
+      {editor && find ? (
+        <FindBar
+          editor={editor}
+          initialQuery={find.initialQuery}
+          onClose={() => setFind(null)}
+          openedAt={find.openedAt}
+        />
+      ) : null}
       <EditorContent editor={editor} />
       {editor && editable ? <SelectionToolbar editor={editor} /> : null}
       {popupOpen && suggestion ? (
