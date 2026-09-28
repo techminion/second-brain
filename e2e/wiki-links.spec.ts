@@ -101,6 +101,10 @@ test("renaming a linked note keeps the link resolved in the linking note", async
     // B shows the new title, still as a resolved link that opens A.
     await notesNav.getByRole("link", { name: /Standup/ }).click();
     await page.waitForURL(`/notes/${noteBId}`);
+    // B's first load on a fresh preview deployment can outlast the default 5s
+    // (seen once in CI on #134); wait for the loaded note explicitly so a slow
+    // fetch reads as a slow fetch, not a missing editor.
+    await expect(page.getByLabel("Note title")).toHaveValue("Standup", { timeout: 15_000 });
     const body = page.getByRole("textbox", { name: "Note body" });
     await expect(body).toContainText("[[Final plan]]");
     await expect(body).not.toContainText("Draft plan");

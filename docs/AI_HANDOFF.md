@@ -21,6 +21,20 @@ Estimated Context Needed:
 
 ---
 
+## 2026-09-28 — Claude — Slash menu + selection toolbar (EDIT-08/09)
+
+**Session Date:** 2026-09-28
+**Agent:** Claude
+**Objective:** Merge #134 (editor blocks), then EDIT-08 and EDIT-09.
+**#134 CI note:** E2E failed once in `wiki-links.spec.ts` (LINK-12). After the rename, B's editor didn't appear within 5s on the preview. It passed 3/3 locally and passed on the one re-run. There are no Playwright artifacts in CI to show the page state, so this PR waits for B's title with a 15s timeout, which makes a slow first fetch read as exactly that. Adding `upload-artifact` for `test-results/` would be a worthwhile CI follow-up (CI owner's call).
+**Architecture Decisions:** none new. The slash menu follows the `[[` pattern: a detection-only ProseMirror plugin (`slash-menu-extension.ts`), commands as data (`slash-commands.ts`), and the host renders the menu. The popup listbox and its key handling were extracted into `components/suggestion-list.tsx` and are shared by both menus. The toolbar uses Tiptap's `BubbleMenu`; `@tiptap/extension-bubble-menu` was already installed as an optional dependency of `@tiptap/react` and is now declared explicitly.
+**Deferred:** a slash-menu "Image" entry. 10_DESIGN §5 lists image, but inserting one needs the attachments upload (ATT).
+**Files Added:** `src/features/editor/{slash-commands.ts,slash-menu-extension.ts,slash-menu.test.tsx,components/suggestion-list.tsx,components/selection-toolbar.tsx,components/selection-toolbar.test.ts}`, `e2e/editor-menus.spec.ts`.
+**Verification:** editor unit tests; `editor-menus` E2E green 2× locally; light and dark screenshots reviewed (menu, toolbar).
+**Suggested Next Task:** EDIT-11 (paste handling), then EDIT-18 (⌘F).
+
+---
+
 ## 2026-09-28 — Claude — Editor blocks (EDIT-06/07/14; EDIT-10/12/13 closed)
 
 **Session Date:** 2026-09-28

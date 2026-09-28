@@ -12,16 +12,18 @@
 
 ## Sprint 9 — M1 editor polish (in progress)
 
-Promoted 2026-09-28 by the user's "continue with the next tasks" after M2 Connect closed. Branch `claude/gallant-ride-gl1fkf`. First PR: block types + reading column, and closing out the editor tasks whose behavior already shipped (EDIT-10/12/13) with tests. Next: EDIT-08 slash menu, EDIT-09 selection toolbar, EDIT-11 paste, EDIT-18 ⌘F, then EDIT-15/17.
+Promoted 2026-09-28 by the user's "continue with the next tasks" after M2 Connect closed. Branch `claude/gallant-ride-gl1fkf`. First PR (#134, `42f9820`): block types + reading column, and EDIT-10/12/13 closed with tests. Second PR: EDIT-08 slash menu + EDIT-09 selection toolbar. Next: EDIT-11 paste, EDIT-18 ⌘F, then EDIT-15/17.
 
 | ID | Title | Priority | Cx | Depends on | Owner | Status | Milestone | Acceptance criteria |
 |---|---|---|---|---|---|---|---|---|
-| EDIT-06 | Code blocks with syntax highlighting (theme-aware) | P0 | M | EDIT-02 | Claude | In Review | M1 | **ADR-34**: lowlight + 15 curated grammars; single-accent token colors, ≥ 4.5:1 in both themes; fence info strings round-trip; `e2e/editor-blocks.spec.ts` + corpus entry |
-| EDIT-07 | Blockquotes, horizontal rules, tables | P0 | M | EDIT-02 | Claude | In Review | M1 | GFM tables via `@tiptap/extension-table` with the pipe-escaping serializer fix (ADR-34); styled quotes/rules; corpus + XSS entries; axe-clean |
-| EDIT-14 | Reading-column layout (~68ch, 1.7 line-height) | P1 | S | EDIT-01 | Claude | In Review | M1 | Editor content max-width `68ch`, line-height 1.7 (code blocks 1.5) |
-| EDIT-10 | Debounced autosave + save-on-blur, quiet indicator — FR-NOTE-5 | P1 | M | EDIT-02, NOTE-04 | Claude | In Review | M1 | Already shipped with NOTE-10 (`useAutosave`: 800ms debounce, blur/unmount flush, "Saved" status); verified by `use-autosave.test.ts` and the note-lifecycle/wiki-links E2E — closed here |
-| EDIT-12 | Title field: editing, dual-write, rename flow — FR-NOTE-3 | P1 | S | NOTE-04, EDIT-01 | Claude | In Review | M1 | Shipped with NOTE-10/LINK-08; rename flow proven by LINK-12 E2E. Fix here: title rendered small on desktop (`md:text-sm` from the shared input) |
-| EDIT-13 | Editor keyboard shortcuts (⌘B/⌘I, undo/redo) | P1 | S | EDIT-04, SHELL-05 | Claude | In Review | M1 | StarterKit keymaps (Mod = ⌘ on macOS, Ctrl elsewhere); E2E proves ⌘B, ⌘I, ⌘Z, ⇧⌘Z and the live ```` ```lang ```` fence |
+| EDIT-06 | Code blocks with syntax highlighting (theme-aware) | P0 | M | EDIT-02 | Claude | Done (#134) | M1 | **ADR-34**: lowlight + 15 curated grammars; single-accent token colors, ≥ 4.5:1 in both themes; fence info strings round-trip; `e2e/editor-blocks.spec.ts` + corpus entry |
+| EDIT-07 | Blockquotes, horizontal rules, tables | P0 | M | EDIT-02 | Claude | Done (#134) | M1 | GFM tables via `@tiptap/extension-table` with the pipe-escaping serializer fix (ADR-34); styled quotes/rules; corpus + XSS entries; axe-clean |
+| EDIT-14 | Reading-column layout (~68ch, 1.7 line-height) | P1 | S | EDIT-01 | Claude | Done (#134) | M1 | Editor content max-width `68ch`, line-height 1.7 (code blocks 1.5) |
+| EDIT-10 | Debounced autosave + save-on-blur, quiet indicator — FR-NOTE-5 | P1 | M | EDIT-02, NOTE-04 | Claude | Done (#134) | M1 | Already shipped with NOTE-10 (`useAutosave`: 800ms debounce, blur/unmount flush, "Saved" status); verified by `use-autosave.test.ts` and the note-lifecycle/wiki-links E2E — closed here |
+| EDIT-12 | Title field: editing, dual-write, rename flow — FR-NOTE-3 | P1 | S | NOTE-04, EDIT-01 | Claude | Done (#134) | M1 | Shipped with NOTE-10/LINK-08; rename flow proven by LINK-12 E2E. Fix here: title rendered small on desktop (`md:text-sm` from the shared input) |
+| EDIT-08 | Slash menu (`/` at line start) for block insertion | P0 | M | EDIT-04 | Claude | In Review | M1 | 10 commands (headings 1–3, bullet/numbered/task list, code block, quote, table, divider), ranked filter, combobox semantics shared with `[[` (`SuggestionList`); image deferred to attachments (ATT); unit + `e2e/editor-menus.spec.ts` |
+| EDIT-09 | Floating selection toolbar (bold, italic, code, link) | P1 | S | EDIT-04 | Claude | In Review | M1 | Tiptap `BubbleMenu`; `role="toolbar"`, `aria-pressed` state; inline link field accepting only https/http/mailto (bare host → https); hidden in code blocks and on whitespace-only selections |
+| EDIT-13 | Editor keyboard shortcuts (⌘B/⌘I, undo/redo) | P1 | S | EDIT-04, SHELL-05 | Claude | Done (#134) | M1 | StarterKit keymaps (Mod = ⌘ on macOS, Ctrl elsewhere); E2E proves ⌘B, ⌘I, ⌘Z, ⇧⌘Z and the live ```` ```lang ```` fence |
 
 ## Sprint 8 — M2 Connect close-out (complete)
 

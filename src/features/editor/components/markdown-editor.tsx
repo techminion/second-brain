@@ -7,8 +7,12 @@ import { cn } from "@/shared/lib/utils";
 
 import { markdownEditorExtensions } from "../markdown-editor-extensions";
 import { serializeEditorMarkdown } from "../markdown-round-trip";
+import { filterSlashCommands, type SlashCommand } from "../slash-commands";
+import { SlashMenu, type SlashTrigger } from "../slash-menu-extension";
 import { wikiLinkRefreshMeta, WikiLinks, type WikiLinkSuggestion } from "../wiki-link-extension";
 import styles from "./markdown-editor.module.css";
+import { SelectionToolbar } from "./selection-toolbar";
+import { handleSuggestionKey, SuggestionList } from "./suggestion-list";
 
 /**
  * Host-supplied wiki-link behavior (LINK-05..09). The editor renders links and
@@ -52,6 +56,19 @@ export function MarkdownEditor({
   const popupOpen = suggestion !== null && dismissedAt !== suggestion.from && items.length > 0;
   const keyHandlerRef = useRef<(event: KeyboardEvent) => boolean>(() => false);
 
+  // Slash menu (EDIT-08): `/` at the start of a paragraph lists block commands.
+  const slashListboxId = useId();
+  const [slashTrigger, setSlashTrigger] = useState<SlashTrigger | null>(null);
+  const [slashActiveIndex, setSlashActiveIndex] = useState(0);
+  const [slashDismissedAt, setSlashDismissedAt] = useState<number | null>(null);
+  const slashItems = useMemo(
+    () => (slashTrigger ? filterSlashCommands(slashTrigger.query) : []),
+    [slashTrigger],
+  );
+  const slashOpen =
+    slashTrigger !== null && slashDismissedAt !== slashTrigger.from && slashItems.length > 0;
+  const slashKeyHandlerRef = useRef<(event: KeyboardEvent) => boolean>(() => false);
+
   const extensions = useMemo(
     () => [
       ...markdownEditorExtensions,
@@ -60,6 +77,13 @@ export function MarkdownEditor({
         onSuggest: (next) => setSuggestion(wikiLinksRef.current ? next : null),
         onSuggestKeyDown: (event) => keyHandlerRef.current(event),
         open: (title) => wikiLinksRef.current?.open(title),
+      }),
+      SlashMenu.configure({
+        onKeyDown: (event) => slashKeyHandlerRef.current(event),
+        onTrigger: (next) => {
+          setSlashTrigger(next);
+          setSlashActiveIndex(0);
+        },
       }),
     ],
     [],
@@ -179,31 +203,54 @@ export function MarkdownEditor({
     if (!popupOpen || !suggestion) {
       return false;
     }
-    if (event.key === "ArrowDown") {
-      setActiveIndex((index) => (index + 1) % items.length);
-    } else if (event.key === "ArrowUp") {
-      setActiveIndex((index) => (index - 1 + items.length) % items.length);
-    } else if (event.key === "Enter" || event.key === "Tab") {
-      insertSuggestion(items[activeIndex] ?? items[0]);
-    } else if (event.key === "Escape") {
-      setDismissedAt(suggestion.from);
-    } else {
-      return false;
-    }
-    return true;
+    return handleSuggestionKey(event, items.length, {
+      dismiss: () => setDismissedAt(suggestion.from),
+      move: (delta) => setActiveIndex((index) => (index + delta + items.length) % items.length),
+      pick: () => insertSuggestion(items[activeIndex] ?? items[0]),
+    });
   };
 
-  // Combobox semantics on the editing surface while the popup is open.
+  const runSlashCommand = useCallback(
+    (command: SlashCommand) => {
+      if (!editor || !slashTrigger) {
+        return;
+      }
+      command.run(editor, { from: slashTrigger.from, to: slashTrigger.to });
+      setSlashTrigger(null);
+    },
+    [editor, slashTrigger],
+  );
+
+  slashKeyHandlerRef.current = (event) => {
+    if (!slashOpen || !slashTrigger) {
+      return false;
+    }
+    return handleSuggestionKey(event, slashItems.length, {
+      dismiss: () => setSlashDismissedAt(slashTrigger.from),
+      move: (delta) =>
+        setSlashActiveIndex((index) => (index + delta + slashItems.length) % slashItems.length),
+      pick: () => runSlashCommand(slashItems[slashActiveIndex] ?? slashItems[0]),
+    });
+  };
+
+  // Combobox semantics on the editing surface while either popup is open.
+  const activeListbox = popupOpen
+    ? { id: listboxId, index: activeIndex }
+    : slashOpen
+      ? { id: slashListboxId, index: slashActiveIndex }
+      : null;
+  const activeListboxId = activeListbox?.id;
+  const activeOptionIndex = activeListbox?.index;
   useEffect(() => {
     const dom = editor && !editor.isDestroyed ? editor.view.dom : null;
     if (!dom) {
       return;
     }
-    if (popupOpen) {
+    if (activeListboxId !== undefined) {
       dom.setAttribute("aria-autocomplete", "list");
-      dom.setAttribute("aria-controls", listboxId);
+      dom.setAttribute("aria-controls", activeListboxId);
       dom.setAttribute("aria-expanded", "true");
-      dom.setAttribute("aria-activedescendant", `${listboxId}-${activeIndex}`);
+      dom.setAttribute("aria-activedescendant", `${activeListboxId}-${activeOptionIndex ?? 0}`);
     } else {
       for (const name of [
         "aria-autocomplete",
@@ -214,36 +261,40 @@ export function MarkdownEditor({
         dom.removeAttribute(name);
       }
     }
-  }, [activeIndex, editor, listboxId, popupOpen]);
+  }, [activeListboxId, activeOptionIndex, editor]);
 
   return (
     <div className={cn(styles.root, className)} data-disabled={String(!editable)}>
       <EditorContent editor={editor} />
+      {editor && editable ? <SelectionToolbar editor={editor} /> : null}
       {popupOpen && suggestion ? (
-        <ul
-          aria-label="Link suggestions"
-          className={styles.suggestions}
+        <SuggestionList
+          activeIndex={activeIndex}
+          getKey={(title) => title}
           id={listboxId}
-          role="listbox"
-          style={{ left: suggestion.left, top: suggestion.bottom + 4 }}
-        >
-          {items.map((title, index) => (
-            <li
-              aria-selected={index === activeIndex}
-              className={styles.suggestion}
-              data-active={index === activeIndex}
-              id={`${listboxId}-${index}`}
-              key={title}
-              onMouseDown={(event) => {
-                event.preventDefault();
-                insertSuggestion(title);
-              }}
-              role="option"
-            >
-              {title}
-            </li>
-          ))}
-        </ul>
+          items={items}
+          label="Link suggestions"
+          onPick={insertSuggestion}
+          position={suggestion}
+          renderItem={(title) => title}
+        />
+      ) : null}
+      {slashOpen && slashTrigger ? (
+        <SuggestionList
+          activeIndex={slashActiveIndex}
+          getKey={(command) => command.id}
+          id={slashListboxId}
+          items={slashItems}
+          label="Insert block"
+          onPick={runSlashCommand}
+          position={slashTrigger}
+          renderItem={(command) => (
+            <span className={styles.command}>
+              <span>{command.label}</span>
+              <span className={styles.commandHint}>{command.description}</span>
+            </span>
+          )}
+        />
       ) : null}
     </div>
   );
