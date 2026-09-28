@@ -43,7 +43,13 @@ Estimated Context Needed:
 - **E2E:** `search.spec` covers ⇧⌘F, phrase and exclusion syntax, marks, keyboard open, a trashed note excluded, a second user's same-term note never visible via UI or API, and empty q → 400. It ran green on the dev server and 4× against a local production build.
 - **a11y sweep:** green.
 - **Screenshots:** light and dark reviewed.
-**Suggested Next Task:** FTS-08 (search latency instrumentation, p95 < 300ms), which closes the FTS track. Then the M3 semantic track (EMB-*, SEM-*) needs an OpenAI key decision (07_AI).
+**FTS-08 (added to #142 at the user's "continue with FTS-08"):**
+- **Route context:** `createServiceRoute` now hands handlers the request's structured `logger`.
+- **Instrumentation:** `/api/search` wraps the service call in `instrumentFullTextSearch`. Each search logs `search.fulltext.completed` with numbers and booleans only, never query text, and a search over 300ms also logs a `search.fulltext.slow` warning.
+- **p95:** computed from these events once OBS-03 dashboards exist.
+- **Local measurement (DB time):** 5,000 notes per user (10,000 rows), 6 query shapes × 20 runs. p50 16.7ms, p95 28.8ms, max 32ms. PERF-03 is the formal 10k load test.
+**Also in #142:** LINK-11's link-resolution wait was raised to 15s after it timed out at 5s on the preview; same class as LINK-12 in #135.
+**Suggested Next Task:** the FTS track is complete. The M3 semantic track (EMB-*, SEM-*) needs an OpenAI API key and a provisioning decision (07_AI, ADR-24), so ask the user. Otherwise PERF-01 (seed script) and PERF-03 (10k load test) are unblocked.
 
 ---
 

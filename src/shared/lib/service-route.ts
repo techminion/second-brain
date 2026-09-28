@@ -1,10 +1,13 @@
 import { serviceErrorResponse, unauthenticatedResponse } from "@/shared/lib/api-error-response";
+import type { StructuredLogger } from "@/shared/lib/logger";
 import { withRequestLogging } from "@/shared/lib/request-logging";
 
 export interface ServiceRouteContext<Service> {
   request: Request;
   service: Service;
   userId: string;
+  /** The request's structured, content-free logger (OBS-01/02), for route-level metrics. */
+  logger: StructuredLogger;
 }
 
 export type ServiceRouteHandler<Service> = (
@@ -28,7 +31,7 @@ export function createServiceRoute<Service>(
   ): (request: Request) => Promise<Response> {
     return withRequestLogging(
       routeName,
-      async (request) => {
+      async (request, { logger }) => {
         const userId = await resolveUserId();
 
         if (!userId) {
@@ -37,7 +40,7 @@ export function createServiceRoute<Service>(
 
         try {
           const service = await createService();
-          return await handler({ request, service, userId });
+          return await handler({ logger, request, service, userId });
         } catch (error) {
           return serviceErrorResponse(error);
         }

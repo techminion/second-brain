@@ -12,7 +12,7 @@
 
 ## Sprint 10 — M3 Full-text search (in progress)
 
-Promoted 2026-09-28 under the user's "continue with the next tasks" once the M1 tail (NOTE-13/14) merged; FTS-01 was the first dependency-ready search task. Branch `claude/gallant-ride-gl1fkf`. First PR (#141, `f8a5416`): the backend (FTS-01/02/03 + FTS-10). Second PR: route + hook, results UI, ⇧⌘F, FTS-07 scoping E2E, empty states. Remaining: FTS-08 latency instrumentation.
+Promoted 2026-09-28 under the user's "continue with the next tasks" once the M1 tail (NOTE-13/14) merged; FTS-01 was the first dependency-ready search task. Branch `claude/gallant-ride-gl1fkf`. First PR (#141, `f8a5416`): the backend (FTS-01/02/03 + FTS-10). Second PR (#142): route + hook, results UI, ⇧⌘F, FTS-07 scoping E2E, empty states, and FTS-08 latency instrumentation — completes the FTS track.
 
 | ID | Title | Priority | Cx | Depends on | Owner | Status | Milestone | Acceptance criteria |
 |---|---|---|---|---|---|---|---|---|
@@ -23,6 +23,7 @@ Promoted 2026-09-28 under the user's "continue with the next tasks" once the M1 
 | FTS-05 | Search results UI: highlighted snippets, keyboard navigation | P0 | M | FTS-04, SHELL-02 | Claude | In Review | M3 | `/search?q=` page (URL-synced, linkable); markers → `<mark>` via `parseSnippet` (never HTML); ↓/↑/Esc between field and results, Enter opens; "Load more" paging; axe-clean (a11y sweep) |
 | FTS-06 | `⇧⌘F` global search + command palette | P1 | M | FTS-05, SHELL-04 | Claude | In Review | M3 | ⇧⌘F from anywhere (⌘F stays find-in-note); palette "Global search" enabled |
 | FTS-07 | Soft-deleted exclusion + owner-scoping tests — FR-SEARCH-3 | P0 | S | FTS-03, DB-14 | Claude | In Review | M3 | `e2e/search.spec.ts`: a trashed note and a second user's note with the same term never appear, via UI and API |
+| FTS-08 | Latency instrumentation: p95 < 300ms budget — FR-SEARCH-4 | P1 | S | FTS-03, OBS-01 | Claude | In Review | M3 | `instrumentFullTextSearch` logs `search.fulltext.completed` (durationMs, resultCount, pageSize, paged, hasMore, overBudget, budgetMs — content-free) per search and `search.fulltext.slow` (warn) over 300ms; p95 derives from these events (OBS-03). Local DB timing at 5,000 notes/user: p50 16.7ms, p95 28.8ms, max 32ms over 6 query shapes |
 | FTS-09 | Search empty/no-results states | P2 | S | FTS-05, SHELL-09 | Claude | In Review | M3 | Idle hint teaching the syntax, loading skeleton, error and no-results states |
 | FTS-10 | Service tests: phrase queries, exclusions, pagination stability | P1 | M | FTS-03 | Claude | Done (#141) | M3 | Service + repository unit tests (query pass-through, cursor round-trip, forged cursors, clamps); SQL-level phrase/exclusion behavior verified in the migration scenario |
 
