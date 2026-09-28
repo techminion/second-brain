@@ -8,7 +8,7 @@ import type {
   NoteRecord,
   UpdateNoteRecordInput,
 } from "@/features/notes/types";
-import type { Tag } from "@/shared/types";
+import type { AuditActor, Tag } from "@/shared/types";
 
 const noteSelect = `
   id,
@@ -118,7 +118,15 @@ function mapNoteRpcRow(row: NoteRpcRow): NoteRecord {
 }
 
 export class NoteRepository {
-  constructor(private readonly client: SupabaseClient) {}
+  /**
+   * `actor` is recorded on every audit row the note RPCs write (NOTE-13,
+   * ADR-35): "user" for the web app; other entry points (MCP, AI) construct
+   * their repository with their own actor.
+   */
+  constructor(
+    private readonly client: SupabaseClient,
+    private readonly actor: AuditActor = "user",
+  ) {}
 
   async createNote(userId: string, input: CreateNoteRecordInput): Promise<NoteRecord> {
     const { data, error } = await this.client
@@ -126,6 +134,7 @@ export class NoteRepository {
         p_body: input.body,
         p_daily_note_date: input.dailyNoteDate,
         p_folder_id: input.folderId,
+        p_actor: this.actor,
         p_link_titles: input.linkTitles ?? [],
         p_owner_id: userId,
         p_title: input.title,
@@ -202,6 +211,7 @@ export class NoteRepository {
   ): Promise<NoteRecord | null> {
     const { data, error } = await this.client
       .rpc("update_note", {
+        p_actor: this.actor,
         p_body: input.body ?? null,
         p_folder_id: input.folderId ?? null,
         p_knowledge_object_id: noteId,
@@ -443,23 +453,21 @@ export class NoteRepository {
   }
 
   async softDeleteNote(userId: string, noteId: string, deletedAt: string): Promise<boolean> {
-    // The deleted_at guard keeps a repeat delete from refreshing the timestamp,
-    // which would silently restart the retention-purge clock (ADR-18).
-    const { data, error } = await this.client
-      .from("knowledge_objects")
-      .update({ deleted_at: deletedAt, updated_at: deletedAt })
-      .eq("id", noteId)
-      .eq("owner_id", userId)
-      .eq("type", "note")
-      .is("deleted_at", null)
-      .select("id")
-      .maybeSingle();
+    // `delete_note` guards on deleted_at so a repeat delete never refreshes
+    // the timestamp (which would restart the retention clock, ADR-18), and
+    // writes the audit row in the same transaction (NOTE-13).
+    const { data, error } = await this.client.rpc("delete_note", {
+      p_actor: this.actor,
+      p_deleted_at: deletedAt,
+      p_knowledge_object_id: noteId,
+      p_owner_id: userId,
+    });
 
     if (error) {
       throw new Error("Unable to soft-delete note", { cause: error });
     }
 
-    return data !== null;
+    return data === true;
   }
 
   async restoreNote(
@@ -469,22 +477,20 @@ export class NoteRepository {
     windowStart: string,
   ): Promise<NoteRecord | null> {
     // Only rows soft-deleted within the retention window are restorable;
-    // active notes and expired trash both fall through to null.
-    const { data, error } = await this.client
-      .from("knowledge_objects")
-      .update({ deleted_at: null, updated_at: restoredAt })
-      .eq("id", noteId)
-      .eq("owner_id", userId)
-      .eq("type", "note")
-      .not("deleted_at", "is", null)
-      .gte("deleted_at", windowStart)
-      .select(noteSelect)
-      .maybeSingle();
+    // active notes and expired trash both fall through to null. The audit
+    // row is written in the same transaction (NOTE-13).
+    const { data, error } = await this.client.rpc("restore_note", {
+      p_actor: this.actor,
+      p_knowledge_object_id: noteId,
+      p_owner_id: userId,
+      p_restored_at: restoredAt,
+      p_window_start: windowStart,
+    });
 
     if (error) {
       throw new Error("Unable to restore note", { cause: error });
     }
 
-    return data ? mapNoteQueryRow(data as NoteQueryRow) : null;
+    return data === true ? this.getNote(userId, noteId) : null;
   }
 }

@@ -21,6 +21,26 @@ Estimated Context Needed:
 
 ---
 
+## 2026-09-28 — Claude — Audit log writes (NOTE-13, ADR-35)
+
+**Session Date:** 2026-09-28
+**Agent:** Claude
+**Objective:** Merge #138, then NOTE-13, after the user chose "Inside note RPCs" for where audit rows are written.
+**Architecture Decisions:** ADR-35. Audit rows are written inside the note RPCs in the mutation's transaction, with an explicit `p_actor` and changed-field names only. Delete and restore gain RPCs, and rename propagation is logged as `system`. 04_DATABASE §8 gains a "How it's written" row.
+**Database:** migration `20260928200000_add_note_audit_writes.sql`.
+- **Dev:** applied via the Supabase connector with its exact version (23/23), then verified: all five functions SECURITY INVOKER, EXECUTE for `authenticated` only.
+- **Production:** CI-09 applies it on merge.
+- **Compatibility:** backward compatible. `p_actor` has a default, and old callers resolve.
+**Verification:**
+- **Local SQL scenario:** as two `authenticated` users under RLS, checking create, body update, no-op update (no row), rename (title row plus a system propagation row), delete, repeat delete (no-op), restore, and cross-user denial.
+- **Replay guard:** 23 migrations green on a fresh `supabase/postgres` container.
+- **E2E:** `e2e/note-audit.spec.ts` drives the UI lifecycle and reads `audit_log` with the service role, 3/3.
+- **Unit:** repository unit tests.
+**Local stack note:** if Docker restarts, `stack-up.sh` rebuilds the stack, but the modern `auth.uid()` must be applied as `supabase_admin` (applying as `postgres` fails with "permission denied for schema auth").
+**Suggested Next Task:** NOTE-14 (full NoteService contract tests), then FTS-01.
+
+---
+
 ## 2026-09-28 — Claude — ⌘P quick-open (SRCH-07); NOTE-13 needs a decision
 
 **Session Date:** 2026-09-28

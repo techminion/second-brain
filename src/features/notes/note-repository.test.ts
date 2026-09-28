@@ -91,6 +91,7 @@ describe("NoteRepository", () => {
     ).resolves.toEqual(expectedRecord);
 
     expect(rpc).toHaveBeenCalledWith("create_note", {
+      p_actor: "user",
       p_body: "Repository body",
       p_daily_note_date: null,
       p_folder_id: "folder-id",
@@ -168,6 +169,7 @@ describe("NoteRepository", () => {
     });
 
     expect(rpc).toHaveBeenCalledWith("update_note", {
+      p_actor: "user",
       p_body: "Updated body",
       p_folder_id: null,
       p_knowledge_object_id: "note-id",
@@ -238,27 +240,41 @@ describe("NoteRepository", () => {
     expect(builder.or).not.toHaveBeenCalled();
   });
 
-  it("soft-deletes only the requested owned note envelope", async () => {
-    const { builder, repository } = createTableRepository({
-      data: { id: "note-id" },
-      error: null,
-    });
+  it("soft-deletes through delete_note, which also writes the audit row (NOTE-13)", async () => {
+    const { repository, rpc } = createRpcRepository({ data: true, error: null });
     const deletedAt = "2026-07-23T02:00:00.000Z";
 
     await expect(repository.softDeleteNote("user-id", "note-id", deletedAt)).resolves.toBe(true);
-    expect(builder.update).toHaveBeenCalledWith({
-      deleted_at: deletedAt,
-      updated_at: deletedAt,
+    expect(rpc).toHaveBeenCalledWith("delete_note", {
+      p_actor: "user",
+      p_deleted_at: deletedAt,
+      p_knowledge_object_id: "note-id",
+      p_owner_id: "user-id",
     });
-    expect(builder.eq).toHaveBeenNthCalledWith(1, "id", "note-id");
-    expect(builder.eq).toHaveBeenNthCalledWith(2, "owner_id", "user-id");
-    expect(builder.eq).toHaveBeenNthCalledWith(3, "type", "note");
-    expect(builder.is).toHaveBeenCalledWith("deleted_at", null);
   });
 
-  it("restores and returns the complete note record", async () => {
+  it("reports false when delete_note finds no active owned note", async () => {
+    const { repository } = createRpcRepository({ data: false, error: null });
+
+    await expect(
+      repository.softDeleteNote("user-id", "missing", "2026-07-23T02:00:00Z"),
+    ).resolves.toBe(false);
+  });
+
+  it("records the constructor's actor on audited writes", async () => {
+    const builder = createFluentBuilder({ data: true, error: null });
+    const rpc = vi.fn().mockReturnValue(builder);
+    const repository = new NoteRepository({ rpc } as unknown as SupabaseClient, "ai");
+
+    await repository.softDeleteNote("user-id", "note-id", "2026-07-23T02:00:00Z");
+
+    expect(rpc).toHaveBeenCalledWith("delete_note", expect.objectContaining({ p_actor: "ai" }));
+  });
+
+  it("restores through restore_note, then returns the complete note record", async () => {
     const restoredAt = "2026-07-23T03:00:00.000Z";
-    const { builder, repository } = createTableRepository({
+    const windowStart = "2026-06-23T03:00:00.000Z";
+    const readBuilder = createFluentBuilder({
       data: {
         created_at: rpcRow.created_at,
         deleted_at: null,
@@ -276,8 +292,9 @@ describe("NoteRepository", () => {
       },
       error: null,
     });
-
-    const windowStart = "2026-06-23T03:00:00.000Z";
+    const rpc = vi.fn().mockReturnValue(createFluentBuilder({ data: true, error: null }));
+    const from = vi.fn().mockReturnValue(readBuilder);
+    const repository = new NoteRepository({ from, rpc } as unknown as SupabaseClient);
 
     await expect(
       repository.restoreNote("user-id", "note-id", restoredAt, windowStart),
@@ -285,12 +302,25 @@ describe("NoteRepository", () => {
       ...expectedQueryRecord,
       updatedAt: restoredAt,
     });
-    expect(builder.update).toHaveBeenCalledWith({
-      deleted_at: null,
-      updated_at: restoredAt,
+    expect(rpc).toHaveBeenCalledWith("restore_note", {
+      p_actor: "user",
+      p_knowledge_object_id: "note-id",
+      p_owner_id: "user-id",
+      p_restored_at: restoredAt,
+      p_window_start: windowStart,
     });
-    expect(builder.not).toHaveBeenCalledWith("deleted_at", "is", null);
-    expect(builder.gte).toHaveBeenCalledWith("deleted_at", windowStart);
+    expect(from).toHaveBeenCalledWith("knowledge_objects");
+  });
+
+  it("returns null without a read when restore_note restores nothing", async () => {
+    const rpc = vi.fn().mockReturnValue(createFluentBuilder({ data: false, error: null }));
+    const from = vi.fn();
+    const repository = new NoteRepository({ from, rpc } as unknown as SupabaseClient);
+
+    await expect(
+      repository.restoreNote("user-id", "note-id", "2026-07-23T03:00:00Z", "2026-06-23T03:00:00Z"),
+    ).resolves.toBeNull();
+    expect(from).not.toHaveBeenCalled();
   });
 
   it("lists restorable trash newest-deleted first with a deleted_at keyset", async () => {
