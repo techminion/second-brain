@@ -61,8 +61,11 @@ test("links a new note to an existing one and the backlink appears live", async 
     await waitForSaved(page);
 
     // The saved link resolves to A; following it is a client-side navigation.
+    // Resolution follows the save (save → graph invalidation → local-graph
+    // refetch → re-decoration), several round trips on a fresh preview, so
+    // allow it the same 15s as LINK-12's first load (timed out once at 5s, #142).
     const link = body.locator('[data-wiki-link="resolved"]', { hasText: "Project Atlas" });
-    await expect(link).toBeVisible();
+    await expect(link).toBeVisible({ timeout: 15_000 });
     await link.click();
     await page.waitForURL(noteAUrl);
     await expect(page.getByLabel("Note title")).toHaveValue("Project Atlas");
