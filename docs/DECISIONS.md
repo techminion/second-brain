@@ -406,3 +406,22 @@ Routes: `/graph` shows the whole graph and `/graph?note=<id>&depth=1..3` a local
 **Tradeoffs:** Two runtime dependencies (`@xyflow/react` ≈1.2 MB unpacked, loaded only on `/graph`; `d3-force` ≈90 KB). The layout doesn't animate. Past a few hundred nodes, the local graph remains the intended way in (10_DESIGN §10).
 
 **Future Revisit:** Move the layout into a Web Worker if cold layouts on real 2k-node graphs are felt as jank.
+
+## ADR-34 — Editor code highlighting (lowlight, curated grammars) and GFM tables
+
+**Decision:** Fenced code blocks (EDIT-06) use Tiptap's **`@tiptap/extension-code-block-lowlight`** with **`lowlight` 3 / `highlight.js` 11** and a **curated set of 15 grammars** (bash, css, diff, go, java, javascript, json, markdown, python, rust, shell, sql, typescript, xml/html, yaml — each with its aliases), registered in `features/editor/code-languages.ts`. Highlighting is decoration-only; the fence's info string round-trips unchanged, and a fence in any other language renders unhighlighted. Colors are token-driven and **single-accent** (10_DESIGN §3.3): keywords, literals and numbers take `primary`, comments and attributes `muted-foreground`, with weight and italics carrying the rest. Code blocks sit on `background` (bordered) rather than `muted`, because `primary` text on dark `muted` is ~4.0:1 and on dark `background` ~5.4:1.
+
+GFM tables (EDIT-07) use **`@tiptap/extension-table`** (header row + cells, no column resizing — widths have no markdown form), with its markdown serializer wrapped to (a) escape `|` inside cell content — upstream writes it raw, which splits the cell on the next load (silent content loss, FR-NOTE-2) — and (b) trim the newlines the upstream renderer wraps the table in. A multi-paragraph cell serializes with `<br>`, which the table parser reads back as paragraphs, so `detectUnsupportedMarkdown` treats `<br>` on a table row as table syntax, not HTML.
+
+**Status:** Accepted (2026-09-28) under the user's "continue with the next tasks" direction; dependencies flagged in the PR body per 11_CONTRIBUTING §6.
+
+**Context:** 10_DESIGN §7 requires token-driven, theme-tested syntax highlighting, and 12_TASKS EDIT-06/07 require code blocks, tables, quotes and rules. Tiptap ships none of highlighting or tables in StarterKit.
+
+**Options Considered:** (1) lowlight with the curated grammar set (chosen); (2) lowlight's `common` set (~35 grammars) — measured +70 kB First Load JS on `/notes/[id]`, versus +37 kB for the curated set; (3) Shiki — higher-fidelity themes but WASM/oniguruma-sized and theme-by-palette, at odds with the token layer; (4) no highlighting — contradicts 10_DESIGN §7.
+
+**Chosen Solution:** (1). Measured with `next build`: `/notes/[id]` First Load JS 305 kB → 356 kB (tables ≈ +14 kB, highlighting ≈ +37 kB).
+
+**Tradeoffs:** Four runtime dependencies (`@tiptap/extension-code-block-lowlight`, `@tiptap/extension-table` — same family and version as the existing Tiptap pins — plus `lowlight` and `highlight.js`, BSD-3). The editor route grows by ~51 kB. Languages outside the curated set are not highlighted.
+
+**Future Revisit:** PERF-06 (bundle audit / editor lazy loading) — load `highlight.js` and the grammars on first code block instead of with the editor; add languages on demand if users ask.
+

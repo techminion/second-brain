@@ -10,15 +10,28 @@
 - **Priorities:** `P0` — on the critical path of the current sprint; `P1` — this sprint, parallelizable; `P2` — next in line, claimable if idle.
 - When the sprint's queue empties, the architect role promotes the next dependency-ready wave from [docs/12_TASKS.md](../docs/12_TASKS.md).
 
-## Sprint 8 — M2 Connect close-out (in progress)
+## Sprint 9 — M1 editor polish (in progress)
 
-Promoted 2026-09-28 by the user ("after merging, continue with the next tasks"). Branch `claude/gallant-ride-gl1fkf`. The M2 link/backlink acceptance tail: the two PRD §5 link flows as E2E, and the FR-LINK-6 freshness test.
+Promoted 2026-09-28 by the user's "continue with the next tasks" after M2 Connect closed. Branch `claude/gallant-ride-gl1fkf`. First PR: block types + reading column, and closing out the editor tasks whose behavior already shipped (EDIT-10/12/13) with tests. Next: EDIT-08 slash menu, EDIT-09 selection toolbar, EDIT-11 paste, EDIT-18 ⌘F, then EDIT-15/17.
 
 | ID | Title | Priority | Cx | Depends on | Owner | Status | Milestone | Acceptance criteria |
 |---|---|---|---|---|---|---|---|---|
-| LINK-11 | E2E: PRD flow "create a note and link it" | P0 | M | LINK-06, BACK-03, CI-06 | Claude | In Review | M2 | `e2e/wiki-links.spec.ts`: A's empty backlinks shown → new note B links A via the `[[` autocomplete → resolved link opens A → A's backlinks list B with its snippet; no reload after the flow starts |
-| LINK-12 | E2E: PRD flow "rename a linked note" | P0 | M | LINK-08, CI-06 | Claude | In Review | M2 | Same spec: rename A → B shows `[[A2]]` as a resolved link opening A; B's stored markdown is byte-identical except the rename |
-| BACK-06 | Freshness test: backlink appears without manual refresh — FR-LINK-6 | P1 | M | BACK-02, LINK-04 | Claude | In Review | M2 | Hook test: a mounted `useBacklinks` refetches when another note's save settles; unmounted backlink + graph caches are invalidated. E2E coverage via LINK-11 |
+| EDIT-06 | Code blocks with syntax highlighting (theme-aware) | P0 | M | EDIT-02 | Claude | In Review | M1 | **ADR-34**: lowlight + 15 curated grammars; single-accent token colors, ≥ 4.5:1 in both themes; fence info strings round-trip; `e2e/editor-blocks.spec.ts` + corpus entry |
+| EDIT-07 | Blockquotes, horizontal rules, tables | P0 | M | EDIT-02 | Claude | In Review | M1 | GFM tables via `@tiptap/extension-table` with the pipe-escaping serializer fix (ADR-34); styled quotes/rules; corpus + XSS entries; axe-clean |
+| EDIT-14 | Reading-column layout (~68ch, 1.7 line-height) | P1 | S | EDIT-01 | Claude | In Review | M1 | Editor content max-width `68ch`, line-height 1.7 (code blocks 1.5) |
+| EDIT-10 | Debounced autosave + save-on-blur, quiet indicator — FR-NOTE-5 | P1 | M | EDIT-02, NOTE-04 | Claude | In Review | M1 | Already shipped with NOTE-10 (`useAutosave`: 800ms debounce, blur/unmount flush, "Saved" status); verified by `use-autosave.test.ts` and the note-lifecycle/wiki-links E2E — closed here |
+| EDIT-12 | Title field: editing, dual-write, rename flow — FR-NOTE-3 | P1 | S | NOTE-04, EDIT-01 | Claude | In Review | M1 | Shipped with NOTE-10/LINK-08; rename flow proven by LINK-12 E2E. Fix here: title rendered small on desktop (`md:text-sm` from the shared input) |
+| EDIT-13 | Editor keyboard shortcuts (⌘B/⌘I, undo/redo) | P1 | S | EDIT-04, SHELL-05 | Claude | In Review | M1 | StarterKit keymaps (Mod = ⌘ on macOS, Ctrl elsewhere); E2E proves ⌘B, ⌘I, ⌘Z, ⇧⌘Z and the live ```` ```lang ```` fence |
+
+## Sprint 8 — M2 Connect close-out (complete)
+
+Promoted 2026-09-28 by the user ("after merging, continue with the next tasks"). Merged via PR #133 (`c6ee782`). The M2 link/backlink acceptance tail: the two PRD §5 link flows as E2E, and the FR-LINK-6 freshness test.
+
+| ID | Title | Priority | Cx | Depends on | Owner | Status | Milestone | Acceptance criteria |
+|---|---|---|---|---|---|---|---|---|
+| LINK-11 | E2E: PRD flow "create a note and link it" | P0 | M | LINK-06, BACK-03, CI-06 | Claude | Done (#133) | M2 | `e2e/wiki-links.spec.ts`: A's empty backlinks shown → new note B links A via the `[[` autocomplete → resolved link opens A → A's backlinks list B with its snippet; no reload after the flow starts |
+| LINK-12 | E2E: PRD flow "rename a linked note" | P0 | M | LINK-08, CI-06 | Claude | Done (#133) | M2 | Same spec: rename A → B shows `[[A2]]` as a resolved link opening A; B's stored markdown is byte-identical except the rename |
+| BACK-06 | Freshness test: backlink appears without manual refresh — FR-LINK-6 | P1 | M | BACK-02, LINK-04 | Claude | Done (#133) | M2 | Hook test: a mounted `useBacklinks` refetches when another note's save settles; unmounted backlink + graph caches are invalidated. E2E coverage via LINK-11 |
 
 ## Sprint 7 — M2 Graph View (complete)
 

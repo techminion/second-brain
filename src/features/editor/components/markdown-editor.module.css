@@ -16,9 +16,12 @@
   color: hsl(var(--muted-foreground));
 }
 
+/* EDIT-14 (10_DESIGN §3.1): a ~68ch reading measure at 1.7 line-height. */
 .content {
   min-height: 16rem;
+  max-width: 68ch;
   padding: 0.75rem 1rem;
+  line-height: 1.7;
   outline: none;
 }
 
@@ -141,15 +144,97 @@
   font-family: var(--font-jetbrains-mono), ui-monospace, monospace;
 }
 
+/* Code blocks (EDIT-06) sit on the canvas color, not `muted`: the accent used
+   for keywords only clears 4.5:1 against `background` in dark mode. */
 .content pre {
   overflow-x: auto;
+  border: 1px solid hsl(var(--border));
   border-radius: var(--radius-md);
-  background: hsl(var(--muted));
+  background: hsl(var(--background));
   padding: 0.75rem 1rem;
+  line-height: 1.5;
 }
 
 .content pre code {
+  background: none;
   padding: 0;
+}
+
+/* Syntax highlighting (EDIT-06, 10_DESIGN §3.3/§7): token-driven and single-
+   accent — keywords and literals take `primary`, comments recede to
+   `muted-foreground`, and structure is carried by weight and style rather
+   than extra hues, so both themes stay calm and every pair stays ≥ 4.5:1. */
+.content pre :global(.hljs-keyword),
+.content pre :global(.hljs-built_in),
+.content pre :global(.hljs-type),
+.content pre :global(.hljs-literal),
+.content pre :global(.hljs-number),
+.content pre :global(.hljs-selector-tag) {
+  color: hsl(var(--primary));
+}
+
+.content pre :global(.hljs-keyword),
+.content pre :global(.hljs-selector-tag),
+.content pre :global(.hljs-title),
+.content pre :global(.hljs-section) {
+  font-weight: var(--font-weight-semibold);
+}
+
+.content pre :global(.hljs-comment),
+.content pre :global(.hljs-quote),
+.content pre :global(.hljs-meta),
+.content pre :global(.hljs-attr),
+.content pre :global(.hljs-attribute) {
+  color: hsl(var(--muted-foreground));
+}
+
+.content pre :global(.hljs-comment),
+.content pre :global(.hljs-quote),
+.content pre :global(.hljs-string),
+.content pre :global(.hljs-regexp) {
+  font-style: italic;
+}
+
+/* Horizontal rules and tables (EDIT-07). */
+.content hr {
+  margin-block: 1.5rem;
+  border: 0;
+  border-top: 1px solid hsl(var(--border));
+}
+
+.content hr:global(.ProseMirror-selectednode) {
+  border-top-color: hsl(var(--ring));
+}
+
+.content table {
+  display: block;
+  max-width: 100%;
+  overflow-x: auto;
+  margin-block: 0.75rem;
+  border-collapse: collapse;
+}
+
+.content th,
+.content td {
+  min-width: 6rem;
+  border: 1px solid hsl(var(--border));
+  padding: 0.375rem 0.75rem;
+  text-align: start;
+  vertical-align: top;
+}
+
+.content th {
+  background: hsl(var(--muted));
+  font-weight: var(--font-weight-semibold);
+}
+
+.content th > p,
+.content td > p {
+  margin-block: 0;
+}
+
+.content :global(.selectedCell) {
+  background: hsl(var(--primary) / 0.12);
 }
 
 /* Wiki links (LINK-05/07): the single accent (10_DESIGN §3); unresolved dashed. */

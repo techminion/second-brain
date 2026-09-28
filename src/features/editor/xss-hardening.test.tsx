@@ -30,6 +30,10 @@ const hostileCorpus: [string, string][] = [
   ["fenced code with markup", "```html\n<img src=x onerror=alert(1)>\n```"],
   ["wiki link with markup", "[[<script>alert(1)</script>]]"],
   ["task item with markup", "- [ ] <img src=x onerror=alert(1)> task"],
+  ["table cell with markup", "| a |\n| --- |\n| <img src=x onerror=alert(1)> |"],
+  ["table cell with hostile br", "| a |\n| --- |\n| x<br onmouseover=alert(1)>y |"],
+  ["table cell javascript link", "| a |\n| --- |\n| [x](javascript:alert(1)) |"],
+  ["fenced code with hostile info string", '```js" onmouseover="alert(1)\nx\n```'],
 ];
 
 const dangerousScheme = /^\s*(javascript|vbscript|data):/i;

@@ -21,6 +21,25 @@ Estimated Context Needed:
 
 ---
 
+## 2026-09-28 — Claude — Editor blocks (EDIT-06/07/14; EDIT-10/12/13 closed)
+
+**Session Date:** 2026-09-28
+**Agent:** Claude
+**Objective:** Merge #133 (M2 Connect complete) and continue into M1 editor polish.
+**Architecture Decisions:** ADR-34 — lowlight with 15 curated grammars (lowlight's `common` set cost +70 kB on `/notes/[id]`; curated +37 kB), single-accent token colors, code blocks on `background` for contrast; GFM tables via `@tiptap/extension-table` with a serializer wrapper.
+**Bugs found and fixed:**
+- **Table cell pipes were lost on save.** Upstream writes a literal `|` in a cell unescaped, so the cell splits on the next load. The wrapper now escapes it.
+- **Stray newlines around tables.** The table serializer wraps its output in newlines; the wrapper trims them.
+- **Note title too small on desktop.** The shared input's `md:text-sm` overrode `text-2xl`; the title now also sets `md:text-2xl`.
+**Test gotcha:** ProseMirror syncs DOM selection changes asynchronously. A shortcut sent in the same tick as Shift+Home/End still sees the old selection. `e2e/editor-blocks.spec.ts` waits on the editor's own selection (Tiptap exposes `editor` on `.ProseMirror`) before each follow-up key.
+**Files Added:** `src/features/editor/{code-languages.ts,code-languages.test.ts}`, `e2e/editor-blocks.spec.ts`.
+**Files Modified:** editor extensions/CSS/round-trip detector/corpus/XSS corpus, `note-editor.tsx`, package.json/lock (4 deps), docs.
+**Verification:** 681 unit tests; editor-blocks, editor-lists and a11y E2E green twice locally; light/dark screenshots reviewed; `next build` measured.
+**Outstanding Work:** EDIT-08 slash menu (should offer Table and Code block), EDIT-09 selection toolbar, EDIT-11 paste, EDIT-18 ⌘F, then EDIT-15 a11y pass and EDIT-17 component tests.
+**Suggested Next Task:** EDIT-08.
+
+---
+
 ## 2026-09-28 — Claude — M2 Connect close-out (LINK-11/12, BACK-06)
 
 **Session Date:** 2026-09-28

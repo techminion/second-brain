@@ -82,7 +82,7 @@ export function NoteEditor({ note }: Readonly<{ note: Note }>) {
       <div className="flex items-start justify-between gap-4">
         <Input
           aria-label="Note title"
-          className="h-auto border-0 px-0 text-2xl font-semibold shadow-none focus-visible:ring-0"
+          className="h-auto border-0 px-0 text-2xl font-semibold shadow-none focus-visible:ring-0 md:text-2xl"
           onChange={(event) => handleTitle(event.target.value)}
           placeholder="Untitled"
           value={title}
