@@ -132,7 +132,9 @@ begin
       -- ADR-35 audited note writes (NOTE-13).
       'public.write_note_audit(uuid,text,text,uuid,text[],jsonb)',
       'public.delete_note(uuid,uuid,timestamptz,text)',
-      'public.restore_note(uuid,uuid,timestamptz,timestamptz,text)'
+      'public.restore_note(uuid,uuid,timestamptz,timestamptz,text)',
+      -- FTS-01/02 full-text search.
+      'public.search_notes(uuid,text,integer,integer)'
     ]) as required(signature)
     where to_regprocedure(required.signature) is null
       or (select prosecdef from pg_proc where oid = to_regprocedure(required.signature))
