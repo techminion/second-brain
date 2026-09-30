@@ -55,7 +55,7 @@ The MCP server is explicitly **not** on this list ([06_MCP.md §9](06_MCP.md#9-s
 | Rule | Detail |
 |---|---|
 | Storage | Vercel environment variables, scoped per environment (preview vs. production values are distinct) — per [03_ARCHITECTURE.md §8](03_ARCHITECTURE.md#8-deployment-architecture). |
-| Inventory | Supabase service-role key, OpenAI API key, webhook shared secret (§3). The Supabase publishable key and URL are public by design (RLS is the protection, not key secrecy) — but the *service-role* key must never ship in any client bundle; only code running in Route Handlers/server components may read it. |
+| Inventory | Supabase service-role key, OpenAI API key (issued by the OpenAI-compatible gateway, ADR-37; its base URL `OPENAI_BASE_URL` is server-only configuration, not a secret), webhook shared secret (§3). The Supabase publishable key and URL are public by design (RLS is the protection, not key secrecy) — but the *service-role* key must never ship in any client bundle; only code running in Route Handlers/server components may read it. |
 | Client exposure | No secret is ever prefixed `NEXT_PUBLIC_`. CI lint rule enforces this mechanically ([11_CONTRIBUTING.md](11_CONTRIBUTING.md)). |
 | Logs | Structured logs carry request id + user id, never tokens, note content, or signed URLs ([03_ARCHITECTURE.md §9](03_ARCHITECTURE.md#9-cross-cutting-concerns)). |
 | Rotation | All three secrets are rotatable without a schema change; rotation is a Vercel env-var update + redeploy. On any suspected exposure, rotate first, investigate second. |
@@ -89,7 +89,7 @@ Set globally via Next.js middleware/config:
 
 ## 9. Threat Model
 
-Assets: user Knowledge Objects (the crown jewel), account credentials, MCP credentials, platform API keys. Trust boundaries: browser ↔ Vercel, MCP client ↔ Vercel, Vercel ↔ Supabase, Vercel ↔ OpenAI.
+Assets: user Knowledge Objects (the crown jewel), account credentials, MCP credentials, platform API keys. Trust boundaries: browser ↔ Vercel, MCP client ↔ Vercel, Vercel ↔ Supabase, Vercel ↔ the OpenAI-compatible gateway (ADR-37) ↔ the model provider.
 
 | # | Threat | Vector | Mitigation |
 |---|---|---|---|
@@ -126,7 +126,7 @@ The concrete commitments behind "Open" and "data outlives the app" ([01_PRODUCT.
 |---|---|
 | Full export, always | A user can export their complete graph as plain markdown files (+ attachments) at any time. Export is a first-class requirement, not a support request. |
 | Deletion means deletion | Soft-delete window (30 days, [04_DATABASE.md §6](04_DATABASE.md#6-soft-deletes)), then hard purge including embeddings and storage objects. Account deletion (FR-AUTH-6) cascades the same way after its grace period. |
-| No training on user content | User Knowledge Objects are sent to OpenAI solely to serve that user's own requests (embeddings, chat), under API terms where inputs are not used for model training. Any future provider change must preserve this property. |
+| No training on user content | User Knowledge Objects are sent to OpenAI solely to serve that user's own requests (embeddings, chat), under API terms where inputs are not used for model training. Any future provider change must preserve this property — including the OpenAI-compatible gateway (ADR-37), which sees the same content in transit. |
 | No content in telemetry | Logs and metrics carry ids and counts, never note bodies, titles, or search queries (§6). |
 | Encryption | In transit: TLS on every hop (browser↔Vercel, Vercel↔Supabase, Vercel↔OpenAI). At rest: provided by Supabase's managed Postgres and Storage. Client-side/E2E encryption is explicitly **not** offered — it is structurally incompatible with server-side search, embeddings, and MCP access, which are the product ([01_PRODUCT.md §1](01_PRODUCT.md#1-purpose)). Stated openly rather than implied. |
 | Support access | No admin read path to user content exists in the schema ([04_DATABASE.md §8](04_DATABASE.md#8-audit-strategy)) — operational debugging works from metadata and logs, not from reading users' notes. |

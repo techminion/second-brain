@@ -8,7 +8,7 @@
 
 ## Current Sprint
 
-**Sprint 10 — M3 Full-text search** (promoted 2026-09-28; scope in [.ai/TASK_QUEUE.md](../.ai/TASK_QUEUE.md)) — backend merged (#141: `search_notes` RPC, marker snippets, `SearchService.search`, ADR-36). In review (#142): route + hook, `/search` results page, ⇧⌘F, scoping E2E, empty states and latency instrumentation (FTS-04..09) — the rest of the FTS track. Sprint 9 (M1 editor polish + the M1 tail NOTE-13/14, SRCH-07) is complete.
+**Sprint 10 — M3 Full-text search** ✅ complete (scope in [.ai/TASK_QUEUE.md](../.ai/TASK_QUEUE.md)): backend via #141 (`search_notes` RPC, marker snippets, `SearchService.search`, ADR-36); route + hook, `/search` results page, ⇧⌘F, scoping E2E, empty states and latency instrumentation via #142 (FTS-04..09). Next: the M3 semantic-search track — EMB-02/EMB-14 (chunking, needs no credentials) first; EMB-01 waits on the OpenAI-compatible key (ADR-37). Sprint 9 (M1 editor polish + the M1 tail NOTE-13/14, SRCH-07) is complete.
 Done: Sprint 0 (governance), Sprint 1 (repo & tooling — 21 tasks), Sprint 2 (schema, auth core & app shell), Sprint 3 (M0 closeout + note/editor foundation), Sprint 4 (note service + editor round-trip + M0 tail — M0 100% complete), Sprints 5–6 (note-taking UI, M1 collect, M2 backend — #130), Sprint 7 (graph view — #132), Sprint 8 (M2 close-out — #133), Sprint 9 (editor polish + M1 tail — #134–#140)
 
 ## Overall Progress
@@ -17,7 +17,7 @@ Done: Sprint 0 (governance), Sprint 1 (repo & tooling — 21 tasks), Sprint 2 (s
 |---|---|
 | Engineering documentation (12 docs) | ✅ Complete, audited twice for consistency |
 | Governance layer (this file set) | ✅ Complete |
-| Implementation | 143 Done / 309 tasks ([12_TASKS.md](12_TASKS.md)) — 56 via PR #130 (`3805f3e`), CI-09, GRAPH-04..17 via #132 (`112c115`), LINK-11/12 + BACK-06 via #133 (`c6ee782`), EDIT-06/07/10/12/13/14 via #134 (`42f9820`), EDIT-08/09 via #135 (`747bc13`), EDIT-11/18 via #136 (`b83f2a5`), EDIT-15/17 via #137 (`ca4406a`), SRCH-07 via #138 (`2853245`), NOTE-13 via #139 (`ded7081`), NOTE-14 via #140 (`f8a69d4`), FTS-01/02/03/10 via #141 (`f8a5416`); FTS-04/05/06/07/08/09 in review |
+| Implementation | 149 Done / 309 tasks ([12_TASKS.md](12_TASKS.md)) — 56 via PR #130 (`3805f3e`), CI-09, GRAPH-04..17 via #132 (`112c115`), LINK-11/12 + BACK-06 via #133 (`c6ee782`), EDIT-06/07/10/12/13/14 via #134 (`42f9820`), EDIT-08/09 via #135 (`747bc13`), EDIT-11/18 via #136 (`b83f2a5`), EDIT-15/17 via #137 (`ca4406a`), SRCH-07 via #138 (`2853245`), NOTE-13 via #139 (`ded7081`), NOTE-14 via #140 (`f8a69d4`), FTS-01/02/03/10 via #141 (`f8a5416`), FTS-04..09 via #142 (`be83e18`) |
 
 ## Completed
 
@@ -82,7 +82,7 @@ Done: Sprint 0 (governance), Sprint 1 (repo & tooling — 21 tasks), Sprint 2 (s
 
 ## In Progress
 
-- **Sprint 7 — M2 graph view (GRAPH-04..17):** in review on `claude/gallant-ride-gl1fkf` (ADR-33). Also fixes the malformed note id → 500 bug (now 404, ADR-26). Then LINK-11/12 and BACK-06 finish M2.
+- **M3 semantic search, first slice:** EMB-02 + EMB-14 (markdown-aware chunking and its unit corpus, pure — no credentials needed), on `claude/gallant-ride-gl1fkf`.
 
 ## Blocked
 
@@ -90,7 +90,7 @@ Done: Sprint 0 (governance), Sprint 1 (repo & tooling — 21 tasks), Sprint 2 (s
 
 ## Upcoming
 
-- **Next:** GRAPH-04..17 (React Flow + d3-force layout, ADR pending), LINK-11/12, BACK-06; then the M1 tail (EDIT-06..15/17/18, NOTE-13/14/16, ATT-*) and M3 FTS. AI (EMB/SEM/AICH/VCH) waits on the ADR-25 spec ripples; MCP waits on the protocol-version pin.
+- **Next:** after chunking, SEM-03 (RRF ranking module, pure). EMB-01 (typed OpenAI client) needs the user's key in Vercel Preview/Production and `.env.local`, pointed at the OpenAI-compatible gateway `https://omni.khaire.dev/v1` (ADR-37); the rest of EMB/SEM follows it, and applying the ADR-25 gating ripples is part of that work. The M1 tail left is NOTE-16 and ATT-*; MCP waits on the protocol-version pin.
 - **Earlier plan (after Sprint 5):** rest of EDIT formatting (EDIT-06+), NOTE-13/16, then FOLD/TAG/ATT/DAILY (the rest of M1 Collect). CRED-01 (MCP) tracks to M4; ADR-24/ADR-25 make EMB-01 the first AI task, in M3.
 - **Resolved 2026-07-24 (GOV-8):** `E2E (preview)` and `Accessibility` are now **required** branch-protection contexts (added via the GitHub API). A preview-lane flake now blocks merge until re-triggered — accepted tradeoff.
 - **Watch-item (reviewer flag):** EDIT-16 (XSS hardening test, 09_SECURITY §9 T4) is deferred, but the editor now renders user markdown incl. `@tiptap/extension-image` URLs — prioritize EDIT-16 before the editor reaches real users.

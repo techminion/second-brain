@@ -480,3 +480,23 @@ GFM tables (EDIT-07) use **`@tiptap/extension-table`** (header row + cells, no c
 
 **Future Revisit:** SEM-04 (hybrid search). RRF merges ranks, not scores, so the cursor may need to encode the merged position.
 
+## ADR-37 — OpenAI calls go through an OpenAI-compatible gateway at `OPENAI_BASE_URL`
+
+**Decision:** The typed OpenAI client (EMB-01) sends every embeddings and chat request to the OpenAI-compatible gateway `https://omni.khaire.dev/v1`, not to `api.openai.com`. The base URL is a server-only environment variable, `OPENAI_BASE_URL`, set per Vercel scope next to `OPENAI_API_KEY`; the key is the one the gateway issues. Feature code never sees either value — only the `shared/lib` client wrapper reads them.
+
+**Status:** Accepted (2026-09-30) — explicit user (product-owner) decision.
+
+**Context:** The product owner provides model access through their own OpenAI-compatible endpoint. The documented architecture named OpenAI directly (03_ARCHITECTURE §2.1) and put the trust boundary at Vercel ↔ OpenAI (09_SECURITY §9).
+
+**Options Considered:** (a) call `api.openai.com` directly, as originally written; (b) call the gateway through a configurable base URL (chosen); (c) hardcode the gateway URL in code (rejected — per-environment configuration belongs in the environment, per ADR-24).
+
+**Chosen Solution:** (b). The wire protocol is unchanged (OpenAI embeddings and Responses/chat endpoints), so 07_AI's model tiers, the 1536-dimension embedding contract and the budgets stand. ADR-24 still holds: Preview and Production keys stay distinct, and EMB-01 still owns provisioning and verifying both scopes.
+
+**Tradeoffs:**
+- The gateway is a new party in the data path. Note content (embeddings) and chat context pass through it, so 09_SECURITY §6's "no training on user content" property now depends on the gateway and on the upstream provider behind it.
+- The gateway must expose a 1536-dimension embedding model (the small embedding tier, e.g. `text-embedding-3-small`). EMB-01 verifies this against the live endpoint before completing; a different width needs a migration (07_AI §3).
+- Outages or rate limits at the gateway surface as upstream failures: the EMB-09 retry/`failed` path and SEM-06 keyword-only degradation already cover them.
+
+**Applied to specs:** 03_ARCHITECTURE §2.1 (AI provider row), 09_SECURITY §6 (inventory, no-training row) and §9 (trust boundary); `.env.example` gains `OPENAI_BASE_URL`.
+
+**Future Revisit:** If the gateway is retired, set `OPENAI_BASE_URL` back to `https://api.openai.com/v1` and issue new keys; no code change.
