@@ -10,6 +10,17 @@
 - **Priorities:** `P0` — on the critical path of the current sprint; `P1` — this sprint, parallelizable; `P2` — next in line, claimable if idle.
 - When the sprint's queue empties, the architect role promotes the next dependency-ready wave from [docs/12_TASKS.md](../docs/12_TASKS.md).
 
+## Sprint 11 — M3 Semantic search (in progress)
+
+Promoted 2026-09-30 under the user's "go ahead with the docs PR and chunking". The pure, credential-free modules go first; EMB-01 (typed client) waits on the user adding the gateway key (ADR-37). Branch `claude/gallant-ride-gl1fkf`.
+
+| ID | Title | Priority | Cx | Depends on | Owner | Status | Milestone | Acceptance criteria |
+|---|---|---|---|---|---|---|---|---|
+| EMB-02 | Chunking module per 07_AI §4 (markdown-aware splits, overlap, floor merging) | P0 | L | SETUP-06 | Claude | In Review | M3 | **ADR-38**: `chunkMarkdown` in `src/features/ai/chunking.ts`: 4 chars/token estimate; ≤500 tokens → one chunk; heading → block → line → sentence → word → char splits, packed to 425 tokens + 75-token overlap starting at a sentence; floor 50 tokens; fences never split at inner blank lines/headings; chunks are exact substrings in order. L split: one unit (pure module + corpus), no sub-PRs needed |
+| EMB-14 | Chunking unit test corpus | P0 | M | EMB-02 | Claude | In Review | M3 | `chunking.test.ts`: empty/short/threshold/CRLF, heading boundaries, section packing, paragraph → sentence splits, overlap placement, fences, oversized code (line splits), unpunctuated text (word splits), single giant run, floor merging, determinism; every multi-chunk case asserts the substring/order/coverage/size invariants |
+| EMB-01 | Typed OpenAI client + Preview/Production keys (ADR-24, ADR-37) | P0 | S | SETUP-14 | — | Blocked (user: gateway key in Vercel) | M3 | Client reads `OPENAI_API_KEY` + `OPENAI_BASE_URL`; both Vercel scopes set with distinct keys and verified; a 1536-dim embedding model confirmed on the gateway |
+| SEM-03 | RRF hybrid ranking module (k=60) | P1 | M | SETUP-06 | — | Queued | M3 | Pure; tested against 08_SEARCH §4's worked example |
+
 ## Sprint 10 — M3 Full-text search (complete)
 
 Promoted 2026-09-28 under the user's "continue with the next tasks" once the M1 tail (NOTE-13/14) merged; FTS-01 was the first dependency-ready search task. Branch `claude/gallant-ride-gl1fkf`. First PR (#141, `f8a5416`): the backend (FTS-01/02/03 + FTS-10). Second PR (#142, `be83e18`): route + hook, results UI, ⇧⌘F, FTS-07 scoping E2E, empty states, and FTS-08 latency instrumentation — completes the FTS track.

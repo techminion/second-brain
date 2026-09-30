@@ -500,3 +500,38 @@ GFM tables (EDIT-07) use **`@tiptap/extension-table`** (header row + cells, no c
 **Applied to specs:** 03_ARCHITECTURE §2.1 (AI provider row), 09_SECURITY §6 (inventory, no-training row) and §9 (trust boundary); `.env.example` gains `OPENAI_BASE_URL`.
 
 **Future Revisit:** If the gateway is retired, set `OPENAI_BASE_URL` back to `https://api.openai.com/v1` and issue new keys; no code change.
+
+## ADR-38 — Chunk sizes are estimated at four characters per token; chunks are exact substrings of the note
+
+**Decision:** The chunking module (EMB-02, `src/features/ai/chunking.ts`) measures every size in 07_AI §4 with an estimate of **four characters per token**, not a tokenizer. The §4 values become:
+
+| Rule | Value |
+|---|---|
+| Target | 500 tokens (2,000 characters); a note at or under it is one chunk. |
+| Overlap | 75 tokens (300 characters), reserved inside the target. Long notes pack to 425 tokens before the overlap is added. |
+| Floor | 50 tokens (200 characters); a smaller piece merges into its neighbour. |
+
+- **Split order:** heading sections, then blank-line blocks, then lines, sentences and words. A hard character split is used only for a single run longer than a chunk. Adjacent pieces are packed back together up to the budget, so a boundary falls on the coarsest structure that fits.
+- **Code fences:** fenced code is never split at a heading or blank line inside the fence.
+- **Overlap boundary:** the overlap starts at the first sentence or line start in its window, never mid-word.
+- **Substring invariant:** every chunk is a trimmed, exact substring of the (CRLF-normalized) note, in order.
+
+**Status:** Accepted (2026-09-30) as an implementation-level decision within 07_AI §4, whose values are all approximate ("~500 tokens"). No spec behavior changes.
+
+**Context:** 07_AI §4 states sizes in tokens but names no tokenizer. The exact count depends on the configured embedding model (07_AI §2 keeps model IDs as configuration), and ADR-37 routes calls through a gateway whose upstream tokenizer is not ours to pin.
+
+**Options Considered:**
+- (a) Bundle a BPE tokenizer (e.g. `gpt-tokenizer`) for exact counts.
+- (b) A character-based estimate (chosen).
+
+**Chosen Solution:** (b).
+- It is pure and dependency-free, and it is deterministic across model changes.
+- Four characters per token is the usual English average for OpenAI tokenizers.
+- The embedding endpoint's input limit (about 8k tokens) is more than ten times a chunk, so estimation error cannot make a request fail.
+- The substring invariant means `chunk_text` can be shown as a citation or snippet exactly as the user wrote it.
+
+**Tradeoffs:**
+- Real token counts vary: code, URLs and non-Latin scripts run denser than four characters per token, so their chunks hold fewer real tokens than the target. This affects retrieval granularity only, not correctness.
+- Because the floor merge can exceed the budget, a chunk can reach about 2,200 characters (550 tokens).
+
+**Future Revisit:** If retrieval-quality evaluation (PERF-04 recall checks) shows chunk granularity matters, swap `estimateTokens` for a tokenizer; the rest of the module is unchanged.
