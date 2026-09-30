@@ -108,6 +108,17 @@ test("@a11y authenticated shell and settings have no WCAG 2.1 AA violations", as
 
     await expectNoViolations(page);
 
+    // FTS-05 search results (with highlighted snippets) and the idle state.
+    await page.goto("/search");
+    await page.getByRole("searchbox", { name: "Search notes" }).waitFor();
+
+    await expectNoViolations(page);
+
+    await page.goto("/search?q=accessibility");
+    await page.getByRole("list", { name: "Search results" }).waitFor();
+
+    await expectNoViolations(page);
+
     // NOTE-12 trash view, with the note just seeded moved into it.
     const deleted = await page.request.delete(`/api/notes/${note.id}`);
     expect(deleted.ok()).toBeTruthy();

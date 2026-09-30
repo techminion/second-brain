@@ -1,5 +1,11 @@
 import { requestJson } from "@/shared/lib/api-client";
-import type { KnowledgeObjectSummary, Paginated, PaginationOptions, Tag } from "@/shared/types";
+import type {
+  KnowledgeObjectSummary,
+  Paginated,
+  PaginationOptions,
+  SearchResult,
+  Tag,
+} from "@/shared/types";
 
 export function fetchTags(): Promise<Tag[]> {
   return requestJson<Tag[]>("/api/tags");
@@ -22,4 +28,18 @@ export function fetchObjectsByTag(
 export function fetchTitleSuggestions(query: string, limit = 8): Promise<KnowledgeObjectSummary[]> {
   const params = new URLSearchParams({ limit: String(limit), q: query });
   return requestJson<KnowledgeObjectSummary[]>(`/api/search/titles?${params.toString()}`);
+}
+
+export function fetchSearchResults(
+  query: string,
+  options: PaginationOptions = {},
+): Promise<Paginated<SearchResult>> {
+  const params = new URLSearchParams({ q: query });
+  if (options.cursor) {
+    params.set("cursor", options.cursor);
+  }
+  if (options.limit !== undefined) {
+    params.set("limit", String(options.limit));
+  }
+  return requestJson<Paginated<SearchResult>>(`/api/search?${params.toString()}`);
 }

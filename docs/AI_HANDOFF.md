@@ -21,6 +21,38 @@ Estimated Context Needed:
 
 ---
 
+## 2026-09-28 — Claude — Search UI (FTS-04/05/06/07/09)
+
+**Session Date:** 2026-09-28
+**Agent:** Claude
+**Objective:** Merge #141 (search backend), then the search UI slice.
+**Architecture Decisions:** none new; follows ADR-36. Snippet markers are rendered by `parseSnippet`, a character walk that tolerates unbalanced markers, and React escapes all text.
+**Files Added:**
+- `src/app/api/search/route.ts`
+- `src/features/search/hooks/use-search.ts`
+- `src/features/search/components/{search-snippet.tsx,search-view.tsx,search-view.test.tsx}`
+- `src/app/(app)/search/page.tsx`
+- `e2e/search.spec.ts`
+**Files Modified:**
+- `search-api.ts` (`fetchSearchResults`)
+- shell shortcuts (⇧⌘F) and command registry ("Global search" enabled)
+- a11y sweep (`/search` idle and with results)
+- docs
+**Verification:**
+- **Unit tests:** snippet parsing, plus a hostile snippet rendering no markup; the view's idle, results, no-results, error and load-more states; URL sync; arrow-key navigation.
+- **E2E:** `search.spec` covers ⇧⌘F, phrase and exclusion syntax, marks, keyboard open, a trashed note excluded, a second user's same-term note never visible via UI or API, and empty q → 400. It ran green on the dev server and 4× against a local production build.
+- **a11y sweep:** green.
+- **Screenshots:** light and dark reviewed.
+**FTS-08 (added to #142 at the user's "continue with FTS-08"):**
+- **Route context:** `createServiceRoute` now hands handlers the request's structured `logger`.
+- **Instrumentation:** `/api/search` wraps the service call in `instrumentFullTextSearch`. Each search logs `search.fulltext.completed` with numbers and booleans only, never query text, and a search over 300ms also logs a `search.fulltext.slow` warning.
+- **p95:** computed from these events once OBS-03 dashboards exist.
+- **Local measurement (DB time):** 5,000 notes per user (10,000 rows), 6 query shapes × 20 runs. p50 16.7ms, p95 28.8ms, max 32ms. PERF-03 is the formal 10k load test.
+**Also in #142:** LINK-11's link-resolution wait was raised to 15s after it timed out at 5s on the preview; same class as LINK-12 in #135.
+**Suggested Next Task:** the FTS track is complete. The M3 semantic track (EMB-*, SEM-*) needs an OpenAI API key and a provisioning decision (07_AI, ADR-24), so ask the user. Otherwise PERF-01 (seed script) and PERF-03 (10k load test) are unblocked.
+
+---
+
 ## 2026-09-28 — Claude — Full-text search backend (FTS-01/02/03/10, ADR-36)
 
 **Session Date:** 2026-09-28
