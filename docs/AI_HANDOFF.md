@@ -21,6 +21,33 @@ Estimated Context Needed:
 
 ---
 
+## 2026-09-30 — Claude — Chunking module (EMB-02/EMB-14, ADR-38)
+
+**Session Date:** 2026-09-30
+**Agent:** Claude
+**Objective:** Merge #143 (Sprint 10 close-out, ADR-37), then start Sprint 11 (M3 semantic search) with the pure chunking module.
+**Architecture Decisions:** ADR-38: sizes are estimated at four characters per token (no tokenizer dependency), and every chunk is an exact, trimmed substring of the note. 07_AI §4 gains a pointer to it.
+**Files Added:** `src/features/ai/chunking.ts` and `src/features/ai/chunking.test.ts`.
+**Files Modified:** `.ai/TASK_QUEUE.md` (Sprint 11), `docs/07_AI.md`, `docs/DECISIONS.md`, `docs/PROJECT_STATE.md`.
+**Design:**
+- **Recursive split, coarsest structure first:** heading sections, then blank-line blocks, then lines, sentences, words, and a character split as a last resort.
+- **Packing:** adjacent pieces are packed back together, up to 425 tokens.
+- **Floor:** a piece under 50 tokens merges into its neighbour.
+- **Overlap:** 75 tokens, starting at the first sentence or line start in the window.
+- **Fences:** a fenced block is not split at a blank line or heading inside it.
+**Verification:** 17 unit tests. Every multi-chunk case also asserts the invariants:
+- sequential indexes;
+- each chunk an exact substring, in order;
+- no content gaps;
+- a size bound of 2,200 characters.
+
+Sample output was inspected by hand.
+**Outstanding Work:** EMB-01 is blocked on the user adding the gateway key (ADR-37). SEM-03 (RRF ranking) is next and needs no credentials.
+**Known Bugs:** none. Setext (underlined) headings are not treated as section boundaries; their paragraphs still split at blank lines.
+**Suggested Next Task:** SEM-03, then EMB-01 once the key is in Vercel.
+
+---
+
 ## 2026-09-30 — Claude — Sprint 10 close-out + OpenAI gateway decision (ADR-37)
 
 **Session Date:** 2026-09-30
