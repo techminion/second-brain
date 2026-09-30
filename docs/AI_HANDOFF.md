@@ -21,6 +21,21 @@ Estimated Context Needed:
 
 ---
 
+## 2026-09-30 — Claude — Sprint 10 close-out + OpenAI gateway decision (ADR-37)
+
+**Session Date:** 2026-09-30
+**Agent:** Claude
+**Objective:** Merge #142, close Sprint 10 (full-text search), and record the user's choice of OpenAI endpoint before the semantic-search track starts.
+**Architecture Decisions:** ADR-37 — every OpenAI request goes through the OpenAI-compatible gateway `https://omni.khaire.dev/v1`, configured by a new server-only `OPENAI_BASE_URL` next to `OPENAI_API_KEY` (user decision). Spec ripples applied: 03_ARCHITECTURE §2.1, 09_SECURITY §6 and §9, `.env.example`.
+**Files Modified:** `.ai/TASK_QUEUE.md` (FTS-04..09 Done, Sprint 10 complete), `docs/PROJECT_STATE.md`, `docs/DECISIONS.md`, `docs/03_ARCHITECTURE.md`, `docs/09_SECURITY.md`, `.env.example`.
+**Outstanding Work:**
+- EMB-01 needs the user to add the gateway key (Preview and Production, distinct) and `OPENAI_BASE_URL` in Vercel, then verify a 1536-dimension embedding model is served.
+- `env.ts` does not read `OPENAI_BASE_URL` yet; EMB-01 adds it with the client wrapper.
+**Risks:** the gateway was unreachable from this cloud container (egress policy denied `omni.khaire.dev`), so it has not been probed. The gateway is a new party in the data path (ADR-37 tradeoffs).
+**Suggested Next Task:** EMB-02 + EMB-14 (chunking, pure), then SEM-03 (RRF ranking, pure).
+
+---
+
 ## 2026-09-28 — Claude — Search UI (FTS-04/05/06/07/09)
 
 **Session Date:** 2026-09-28

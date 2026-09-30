@@ -33,7 +33,7 @@ The canonical statement of the MVP stack. Documents 04–12 reference this table
 | Editor | Tiptap |
 | Graph rendering | React Flow |
 | Backend platform | Supabase: PostgreSQL (+ pgvector), Auth, Storage, RLS — clients: `@supabase/supabase-js`, `@supabase/ssr` |
-| AI provider | OpenAI (Responses API for chat; embeddings endpoint for vectors) |
+| AI provider | OpenAI API (Responses API for chat; embeddings endpoint for vectors), reached through the OpenAI-compatible gateway configured by `OPENAI_BASE_URL` (ADR-37) |
 | Hosting | Vercel |
 
 ## 3. System Context
