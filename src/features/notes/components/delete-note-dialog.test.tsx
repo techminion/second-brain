@@ -1,4 +1,5 @@
 import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
+import { useState } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { DeleteNoteDialog } from "./delete-note-dialog";
@@ -10,10 +11,31 @@ const mutation = { isPending: false, mutate };
 vi.mock("next/navigation", () => ({ useRouter: () => ({ replace }) }));
 vi.mock("../hooks/use-note-mutations", () => ({ useDeleteNote: () => mutation }));
 
-function renderDialog(overrides: Partial<React.ComponentProps<typeof DeleteNoteDialog>> = {}) {
-  render(
-    <DeleteNoteDialog isSaving={false} noteId="note-1" noteTitle="Q3 Planning" {...overrides} />,
+type DialogProps = React.ComponentProps<typeof DeleteNoteDialog>;
+
+// The dialog is controlled (the note's actions menu opens it); this harness
+// stands in for that menu with a plain "Delete" button.
+function Harness(overrides: Partial<DialogProps>) {
+  const [open, setOpen] = useState(false);
+  return (
+    <>
+      <button onClick={() => setOpen(true)} type="button">
+        Delete
+      </button>
+      <DeleteNoteDialog
+        isSaving={false}
+        noteId="note-1"
+        noteTitle="Q3 Planning"
+        onOpenChange={setOpen}
+        open={open}
+        {...overrides}
+      />
+    </>
   );
+}
+
+function renderDialog(overrides: Partial<Omit<DialogProps, "onOpenChange" | "open">> = {}) {
+  render(<Harness {...overrides} />);
 }
 
 function openDialog() {

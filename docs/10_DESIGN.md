@@ -104,11 +104,12 @@ The editor is the single most important surface in the product. Its defining dec
 
 | Interaction | Behavior |
 |---|---|
-| Wiki links | `[[` triggers autocomplete (FR-LINK-3) backed by `suggestNoteTitles` ([08_SEARCH.md §6](08_SEARCH.md#6-wiki-links--autocomplete)); Enter inserts the link; unresolved links render visually distinct (dashed underline) and create-on-click (FR-LINK-4) |
+| Wiki links | `[[` triggers autocomplete (FR-LINK-3) backed by `suggestNoteTitles` ([08_SEARCH.md §6](08_SEARCH.md#6-wiki-links--autocomplete)); Enter inserts the link. Links render as link text with a soft underline; the `[[ ]]` brackets show only while the cursor is inside the link, as in Obsidian's live preview (UX-03). Unresolved links render visually distinct (dashed underline) and create-on-click (FR-LINK-4). |
 | Slash menu | `/` at line start opens a block-insert menu (heading, list, code block, image) — discoverability for users who don't know markdown syntax, no toolbar required |
 | Autosave | Debounced (~800ms after last keystroke) plus save-on-blur/navigation (FR-NOTE-5); a quiet "Saved" indicator, never a modal or a save button |
 | Paste | Pasted markdown parses as markdown; pasted rich text converts to markdown; pasted image uploads as an Attachment (FR-ATTACH-1) and inserts inline (FR-ATTACH-4) |
 | Formatting UI | Minimal floating toolbar on text selection (bold, italic, code, link) — the keyboard and slash menu are primary; no persistent toolbar row |
+| Note page | The body is the page, not a field: no border, outline or inset, and the caret marks focus. A quiet header row holds the folder breadcrumb (it opens the move-to-folder menu), the save status as a coloured dot plus a word, and a ⋯ menu with Open in graph, Copy link and Delete…. Delete never sits beside the title. Below the header come the title (`text-3xl`) and the tag chips (UX-02). |
 
 ## 6. Accessibility (WCAG 2.1 AA)
 

@@ -1,4 +1,5 @@
 import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import type { Editor } from "@tiptap/react";
 import { describe, expect, it, vi } from "vitest";
 
 import { MarkdownEditor, type WikiLinkController } from "./components/markdown-editor";
@@ -18,6 +19,32 @@ async function editorElement() {
 }
 
 describe("wiki links in the editor (LINK-05/07/09)", () => {
+  it("hides the brackets except on the link holding the cursor (UX-03)", async () => {
+    render(
+      <MarkdownEditor
+        onChange={vi.fn()}
+        value="See [[Known]] and [[Missing]]"
+        wikiLinks={controller()}
+      />,
+    );
+    const element = (await editorElement()) as HTMLElement & { editor?: Editor };
+    const brackets = () => element.querySelectorAll("[data-wiki-bracket]");
+
+    await waitFor(() => expect(brackets()).toHaveLength(4));
+
+    // Cursor inside [[Known]] (doc position 7): that link shows its syntax.
+    // jsdom has no layout, so focus via the DOM event rather than view.focus().
+    fireEvent.focus(element);
+    act(() => {
+      element.editor?.commands.setTextSelection(7);
+    });
+    await waitFor(() => expect(brackets()).toHaveLength(2));
+    expect(element.querySelector('[data-wiki-title="Known"] [data-wiki-bracket]')).toBeNull();
+
+    fireEvent.blur(element);
+    await waitFor(() => expect(brackets()).toHaveLength(4));
+  });
+
   it("renders resolved and unresolved links distinctly, never inside code", async () => {
     render(
       <MarkdownEditor

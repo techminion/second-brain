@@ -36,7 +36,8 @@ test("creates, edits, deletes, and restores a note through the UI", async ({ pag
     await expect(notesNav).toContainText(noteTitle);
 
     // Delete through the named confirmation.
-    await page.getByRole("button", { name: "Delete" }).click();
+    await page.getByRole("button", { name: "Note actions" }).click();
+    await page.getByRole("menuitem", { name: "Delete…" }).click();
     await expect(page.getByRole("heading", { name: `Delete “${noteTitle}”?` })).toBeVisible();
     await page.getByRole("button", { name: "Delete note" }).click();
     await page.waitForURL("/");

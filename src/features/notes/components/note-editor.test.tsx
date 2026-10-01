@@ -105,7 +105,7 @@ describe("NoteEditor", () => {
     expect(screen.getByLabelText("Note title")).toHaveValue("Title");
     expect(screen.getByLabelText("Note body")).toHaveValue("Body");
     expect(screen.getByRole("status")).toHaveTextContent("Saved");
-    expect(screen.getByRole("button", { name: "Delete" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Note actions" })).toBeInTheDocument();
   });
 
   it("autosaves the edited body after the debounce window", () => {

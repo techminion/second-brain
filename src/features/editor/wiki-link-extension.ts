@@ -27,9 +27,16 @@ export interface WikiLinkOptions {
   onSuggestKeyDown: (event: KeyboardEvent) => boolean;
 }
 
-export const wikiLinkPluginKey = new PluginKey<DecorationSet>("wikiLinks");
+interface WikiLinkState {
+  decorations: DecorationSet;
+  focused: boolean;
+}
+
+export const wikiLinkPluginKey = new PluginKey<WikiLinkState>("wikiLinks");
 /** Transaction meta that forces decorations to recompute (resolution changed). */
 export const wikiLinkRefreshMeta = "wikiLinksRefresh";
+/** Transaction meta carrying the editor's focus state (brackets hide on blur). */
+const wikiLinkFocusMeta = "wikiLinksFocus";
 
 const linkPattern = /\[\[([^[\]\n]+)\]\]/g;
 const openQueryPattern = /\[\[([^[\]\n]*)$/;
@@ -67,18 +74,40 @@ export function findLinkRanges(doc: ProseMirrorNode): LinkRange[] {
   return ranges;
 }
 
-function buildDecorations(doc: ProseMirrorNode, options: WikiLinkOptions): DecorationSet {
+/**
+ * Link decorations, plus bracket decorations that hide `[[` / `]]` (UX-03,
+ * Obsidian's live preview) — except on the link holding the cursor, so the
+ * syntax is visible exactly where the user is editing it. `cursor` is null
+ * while the editor is blurred: every link then reads as plain link text.
+ */
+function buildDecorations(
+  doc: ProseMirrorNode,
+  options: WikiLinkOptions,
+  cursor: number | null,
+): DecorationSet {
   return DecorationSet.create(
     doc,
-    findLinkRanges(doc).map(({ from, title, to }) => {
+    findLinkRanges(doc).flatMap(({ from, title, to }) => {
       const resolved = options.isResolved(title);
-      return Decoration.inline(from, to, {
+      const link = Decoration.inline(from, to, {
         "data-wiki-link": resolved ? "resolved" : "unresolved",
         "data-wiki-title": title,
         title: resolved ? `Open “${title}”` : `Create “${title}”`,
       });
+      if (cursor !== null && cursor >= from && cursor <= to) {
+        return [link];
+      }
+      return [
+        link,
+        Decoration.inline(from, from + 2, { "data-wiki-bracket": "open" }),
+        Decoration.inline(to - 2, to, { "data-wiki-bracket": "close" }),
+      ];
     }),
   );
+}
+
+function cursorOf(state: EditorState, focused: boolean): number | null {
+  return focused && state.selection.empty ? state.selection.head : null;
 }
 
 function linkAtSelection(state: EditorState): LinkRange | undefined {
@@ -136,11 +165,11 @@ export const WikiLinks = Extension.create<WikiLinkOptions>({
     };
 
     return [
-      new Plugin<DecorationSet>({
+      new Plugin<WikiLinkState>({
         key: wikiLinkPluginKey,
         props: {
           decorations(state) {
-            return wikiLinkPluginKey.getState(state);
+            return wikiLinkPluginKey.getState(state)?.decorations;
           },
           handleDOMEvents: {
             click(_view, event) {
@@ -153,12 +182,14 @@ export const WikiLinks = Extension.create<WikiLinkOptions>({
               options.open(link.dataset.wikiTitle);
               return true;
             },
-            blur() {
+            blur(view) {
               lastSuggestion = null;
               options.onSuggest(null);
+              view.dispatch(view.state.tr.setMeta(wikiLinkFocusMeta, false));
               return false;
             },
             focus(view) {
+              view.dispatch(view.state.tr.setMeta(wikiLinkFocusMeta, true));
               report(view);
               return false;
             },
@@ -180,14 +211,24 @@ export const WikiLinks = Extension.create<WikiLinkOptions>({
           },
         },
         state: {
-          apply(transaction, decorations, _previous, next) {
-            if (transaction.docChanged || transaction.getMeta(wikiLinkRefreshMeta)) {
-              return buildDecorations(next.doc, options);
+          apply(transaction, value, _previous, next) {
+            const focusMeta: unknown = transaction.getMeta(wikiLinkFocusMeta);
+            const focused = typeof focusMeta === "boolean" ? focusMeta : value.focused;
+            if (
+              transaction.docChanged ||
+              transaction.selectionSet ||
+              focused !== value.focused ||
+              transaction.getMeta(wikiLinkRefreshMeta)
+            ) {
+              return {
+                decorations: buildDecorations(next.doc, options, cursorOf(next, focused)),
+                focused,
+              };
             }
-            return decorations.map(transaction.mapping, transaction.doc);
+            return value;
           },
           init(_config, state) {
-            return buildDecorations(state.doc, options);
+            return { decorations: buildDecorations(state.doc, options, null), focused: false };
           },
         },
         view() {

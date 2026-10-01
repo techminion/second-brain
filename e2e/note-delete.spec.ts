@@ -25,7 +25,8 @@ test("deletes a note only after confirming its name", async ({ page }) => {
     await page.goto(`/notes/${note.id}`);
     await expect(page.getByLabel("Note title")).toHaveValue(noteTitle);
 
-    await page.getByRole("button", { name: "Delete" }).click();
+    await page.getByRole("button", { name: "Note actions" }).click();
+    await page.getByRole("menuitem", { name: "Delete…" }).click();
     await expect(page.getByRole("heading", { name: `Delete “${noteTitle}”?` })).toBeVisible();
 
     await page.setViewportSize({ height: 844, width: 390 });
@@ -35,7 +36,8 @@ test("deletes a note only after confirming its name", async ({ page }) => {
     await expect(page.getByRole("dialog")).toHaveCount(0);
     await expect(page).toHaveURL(`/notes/${note.id}`);
 
-    await page.getByRole("button", { name: "Delete" }).click();
+    await page.getByRole("button", { name: "Note actions" }).click();
+    await page.getByRole("menuitem", { name: "Delete…" }).click();
     await page.getByRole("button", { name: "Delete note" }).click();
 
     await page.waitForURL("/");

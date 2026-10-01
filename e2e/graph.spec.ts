@@ -51,7 +51,8 @@ test("opens the graph, clicks a node, and filters by tag", async ({ page }) => {
     await expect(page.getByLabel("Note title")).toHaveValue("Spoke One");
 
     // Local graph from the note: the note and its direct neighbor only.
-    await page.getByRole("link", { name: "Open local graph" }).click();
+    await page.getByRole("button", { name: "Note actions" }).click();
+    await page.getByRole("menuitem", { name: "Open in graph" }).click();
     await page.waitForURL(/\/graph\?note=/);
     await expect(page.getByRole("heading", { name: "Local graph" })).toBeVisible();
     await expect(page.locator(".react-flow__node")).toHaveCount(2);

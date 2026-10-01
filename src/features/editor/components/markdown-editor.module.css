@@ -11,6 +11,22 @@
   outline-offset: 2px;
 }
 
+/* UX-02: the note page's body is the page, not a field — no border, outline
+   or inset; the caret marks focus, as in every document editor. */
+.root[data-variant="document"] {
+  border: 0;
+  background: transparent;
+}
+
+.root[data-variant="document"]:focus-within {
+  outline: none;
+}
+
+.root[data-variant="document"] .content {
+  min-height: 50vh;
+  padding-inline: 0;
+}
+
 .root[data-disabled="true"] {
   background: hsl(var(--muted));
   color: hsl(var(--muted-foreground));
@@ -237,16 +253,29 @@
   background: hsl(var(--primary) / 0.12);
 }
 
-/* Wiki links (LINK-05/07): the single accent (10_DESIGN §3); unresolved dashed. */
+/* Wiki links (LINK-05/07, UX-03): link text in the link colour with a soft
+   underline — a non-colour cue, since the link and body colours sit under
+   3:1 (WCAG 1.4.1). Unresolved links are dashed. Brackets are hidden except
+   on the link holding the cursor (the decorations decide which). */
 .content [data-wiki-link] {
   color: hsl(var(--primary));
   cursor: pointer;
   text-decoration: underline;
+  text-decoration-color: hsl(var(--primary) / 0.4);
+  text-decoration-thickness: 1px;
   text-underline-offset: 0.2em;
+}
+
+.content [data-wiki-link]:hover {
+  text-decoration-color: currentcolor;
 }
 
 .content [data-wiki-link="unresolved"] {
   text-decoration-style: dashed;
+}
+
+.content [data-wiki-bracket] {
+  display: none;
 }
 
 .suggestions {
