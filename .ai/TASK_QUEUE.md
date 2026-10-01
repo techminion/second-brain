@@ -1,6 +1,6 @@
 # Task Queue — Live Operational View
 
-> The canonical backlog is [docs/12_TASKS.md](../docs/12_TASKS.md) (309 tasks, immutable IDs, dependencies, complexity). This file never redefines a task (GOV-2) — it adds the operational state: what is queued *now*, who owns it, and where it stands. Acceptance criteria live with the task's referenced FR/doc section in the backlog.
+> The canonical backlog is [docs/12_TASKS.md](../docs/12_TASKS.md) (320 tasks, immutable IDs, dependencies, complexity). This file never redefines a task (GOV-2) — it adds the operational state: what is queued *now*, who owns it, and where it stands. Acceptance criteria live with the task's referenced FR/doc section in the backlog.
 
 ## Rules
 
@@ -10,16 +10,34 @@
 - **Priorities:** `P0` — on the critical path of the current sprint; `P1` — this sprint, parallelizable; `P2` — next in line, claimable if idle.
 - When the sprint's queue empties, the architect role promotes the next dependency-ready wave from [docs/12_TASKS.md](../docs/12_TASKS.md).
 
-## Sprint 11 — M3 Semantic search (in progress)
+## Sprint 12 — UX overhaul (in progress)
 
-Promoted 2026-09-30 under the user's "go ahead with the docs PR and chunking". The pure, credential-free modules go first; EMB-01 (typed client) waits on the user adding the gateway key (ADR-37). Branch `claude/gallant-ride-gl1fkf`.
+Promoted 2026-10-01: the user paused AI and asked for a friendlier UI, planned with inspiration from other apps. Plan approved with the user's palette (ADR-39), a recent-notes Home and a light mobile pass. One PR per phase; screenshots and the axe sweep on every PR. Branch `claude/gallant-ride-gl1fkf`.
 
 | ID | Title | Priority | Cx | Depends on | Owner | Status | Milestone | Acceptance criteria |
 |---|---|---|---|---|---|---|---|---|
-| EMB-02 | Chunking module per 07_AI §4 (markdown-aware splits, overlap, floor merging) | P0 | L | SETUP-06 | Claude | In Review | M3 | **ADR-38**: `chunkMarkdown` in `src/features/ai/chunking.ts`: 4 chars/token estimate; ≤500 tokens → one chunk; heading → block → line → sentence → word → char splits, packed to 425 tokens + 75-token overlap starting at a sentence; floor 50 tokens; fences never split at inner blank lines/headings; chunks are exact substrings in order. L split: one unit (pure module + corpus), no sub-PRs needed |
-| EMB-14 | Chunking unit test corpus | P0 | M | EMB-02 | Claude | In Review | M3 | `chunking.test.ts`: empty/short/threshold/CRLF, heading boundaries, section packing, paragraph → sentence splits, overlap placement, fences, oversized code (line splits), unpunctuated text (word splits), single giant run, floor merging, determinism; every multi-chunk case asserts the substring/order/coverage/size invariants |
-| EMB-01 | Typed OpenAI client + Preview/Production keys (ADR-24, ADR-37) | P0 | S | SETUP-14 | — | Blocked (user: gateway key in Vercel) | M3 | Client reads `OPENAI_API_KEY` + `OPENAI_BASE_URL`; both Vercel scopes set with distinct keys and verified; a 1536-dim embedding model confirmed on the gateway |
-| SEM-03 | RRF hybrid ranking module (k=60) | P1 | M | SETUP-06 | — | Queued | M3 | Pure; tested against 08_SEARCH §4's worked example |
+| UX-01 | Palette tokens (ADR-39) | P0 | S | SETUP-02 | Claude | In Review | M1 | Concept hexes for non-text, AA text shades; `design-tokens.test.ts` checks every text token on background/surface/muted in both themes plus ring ≥ 3:1; sidebar on `surface`; tags teal (≤10% tint, ring for active), backlinks purple, search marks amber, done/saved green; axe sweep green |
+| UX-02 | Note page header + borderless editor | P0 | M | NOTE-10, FOLD-10 | — | Queued | M1 | Phase 1 |
+| UX-03 | Clean wiki-link rendering | P0 | M | LINK-07 | — | Queued | M1 | Phase 1 |
+| UX-04 | Sidebar restructure | P0 | M | SHELL-02 | — | Queued | M1 | Phase 2 |
+| UX-05 | Note list previews + date groups | P1 | M | NOTE-09 | — | Queued | M1 | Phase 2 |
+| UX-06 | Right panel only on note routes | P1 | S | BACK-04 | — | Queued | M1 | Phase 2 |
+| UX-07 | Home dashboard + New note command/shortcut | P0 | M | NOTE-09, DAILY-03 | — | Queued | M1 | Phase 3; fixes Home always showing the empty state and the disabled New note command |
+| UX-08 | Search snippets without markdown syntax | P1 | S | FTS-05 | — | Queued | M1 | Phase 4 |
+| UX-09 | Settings → Appearance | P1 | S | SETUP-13 | — | Queued | M1 | Phase 4 |
+| UX-10 | Mobile light pass | P2 | M | SHELL-06, UX-02 | — | Queued | M1 | Phase 4 |
+| UX-11 | Graph colours + legend | P2 | M | GRAPH-04, UX-01 | — | Queued | M1 | Phase 4 |
+
+## Sprint 11 — M3 Semantic search (paused)
+
+Promoted 2026-09-30 under the user's "go ahead with the docs PR and chunking". **Paused 2026-10-01** by the user ("scratch the AI integration for now") in favour of the UX overhaul (Sprint 12). EMB-02/14 merged; the gateway embedding model is `vercel-ai-gateway/text-embedding-3-small` (1536 dims) when EMB-01 resumes. The pure, credential-free modules go first; EMB-01 (typed client) waits on the user adding the gateway key (ADR-37). Branch `claude/gallant-ride-gl1fkf`.
+
+| ID | Title | Priority | Cx | Depends on | Owner | Status | Milestone | Acceptance criteria |
+|---|---|---|---|---|---|---|---|---|
+| EMB-02 | Chunking module per 07_AI §4 (markdown-aware splits, overlap, floor merging) | P0 | L | SETUP-06 | Claude | Done (#144) | M3 | **ADR-38**: `chunkMarkdown` in `src/features/ai/chunking.ts`: 4 chars/token estimate; ≤500 tokens → one chunk; heading → block → line → sentence → word → char splits, packed to 425 tokens + 75-token overlap starting at a sentence; floor 50 tokens; fences never split at inner blank lines/headings; chunks are exact substrings in order. L split: one unit (pure module + corpus), no sub-PRs needed |
+| EMB-14 | Chunking unit test corpus | P0 | M | EMB-02 | Claude | Done (#144) | M3 | `chunking.test.ts`: empty/short/threshold/CRLF, heading boundaries, section packing, paragraph → sentence splits, overlap placement, fences, oversized code (line splits), unpunctuated text (word splits), single giant run, floor merging, determinism; every multi-chunk case asserts the substring/order/coverage/size invariants |
+| EMB-01 | Typed OpenAI client + Preview/Production keys (ADR-24, ADR-37) | P0 | S | SETUP-14 | — | Paused | M3 | Client reads `OPENAI_API_KEY` + `OPENAI_BASE_URL`; both Vercel scopes set with distinct keys and verified; a 1536-dim embedding model confirmed on the gateway |
+| SEM-03 | RRF hybrid ranking module (k=60) | P1 | M | SETUP-06 | — | Paused | M3 | Pure; tested against 08_SEARCH §4's worked example |
 
 ## Sprint 10 — M3 Full-text search (complete)
 

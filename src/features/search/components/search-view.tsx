@@ -145,7 +145,7 @@ export function SearchView({ initialQuery }: Readonly<{ initialQuery: string }>)
                     <SearchSnippet snippet={result.snippet} />
                   </span>
                   {result.object.tags.length > 0 ? (
-                    <span className="text-muted-foreground text-xs">
+                    <span className="text-tag-text text-xs">
                       {result.object.tags.map((tag) => `#${tag.name}`).join(" ")}
                     </span>
                   ) : null}

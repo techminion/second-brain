@@ -34,8 +34,8 @@ export function TagBrowser({ tagId }: Readonly<{ tagId: string }>) {
                 <Link
                   aria-current={candidate.id === tagId ? "page" : undefined}
                   className={cn(
-                    "hover:bg-muted rounded-full border px-3 py-1 text-xs",
-                    candidate.id === tagId && "bg-primary text-primary-foreground hover:bg-primary",
+                    "bg-tag/10 text-tag-text hover:ring-tag/60 rounded-full px-3 py-1 text-xs hover:ring-1",
+                    candidate.id === tagId && "ring-tag ring-1",
                   )}
                   href={`/tags/${candidate.id}`}
                 >

@@ -67,7 +67,7 @@ export function NoteTags({ noteId, tags }: Readonly<{ noteId: string; tags: Tag[
         <ul aria-label="Note tags" className="flex flex-wrap gap-2">
           {tags.map((tag) => (
             <li
-              className="bg-muted flex items-center gap-1 rounded-full py-0.5 pr-1 pl-2.5 text-xs"
+              className="bg-tag/10 text-tag-text flex items-center gap-1 rounded-full py-0.5 pr-1 pl-2.5 text-xs"
               key={tag.id}
             >
               <Link className="hover:underline" href={`/tags/${tag.id}`}>

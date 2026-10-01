@@ -16,12 +16,12 @@
 | Phase | Area codes | Tasks |
 |---|---|---|
 | 0 — Foundations | SETUP, DB, AUTH, SHELL, CI, OBS-01 | 63 |
-| 1 — Collect | NOTE, EDIT, FOLD, TAG, ATT, DAILY | 78 |
+| 1 — Collect | NOTE, EDIT, FOLD, TAG, ATT, DAILY, UX | 89 |
 | 2 — Connect | LINK, BACK, GRAPH, SRCH-05/06/08 | 39 |
 | 3 — Discover | FTS, EMB, SEM, SRCH (remainder) | 38 |
 | 4 — Collaborate | AICH, VCH, MCP, CRED | 52 |
 | 5 — Launch readiness | PERF, SEC, A11Y, EXP, OBS | 39 |
-| **Total** | | **309** |
+| **Total** | | **320** |
 
 Two areas span phases deliberately: OBS-01 (structured logging) lives in Phase 0 because instrumentation tasks in every later phase depend on it, and SRCH-05/06/08 (title autocomplete) live in Phase 2 because the `[[` autocomplete (LINK-06) depends on them.
 
@@ -236,6 +236,24 @@ Two areas span phases deliberately: OBS-01 (structured logging) lives in Phase 0
 | DAILY-08 | Command palette entries for daily-note actions | S | DAILY-03, SHELL-04 |
 
 ---
+
+### UX overhaul (UX)
+
+Added 2026-10-01 at the product owner's request, after a UI audit against [10_DESIGN.md](10_DESIGN.md). Inspiration: Notion (page header, ⋯ menu, breadcrumb), Obsidian (clean links), Bear and Apple Notes (list previews, date groups), Reflect (daily note) and Linear (sidebar).
+
+| ID | Task | Cx | Depends on |
+|---|---|---|---|
+| UX-01 | Concept palette as semantic tokens, with AA-safe text shades and a contrast test on every surface (ADR-39) | S | SETUP-02 |
+| UX-02 | Note page: borderless editor; header with folder breadcrumb picker, save status and ⋯ menu (graph, move, copy link, delete) | M | NOTE-10, FOLD-10 |
+| UX-03 | Clean wiki-link rendering: brackets hidden unless the cursor is inside; unresolved links dashed | M | LINK-07 |
+| UX-04 | Sidebar restructure: account menu, Search and New note entries, Today/Graph/Trash, collapsible Folders/Tags/Notes, date picker in a calendar popover | M | SHELL-02 |
+| UX-05 | Note list: one-line previews, grouped Today / Yesterday / Previous 7 days / Older | M | NOTE-09 |
+| UX-06 | Right panel only on note routes | S | BACK-04 |
+| UX-07 | Home dashboard (recent notes, today's note, quick actions); working New note command and browser-safe shortcut | M | NOTE-09, DAILY-03 |
+| UX-08 | Search snippets with markdown syntax stripped before highlighting | S | FTS-05 |
+| UX-09 | Settings → Appearance (light / dark / system) | S | SETUP-13 |
+| UX-10 | Mobile light pass: compact note header, visible New note, drawer polish | M | SHELL-06, UX-02 |
+| UX-11 | Graph nodes coloured by folder or tag, with a legend | M | GRAPH-04, UX-01 |
 
 ## Phase 2 — Connect ([02_PRD.md §7](02_PRD.md#7-milestones), M2)
 

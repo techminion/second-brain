@@ -41,7 +41,7 @@ export function SearchSnippet({ snippet }: Readonly<{ snippet: string }>) {
     <>
       {parseSnippet(snippet).map((part, index) =>
         part.match ? (
-          <mark className="bg-primary/15 text-foreground rounded-sm px-0.5" key={index}>
+          <mark className="bg-highlight/25 text-foreground rounded-sm px-0.5" key={index}>
             {part.text}
           </mark>
         ) : (

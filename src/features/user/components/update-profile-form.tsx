@@ -66,7 +66,7 @@ export function UpdateProfileForm({ initialDisplayName }: Readonly<UpdateProfile
         </p>
       ) : null}
       {savedDisplayName !== initialDisplayName && !submitError ? (
-        <p aria-live="polite" className="text-sm text-green-600 dark:text-green-400">
+        <p aria-live="polite" className="text-positive-text text-sm">
           Saved
         </p>
       ) : null}
