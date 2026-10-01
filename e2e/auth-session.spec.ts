@@ -15,9 +15,12 @@ test("signup provisions an empty authenticated shell (FR-AUTH-5)", async ({ page
     await page.getByRole("button", { name: "Create account" }).click();
     await page.waitForURL("/");
 
-    // Authenticated shell rendered — sidebar nav and logout control are visible.
+    // Authenticated shell rendered — sidebar nav and the account menu (which
+    // holds Log out, UX-04) are visible.
     await expect(page.getByRole("navigation", { name: "Knowledge navigation" })).toBeVisible();
-    await expect(page.getByRole("button", { name: "Log out" })).toBeVisible();
+    await page.getByRole("button", { name: /^Account: / }).click();
+    await expect(page.getByRole("menuitem", { name: "Log out" })).toBeVisible();
+    await page.keyboard.press("Escape");
 
     // No error state: no role="alert" on the landing page. Next.js mounts its
     // own route announcer with role="alert" in production builds — exclude it.
@@ -78,7 +81,8 @@ test("password recovery creates an HttpOnly session and updates the password", a
     await page.getByRole("button", { name: "Update password" }).click();
     await page.waitForURL("/");
 
-    await page.getByRole("button", { name: "Log out" }).click();
+    await page.getByRole("button", { name: /^Account: / }).click();
+    await page.getByRole("menuitem", { name: "Log out" }).click();
     await page.waitForURL("/login");
     await page.getByLabel("Email").fill(email);
     await page.getByLabel("Password").fill(newPassword);
@@ -137,7 +141,8 @@ test("signup and login establish HttpOnly SameSite=Lax session cookies (ADR-20)"
     }
 
     // SHELL-03 binds the visible control to AUTH-08's real server action.
-    await page.getByRole("button", { name: "Log out" }).click();
+    await page.getByRole("button", { name: /^Account: / }).click();
+    await page.getByRole("menuitem", { name: "Log out" }).click();
     await page.waitForURL("/login");
     expect((await context.cookies()).some((cookie) => cookie.name.startsWith("sb-"))).toBe(false);
   } finally {

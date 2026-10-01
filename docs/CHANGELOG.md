@@ -63,6 +63,12 @@ All notable changes to Second Brain are documented here, following [Keep a Chang
 - **2026-07-18** — Email/password signup at `/signup`: creates an account and lands signed in (AUTH-02; server policy per ADR-19).
 
 ### Changed
+- **2026-10-01** — A tidier sidebar:
+  - Your account sits at the top, with Settings and Log out inside it.
+  - Below it are a New note button, then Search, Today, Graph and Trash. Today has a small calendar for opening any other day's note.
+  - Folders, Tags and Notes can each be collapsed.
+  - Notes are grouped by when you last edited them, from Today and Yesterday back to Older, each with a one-line preview.
+  - The Backlinks panel now appears only when a note is open.
 - **2026-10-01** — The note page reads like a document. The body has no box around it. A quiet header shows the note's folder (click it to move the note), a save indicator and a ⋯ menu with Open in graph, Copy link and Delete. Links show as clean link text, and their `[[ ]]` brackets appear only while your cursor is inside the link.
 - **2026-10-01** — New colour palette: calm slate neutrals with one colour per meaning. Links and buttons are blue, tags teal, backlinks purple, search matches amber and completed tasks green. Both themes keep every text colour at WCAG AA contrast (ADR-39).
 - **2026-07-26** — Production database migrations now deploy automatically from `main` through the Supabase GitHub integration, with no production database password in GitHub Actions. Vercel blocks Production alias assignment until the matching Supabase deployment check succeeds, preventing application code from reaching `brain.khaire.dev` ahead of its schema (CI-09, ADR-27). The first empty deployment completed at 20/20 parity without applying repository Auth configuration; the next legitimate migration will provide the final auto-apply proof.

@@ -8,7 +8,7 @@
 
 ## Current Sprint
 
-**Sprint 12 — UX overhaul** (in progress, scope in [.ai/TASK_QUEUE.md](../.ai/TASK_QUEUE.md)): the user paused AI work on 2026-10-01 and asked for a friendlier UI. The audit found the Home page always showing the empty state, a disabled New note command, a form-like editor box and clutter in the note header and sidebar. Plan: UX-01 palette (ADR-39, #145) → note page (UX-02/03, in review) → sidebar → Home → polish. Sprint 11 (semantic search) is paused after EMB-02/14 (#144); Sprint 10 (full-text search) is complete.
+**Sprint 12 — UX overhaul** (in progress, scope in [.ai/TASK_QUEUE.md](../.ai/TASK_QUEUE.md)): the user paused AI work on 2026-10-01 and asked for a friendlier UI. The audit found the Home page always showing the empty state, a disabled New note command, a form-like editor box and clutter in the note header and sidebar. Plan: UX-01 palette (ADR-39, #145) → note page (UX-02/03, #146) → sidebar (UX-04/05/06, in review) → sidebar → Home → polish. Sprint 11 (semantic search) is paused after EMB-02/14 (#144); Sprint 10 (full-text search) is complete.
 Done: Sprint 0 (governance), Sprint 1 (repo & tooling — 21 tasks), Sprint 2 (schema, auth core & app shell), Sprint 3 (M0 closeout + note/editor foundation), Sprint 4 (note service + editor round-trip + M0 tail — M0 100% complete), Sprints 5–6 (note-taking UI, M1 collect, M2 backend — #130), Sprint 7 (graph view — #132), Sprint 8 (M2 close-out — #133), Sprint 9 (editor polish + M1 tail — #134–#140)
 
 ## Overall Progress
@@ -17,7 +17,7 @@ Done: Sprint 0 (governance), Sprint 1 (repo & tooling — 21 tasks), Sprint 2 (s
 |---|---|
 | Engineering documentation (12 docs) | ✅ Complete, audited twice for consistency |
 | Governance layer (this file set) | ✅ Complete |
-| Implementation | 152 Done / 320 tasks ([12_TASKS.md](12_TASKS.md)) — 56 via PR #130 (`3805f3e`), CI-09, GRAPH-04..17 via #132 (`112c115`), LINK-11/12 + BACK-06 via #133 (`c6ee782`), EDIT-06/07/10/12/13/14 via #134 (`42f9820`), EDIT-08/09 via #135 (`747bc13`), EDIT-11/18 via #136 (`b83f2a5`), EDIT-15/17 via #137 (`ca4406a`), SRCH-07 via #138 (`2853245`), NOTE-13 via #139 (`ded7081`), NOTE-14 via #140 (`f8a69d4`), FTS-01/02/03/10 via #141 (`f8a5416`), FTS-04..09 via #142 (`be83e18`), EMB-02/14 via #144 (`a1cd04c`), UX-01 via #145 (`406fbfc`) |
+| Implementation | 154 Done / 320 tasks ([12_TASKS.md](12_TASKS.md)) — 56 via PR #130 (`3805f3e`), CI-09, GRAPH-04..17 via #132 (`112c115`), LINK-11/12 + BACK-06 via #133 (`c6ee782`), EDIT-06/07/10/12/13/14 via #134 (`42f9820`), EDIT-08/09 via #135 (`747bc13`), EDIT-11/18 via #136 (`b83f2a5`), EDIT-15/17 via #137 (`ca4406a`), SRCH-07 via #138 (`2853245`), NOTE-13 via #139 (`ded7081`), NOTE-14 via #140 (`f8a69d4`), FTS-01/02/03/10 via #141 (`f8a5416`), FTS-04..09 via #142 (`be83e18`), EMB-02/14 via #144 (`a1cd04c`), UX-01 via #145 (`406fbfc`), UX-02/03 via #146 (`ecd88dd`) |
 
 ## Completed
 
@@ -82,7 +82,7 @@ Done: Sprint 0 (governance), Sprint 1 (repo & tooling — 21 tasks), Sprint 2 (s
 
 ## In Progress
 
-- **UX-02/03 note page** (header, ⋯ menu, folder breadcrumb, borderless editor, clean wiki links): in review on `claude/gallant-ride-gl1fkf`; UX-04/05/06 (sidebar) next.
+- **UX-04/05/06 sidebar:** in review on `claude/gallant-ride-gl1fkf`. It adds the account menu, the New note button, destination rows, the calendar pop-up, collapsible sections, grouped notes with previews, and the backlinks panel only on note pages. UX-07 (Home and the New note command) is next.
 
 ## Blocked
 

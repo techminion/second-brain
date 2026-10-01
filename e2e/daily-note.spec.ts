@@ -40,7 +40,13 @@ test("opens today's daily note by shortcut and navigates to a past date", async 
     await page.waitForURL(todayUrl);
     await expect(page.getByLabel("Note title")).toHaveValue(today);
 
-    await page.getByLabel("Open daily note for date").fill("2026-01-15");
+    // The calendar pop-up (UX-04): page back to January 2026 and pick the 15th.
+    await page.getByRole("button", { name: "Open daily note for date" }).click();
+    const target = page.locator('[data-date="2026-01-15"]');
+    for (let step = 0; step < 36 && (await target.count()) === 0; step += 1) {
+      await page.getByRole("button", { name: "Previous month" }).click();
+    }
+    await target.click();
     await expect(page.getByLabel("Note title")).toHaveValue("2026-01-15");
 
     await page.getByRole("link", { name: "Next day, 2026-01-16" }).click();
