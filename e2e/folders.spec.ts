@@ -33,7 +33,8 @@ test("creates nested folders, moves a note, and deletes with relocation", async 
     const created = await page.request.post("/api/notes", { data: { title: "Roadmap" } });
     const { data: note } = (await created.json()) as { data: { id: string } };
     await page.goto(`/notes/${note.id}`);
-    await page.getByLabel("Folder", { exact: true }).selectOption({ label: "Work / Q3" });
+    await page.getByRole("button", { name: /^Folder: No folder/ }).click();
+    await page.getByRole("menuitemradio", { name: "Work / Q3" }).click();
     await expect(page.getByRole("status").filter({ hasText: /^Saved$/ })).toBeVisible();
 
     const work = folders.getByRole("treeitem", { name: "Work" });

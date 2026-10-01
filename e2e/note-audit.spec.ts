@@ -35,7 +35,8 @@ test("records the note lifecycle in the audit log", async ({ page }) => {
       timeout: 10_000,
     });
 
-    await page.getByRole("button", { name: "Delete" }).click();
+    await page.getByRole("button", { name: "Note actions" }).click();
+    await page.getByRole("menuitem", { name: "Delete…" }).click();
     await page.getByRole("button", { name: "Delete note" }).click();
     await page.waitForURL("/");
     await page.getByRole("link", { name: "Trash" }).click();

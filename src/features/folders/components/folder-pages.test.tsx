@@ -23,19 +23,33 @@ afterEach(() => {
 });
 
 describe("FolderPicker", () => {
-  it("lists every folder by path and reports the choice", () => {
+  it("names the current folder and lists every folder by path", () => {
     tree = [node("a", "Work", [node("b", "Q3")])];
     const onChange = vi.fn();
-    render(<FolderPicker onChange={onChange} value={null} />);
+    render(<FolderPicker onChange={onChange} value="b" />);
 
-    const select = screen.getByLabelText("Folder");
-    expect(screen.getByRole("option", { name: "Work / Q3" })).toBeInTheDocument();
+    const trigger = screen.getByRole("button", { name: "Folder: Work / Q3. Move note" });
+    fireEvent.keyDown(trigger, { key: "Enter" });
 
-    fireEvent.change(select, { target: { value: "b" } });
-    expect(onChange).toHaveBeenCalledWith("b");
+    expect(screen.getByRole("menuitemradio", { name: "Work / Q3" })).toHaveAttribute(
+      "aria-checked",
+      "true",
+    );
+    fireEvent.click(screen.getByRole("menuitemradio", { name: "Work" }));
+    expect(onChange).toHaveBeenCalledWith("a");
+  });
 
-    fireEvent.change(select, { target: { value: "" } });
-    expect(onChange).toHaveBeenLastCalledWith(null);
+  it("reports no folder as null", () => {
+    tree = [node("a", "Work")];
+    const onChange = vi.fn();
+    render(<FolderPicker onChange={onChange} value="a" />);
+
+    fireEvent.keyDown(screen.getByRole("button", { name: "Folder: Work. Move note" }), {
+      key: "Enter",
+    });
+    fireEvent.click(screen.getByRole("menuitemradio", { name: "No folder" }));
+
+    expect(onChange).toHaveBeenCalledWith(null);
   });
 });
 

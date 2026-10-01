@@ -12,7 +12,6 @@ import {
   DialogOverlay,
   DialogPortal,
   DialogTitle,
-  DialogTrigger,
 } from "@/shared/ui/dialog";
 
 import { useDeleteNote } from "../hooks/use-note-mutations";
@@ -21,19 +20,27 @@ interface DeleteNoteDialogProps {
   isSaving: boolean;
   noteId: string;
   noteTitle: string;
+  /** Controlled by the note's actions menu, which opens it (UX-02). */
+  onOpenChange: (open: boolean) => void;
+  open: boolean;
 }
 
-export function DeleteNoteDialog({ isSaving, noteId, noteTitle }: DeleteNoteDialogProps) {
+export function DeleteNoteDialog({
+  isSaving,
+  noteId,
+  noteTitle,
+  onOpenChange,
+  open,
+}: DeleteNoteDialogProps) {
   const router = useRouter();
   const mutation = useDeleteNote();
   const [error, setError] = useState<string | null>(null);
-  const [open, setOpen] = useState(false);
 
   const handleOpenChange = (nextOpen: boolean) => {
     if (!nextOpen) {
       setError(null);
     }
-    setOpen(nextOpen);
+    onOpenChange(nextOpen);
   };
 
   const handleConfirm = () => {
@@ -41,7 +48,7 @@ export function DeleteNoteDialog({ isSaving, noteId, noteTitle }: DeleteNoteDial
     mutation.mutate(noteId, {
       onError: () => setError("Could not delete this note. Please try again."),
       onSuccess: () => {
-        setOpen(false);
+        onOpenChange(false);
         router.replace("/");
       },
     });
@@ -49,11 +56,6 @@ export function DeleteNoteDialog({ isSaving, noteId, noteTitle }: DeleteNoteDial
 
   return (
     <Dialog onOpenChange={handleOpenChange} open={open}>
-      <DialogTrigger asChild>
-        <Button size="sm" type="button" variant="destructive">
-          Delete
-        </Button>
-      </DialogTrigger>
       <DialogPortal>
         <DialogOverlay className="bg-foreground/20 fixed inset-0 z-50" />
         <DialogContent className="bg-background fixed top-1/2 left-1/2 z-50 w-full max-w-md -translate-x-1/2 -translate-y-1/2 rounded-lg border p-6 shadow-lg">

@@ -73,7 +73,8 @@ test("@a11y authenticated shell and settings have no WCAG 2.1 AA violations", as
 
     await expectNoViolations(page);
 
-    await page.getByRole("button", { name: "Delete" }).click();
+    await page.getByRole("button", { name: "Note actions" }).click();
+    await page.getByRole("menuitem", { name: "Delete…" }).click();
     await page.getByRole("dialog").waitFor();
 
     await expectNoViolations(page);

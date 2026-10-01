@@ -41,6 +41,12 @@ export interface MarkdownEditorProps {
    * the page's primary editor should opt in.
    */
   findShortcut?: boolean;
+  /**
+   * `document` drops the field chrome (border, focus outline, inset) so the
+   * body reads as the page itself, as on the note page (UX-02); the caret is
+   * the focus indicator there. `field` (default) keeps the boxed input look.
+   */
+  variant?: "document" | "field";
 }
 
 export function MarkdownEditor({
@@ -50,6 +56,7 @@ export function MarkdownEditor({
   className,
   editable = true,
   findShortcut = false,
+  variant = "field",
   wikiLinks,
 }: MarkdownEditorProps) {
   const onChangeRef = useRef(onChange);
@@ -297,7 +304,11 @@ export function MarkdownEditor({
   }, [activeListboxId, activeOptionIndex, editor]);
 
   return (
-    <div className={cn(styles.root, className)} data-disabled={String(!editable)}>
+    <div
+      className={cn(styles.root, className)}
+      data-disabled={String(!editable)}
+      data-variant={variant}
+    >
       {editor && find ? (
         <FindBar
           editor={editor}

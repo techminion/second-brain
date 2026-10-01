@@ -16,9 +16,9 @@ Promoted 2026-10-01: the user paused AI and asked for a friendlier UI, planned w
 
 | ID | Title | Priority | Cx | Depends on | Owner | Status | Milestone | Acceptance criteria |
 |---|---|---|---|---|---|---|---|---|
-| UX-01 | Palette tokens (ADR-39) | P0 | S | SETUP-02 | Claude | In Review | M1 | Concept hexes for non-text, AA text shades; `design-tokens.test.ts` checks every text token on background/surface/muted in both themes plus ring ≥ 3:1; sidebar on `surface`; tags teal (≤10% tint, ring for active), backlinks purple, search marks amber, done/saved green; axe sweep green |
-| UX-02 | Note page header + borderless editor | P0 | M | NOTE-10, FOLD-10 | — | Queued | M1 | Phase 1 |
-| UX-03 | Clean wiki-link rendering | P0 | M | LINK-07 | — | Queued | M1 | Phase 1 |
+| UX-01 | Palette tokens (ADR-39) | P0 | S | SETUP-02 | Claude | Done (#145) | M1 | Concept hexes for non-text, AA text shades; `design-tokens.test.ts` checks every text token on background/surface/muted in both themes plus ring ≥ 3:1; sidebar on `surface`; tags teal (≤10% tint, ring for active), backlinks purple, search marks amber, done/saved green; axe sweep green |
+| UX-02 | Note page header + borderless editor | P0 | M | NOTE-10, FOLD-10 | Claude | In Review | M1 | Header row: folder breadcrumb → radio menu of folder paths (replaces the native select), save dot + word, ⋯ menu (Open in graph, Copy link, Delete… → named confirmation); title `text-3xl`; `MarkdownEditor variant="document"` (no border/outline/inset); unit + E2E updated; axe green |
+| UX-03 | Clean wiki-link rendering | P0 | M | LINK-07 | Claude | In Review | M1 | Bracket decorations hidden unless the focused, collapsed cursor is inside the link; soft underline kept (WCAG 1.4.1); markdown unchanged; unit test for show/hide/blur |
 | UX-04 | Sidebar restructure | P0 | M | SHELL-02 | — | Queued | M1 | Phase 2 |
 | UX-05 | Note list previews + date groups | P1 | M | NOTE-09 | — | Queued | M1 | Phase 2 |
 | UX-06 | Right panel only on note routes | P1 | S | BACK-04 | — | Queued | M1 | Phase 2 |

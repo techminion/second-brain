@@ -1,19 +1,19 @@
 "use client";
 
-import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 
 import { MarkdownEditor } from "@/features/editor";
 import { FolderPicker } from "@/features/folders";
 import type { Note, UpdateNoteInput } from "@/features/notes/types";
+import { cn } from "@/shared/lib/utils";
 import { Input } from "@/shared/ui/input";
 
 import { useAutosave } from "../hooks/use-autosave";
 import { useUpdateNote } from "../hooks/use-note-mutations";
 import { useWikiLinkController } from "../hooks/use-wiki-link-controller";
 import { DailyNotePager } from "./daily-note-pager";
-import { DeleteNoteDialog } from "./delete-note-dialog";
+import { NoteActionsMenu } from "./note-actions-menu";
 import { NoteTags } from "./note-tags";
 
 /**
@@ -78,44 +78,55 @@ export function NoteEditor({ note }: Readonly<{ note: Note }>) {
       : "Saved";
 
   return (
-    <article className="mx-auto flex max-w-3xl flex-col gap-4 px-6 py-10" onBlur={flush}>
-      <div className="flex items-start justify-between gap-4">
-        <Input
-          aria-label="Note title"
-          className="h-auto border-0 px-0 text-2xl font-semibold shadow-none focus-visible:ring-0 md:text-2xl"
-          onChange={(event) => handleTitle(event.target.value)}
-          placeholder="Untitled"
-          value={title}
+    <article className="mx-auto flex max-w-3xl flex-col gap-3 px-6 py-6 md:px-10" onBlur={flush}>
+      <header className="flex min-h-8 items-center justify-between gap-3">
+        <FolderPicker
+          onChange={(folderId) =>
+            mutate(
+              { id: note.id, input: { folderId } },
+              { onError: () => toast.error("Could not move your note.") },
+            )
+          }
+          value={note.folderId}
         />
-        <div className="flex shrink-0 items-center gap-3">
+        <div className="flex shrink-0 items-center gap-2">
           {note.dailyNoteDate ? <DailyNotePager date={note.dailyNoteDate} /> : null}
-          <Link
-            aria-label="Open local graph"
-            className="text-muted-foreground hover:text-foreground text-sm underline"
-            href={`/graph?note=${note.id}`}
+          <span
+            aria-live="polite"
+            className={cn(
+              "flex items-center gap-1.5 text-xs",
+              mutation.isError ? "text-destructive" : "text-muted-foreground",
+            )}
+            role="status"
           >
-            Graph
-          </Link>
-          <span aria-live="polite" className="text-muted-foreground text-sm" role="status">
+            <span
+              aria-hidden="true"
+              className={cn(
+                "size-1.5 rounded-full",
+                mutation.isError
+                  ? "bg-destructive"
+                  : status === "Saved"
+                    ? "bg-positive"
+                    : "bg-highlight",
+              )}
+            />
             {status}
           </span>
-          <DeleteNoteDialog
+          <NoteActionsMenu
             isSaving={mutation.isPending}
             noteId={note.id}
             noteTitle={title.trim() || "Untitled"}
           />
         </div>
-      </div>
-      <NoteTags noteId={note.id} tags={note.tags} />
-      <FolderPicker
-        onChange={(folderId) =>
-          mutate(
-            { id: note.id, input: { folderId } },
-            { onError: () => toast.error("Could not move your note.") },
-          )
-        }
-        value={note.folderId}
+      </header>
+      <Input
+        aria-label="Note title"
+        className="text-foreground h-auto border-0 bg-transparent px-0 py-1 text-3xl font-semibold tracking-tight shadow-none focus-visible:ring-0 md:text-3xl"
+        onChange={(event) => handleTitle(event.target.value)}
+        placeholder="Untitled"
+        value={title}
       />
+      <NoteTags noteId={note.id} tags={note.tags} />
       {title.trim() === "" ? (
         <p className="text-destructive text-sm">Add a title to save this note’s name.</p>
       ) : null}
@@ -124,6 +135,7 @@ export function NoteEditor({ note }: Readonly<{ note: Note }>) {
         findShortcut
         onChange={handleBody}
         value={body}
+        variant="document"
         wikiLinks={wikiLinks}
       />
     </article>

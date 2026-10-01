@@ -21,6 +21,37 @@ Estimated Context Needed:
 
 ---
 
+## 2026-10-01 — Claude — Note page redesign (UX-02, UX-03)
+
+**Session Date:** 2026-10-01
+**Agent:** Claude
+**Objective:** Merge #145 (palette), then Phase 1 of the UX plan: the note page.
+
+**Files Added:** `notes/components/note-actions-menu.tsx`, plus its test.
+
+**Files Modified:**
+- `note-editor.tsx`: a header row, then the title, tags and body.
+- `delete-note-dialog.tsx`: now controlled, opened from the ⋯ menu.
+- `folders/components/folder-picker.tsx`: a breadcrumb trigger plus a radio menu of folder paths.
+- `shared/ui/dropdown-menu.tsx`: exports RadioGroup, RadioItem, ItemIndicator and Portal.
+- `editor/components/markdown-editor.tsx` and `.module.css`: `variant="document"`, and the link styling.
+- `editor/wiki-link-extension.ts`: the plugin state is now `{decorations, focused}`. Bracket decorations hide `[[`/`]]` except on the link under the focused, collapsed cursor. Focus and blur dispatch a meta.
+- E2E: Delete is reached through "Note actions" → "Delete…", the folder through "Folder: …" → menuitemradio, and the graph through the menu's "Open in graph".
+- 10_DESIGN §5.
+
+**Decisions:**
+- **Focus indicator:** the document variant has no focus outline; the caret is the indicator, as in any document editor. Field-style editors keep the outline.
+- **Delete label:** the "Delete…" menu item keeps body-colour text with a red icon, because `destructive` as text drops below 4.5:1 on the hover surface.
+
+**Verification:**
+- **Unit:** notes, folders and editor suites, plus new menu and bracket tests.
+- **E2E:** a11y, folders, graph, note-audit, note-delete, note-lifecycle, wiki-links and daily-note pass locally.
+- **Screenshots:** light, dark and mobile reviewed.
+
+**Suggested Next Task:** UX-04/05/06, the sidebar.
+
+---
+
 ## 2026-10-01 — Claude — UX audit, plan and palette (UX-01, ADR-39)
 
 **Session Date:** 2026-10-01
