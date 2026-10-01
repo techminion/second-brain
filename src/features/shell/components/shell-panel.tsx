@@ -96,7 +96,7 @@ function ShellPanel({ children, label, side }: Readonly<ShellPanelProps>) {
       <aside
         aria-label={label}
         className={cn(
-          "duration-structural transition-width bg-muted/30 flex flex-col overflow-hidden",
+          "duration-structural transition-width bg-surface flex flex-col overflow-hidden",
           side === "left" ? "border-r" : "border-l",
           isExpanded ? "ease-out" : "ease-in",
           overlay

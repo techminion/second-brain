@@ -25,7 +25,7 @@ export function BacklinksPanel() {
   return (
     <section aria-labelledby="backlinks-heading" className="flex flex-col gap-3 p-4">
       <h2 className="flex items-center gap-2 text-sm font-medium" id="backlinks-heading">
-        <Link2 aria-hidden="true" className="size-4" />
+        <Link2 aria-hidden="true" className="text-backlink size-4" />
         Backlinks
         {query.data && query.data.length > 0 ? (
           <span className="text-muted-foreground font-normal">{query.data.length}</span>

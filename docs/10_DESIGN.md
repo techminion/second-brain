@@ -48,27 +48,41 @@ Semantic tokens only — components reference *roles*, never palette values, whi
 | Role token | Usage |
 |---|---|
 | `background` / `foreground` | App canvas and primary text |
-| `muted` / `muted-foreground` | Secondary surfaces, secondary text (timestamps, counts) |
-| `card` / `popover` | Raised surfaces |
-| `primary` | The single accent: active states, links, wiki links, focus rings, primary buttons |
+| `surface` | Sidebar and panel surfaces; also `card` |
+| `muted` / `muted-foreground` | Elevated surfaces (hover rows, skeletons, popovers); secondary text (timestamps, counts) |
+| `subtle-foreground` | Placeholders and disabled text only, never information |
+| `primary` | Links, wiki links, primary buttons, active navigation |
+| `ring` | Focus rings |
+| `backlink` / `backlink-text` | Backlinks and incoming-link affordances |
+| `positive` / `positive-text` | Done, success, saved |
+| `highlight` / `highlight-text` | Search matches, highlights |
+| `mention` / `mention-text` | Mentions |
+| `tag` / `tag-text` | Tags and object chips |
 | `destructive` | Delete actions and their confirmations only |
-| `border` / `input` / `ring` | Structure and focus |
+| `border` / `input` | Structure |
 
-**One accent color.** Wiki links, buttons, and active navigation share `primary` — a knowledge tool with a rainbow of accents stops feeling calm (§1). Graph view (§10) and tag chips may derive muted categorical variants, but body text and chrome never exceed the single accent.
+**One hue per meaning.** Blue is for links and actions, purple for backlinks, green for done, amber for highlights, rose for mentions, teal for tags. A hue never appears without its meaning, which keeps the workspace calm (§1). Structure and emphasis otherwise come from the slate neutrals, weight and spacing.
 
-**Token values (ADR-8, [DECISIONS.md](DECISIONS.md)).** Concrete starting values: shadcn/ui's zinc neutral scale, Tailwind blue-600/500 as the accent, and red-600 for destructive (darkened from shadcn's default red-500, which fails the 4.5:1 text-contrast rule on white). Deliberately brand-neutral; revisitable before public launch by superseding ADR-8 — components never reference these values directly, so a swap is a token-file change.
+**Text shades.** Each accent has a base token for fills, icons, dots and rings, and a `-text` token for text that meets 4.5:1. Tinted chip backgrounds stay at ≤10% opacity so their `-text` label still passes. Active and hover states on tinted chips use a ring, not a darker fill.
 
-| Role token | Light (HSL) | Dark (HSL) |
+**Token values (ADR-39, [DECISIONS.md](DECISIONS.md)).** These are the product owner's concept palette: slate neutrals, with AA-safe text shades where the concept value is under 4.5:1.
+
+| Role | Light | Dark |
 |---|---|---|
-| `background` / `foreground` | `0 0% 100%` / `240 10% 3.9%` | `240 10% 3.9%` / `0 0% 98%` |
-| `card`, `popover` (+ foregrounds) | `0 0% 100%` / `240 10% 3.9%` | `240 10% 3.9%` / `0 0% 98%` |
-| `primary` / `primary-foreground` | `221.2 83.2% 53.3%` / `0 0% 98%` | `217.2 91.2% 59.8%` / `240 5.9% 10%` |
-| `muted` / `muted-foreground` | `240 4.8% 95.9%` / `240 3.8% 46.1%` | `240 3.7% 15.9%` / `240 5% 64.9%` |
-| `destructive` / `destructive-foreground` | `0 72.2% 50.6%` / `0 0% 98%` | `0 72.2% 50.6%` / `0 0% 98%` |
-| `border`, `input` | `240 5.9% 90%` | `240 3.7% 15.9%` |
-| `ring` | `221.2 83.2% 53.3%` | `217.2 91.2% 59.8%` |
+| `background` / `surface` / `muted` | `#FFFFFF` / `#F8FAFC` / `#F1F5F9` | `#0B0C0E` / `#111317` / `#1A1D21` |
+| `border`, `input` | `#E2E8F0` | `#262A31` |
+| `foreground` | `#475569` | `#E5E7EB` |
+| `muted-foreground` | `#5F6E84` | `#808A99` |
+| `subtle-foreground` | `#CBD5E1` | `#3A3F46` |
+| `primary` / `ring` | `#2563EB` / `#3B82F6` | `#7CA7FF` / `#7CA7FF` |
+| `backlink` / `-text` | `#8B5CF6` / `#7C3AED` | `#C084FC` |
+| `positive` / `-text` | `#22C55E` / `#15803D` | `#6EE7B7` |
+| `highlight` / `-text` | `#F59E0B` / `#B45309` | `#FBBF24` |
+| `mention` / `-text` | `#EC4899` / `#BE185D` | `#F472B6` |
+| `tag` / `-text` | `#14B8A6` / `#0F766E` | `#22D3EE` |
+| `destructive` | `#DC2626` | `#DC2626` |
 
-Key pairs verified ≥ 4.5:1 in both themes: `foreground`/`background`, `muted-foreground`/`background`, `primary`-as-text/`background` (wiki links), `destructive-foreground`/`destructive`. SETUP-02 must include an automated contrast check of every pair above so a future value change cannot silently regress (§6).
+`design-tokens.test.ts` asserts every text token at ≥ 4.5:1 on `background`, `surface` and `muted` in both themes, plus the focus ring at ≥ 3:1. A future value change cannot silently regress (§6).
 
 ## 4. Component Philosophy
 

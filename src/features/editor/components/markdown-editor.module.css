@@ -122,7 +122,7 @@
 }
 
 .content li[data-type="taskItem"] input[type="checkbox"] {
-  accent-color: hsl(var(--primary));
+  accent-color: hsl(var(--positive));
   cursor: pointer;
 }
 

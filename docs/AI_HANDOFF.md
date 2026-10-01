@@ -21,6 +21,59 @@ Estimated Context Needed:
 
 ---
 
+## 2026-10-01 — Claude — UX audit, plan and palette (UX-01, ADR-39)
+
+**Session Date:** 2026-10-01
+**Agent:** Claude
+**Objective:**
+- Merge #144 (chunking).
+- Pause AI at the user's request.
+- Audit the UI and plan an overhaul inspired by Notion, Obsidian, Bear and Apple Notes, Reflect and Linear.
+- Land the palette the user supplied.
+
+**Audit findings:**
+- **Bugs:**
+  - Home always renders the empty state (`src/app/(app)/page.tsx`).
+  - The New note command is disabled, and ⌘N is unbound; browsers reserve it anyway.
+- **Friction:**
+  - The editor sits in a bordered box.
+  - A loud red Delete button sits in the note header.
+  - The folder picker is a native `<select>`.
+  - Wiki links show their `[[ ]]` brackets.
+  - The sidebar shows an always-visible native date input.
+  - Notes come last in the sidebar, and there is no Search or Graph entry.
+  - Log out sits in the nav row.
+  - The Backlinks panel shows on non-note pages.
+  - Search snippets show raw markdown.
+  - There is no theme switch in Settings.
+  - Mobile has no New note.
+
+**Decisions (user):**
+- Palette with AA-safe text shades (ADR-39, supersedes ADR-8).
+- Recent-notes Home.
+- Light mobile pass.
+- New backlog area UX-01..11 in 12_TASKS (320 tasks); Sprint 12 in TASK_QUEUE; Sprint 11 paused.
+
+**Files Modified:**
+- `src/app/globals.css`: new tokens `surface`, `subtle-foreground`, and `backlink|positive|highlight|mention|tag` plus `-text` variants.
+- `design-tokens.test.ts`: every text token is checked on all three surfaces in both themes, and the ring at 3:1.
+- Components:
+  - Sidebar on `surface`; tag chips teal at 10% tint, with a ring for active and hover.
+  - Backlinks icon purple; search marks amber; checked tasks and "Saved" green.
+  - Search result tags teal.
+- Docs: ADR-39, 10_DESIGN §3.3, 12_TASKS, TASK_QUEUE, PROJECT_STATE, CHANGELOG.
+
+**Verification:**
+- **Unit:** 793 pass.
+- **Contrast test:** mutation-checked; the concept `#94A3B8` fails as intended.
+- **axe sweep:** green locally, after fixing a 4.38 active-chip tint by capping tints at 10%.
+- **Screenshots:** light and dark reviewed.
+
+**Local stack note:** after a container restart, re-run `stack-up.sh`, then apply `auth-functions.sql` as `supabase_admin`. Without it, every insert fails RLS because `auth.uid()` is missing.
+**Suggested Next Task:** UX-02/03, the note page.
+
+---
+
 ## 2026-09-30 — Claude — Chunking module (EMB-02/EMB-14, ADR-38)
 
 **Session Date:** 2026-09-30

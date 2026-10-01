@@ -77,7 +77,7 @@ Future Revisit:
 ## ADR-8 — Concrete semantic token values: zinc neutrals + blue accent
 
 **Decision:** The token roles in [10_DESIGN.md §3.3](10_DESIGN.md#33-color) get concrete starting values: shadcn/ui zinc neutral scale, Tailwind blue-600 (light) / blue-500 (dark) as `primary`, red-600 as `destructive`. Full value table now lives in 10_DESIGN §3.3.
-**Status:** Accepted (2026-07-16)
+**Status:** Superseded by ADR-39 (2026-10-01)
 **Context:** SETUP-02 was blocked — the design spec defined roles and contrast targets but no values, and inventing them is a product decision an implementation agent correctly refused to make.
 **Options Considered:** (a) shadcn/ui defaults verbatim; (b) shadcn zinc + blue accent with a contrast-fixed destructive; (c) commission a bespoke palette.
 **Chosen Solution:** (b). shadcn defaults are battle-tested and match the "calm, text-first" character, but its default destructive (red-500) fails the spec's own 4.5:1 text rule on white — red-600 passes. Blue is the conventional, lowest-surprise link/accent hue for a text-first tool.
@@ -535,3 +535,56 @@ GFM tables (EDIT-07) use **`@tiptap/extension-table`** (header row + cells, no c
 - Because the floor merge can exceed the budget, a chunk can reach about 2,200 characters (550 tokens).
 
 **Future Revisit:** If retrieval-quality evaluation (PERF-04 recall checks) shows chunk granularity matters, swap `estimateTokens` for a tokenizer; the rest of the module is unchanged.
+
+## ADR-39 — Slate palette with semantic accent hues; text uses AA-safe shades of each hue
+
+**Decision:** The token values in 10_DESIGN §3.3 move from ADR-8's zinc/blue to the product owner's concept palette: slate neutrals plus one hue per meaning.
+
+| Hue | Meaning |
+|---|---|
+| Blue | Links, primary actions, focus |
+| Purple | Backlinks |
+| Green | Done, positive |
+| Amber | Highlights, search matches |
+| Rose | Mentions |
+| Teal | Tags, objects |
+
+- **Non-text uses:** fills, icons, rings, dots and tints use the concept hexes exactly.
+- **Text uses:** text uses a darker shade of the same hue wherever the concept value is under 4.5:1. That is every light-theme accent, and secondary text in both themes.
+- **Tints:** tinted backgrounds behind text stay at ≤10% opacity. Active and hover states use a ring, not a darker fill.
+
+**Status:** Accepted (2026-10-01) — explicit user (product-owner) decision. Supersedes ADR-8.
+
+**Context:** The UI overhaul (Sprint 12) starts from a concept palette supplied by the product owner. Checked against 10_DESIGN §6 (WCAG 2.1 AA), most light-theme accents fail as text on white (blue 3.7, teal 2.5, green 2.3, amber 2.2), and so do secondary text (2.6 light, 3.5 on dark elevated surfaces). The product owner chose AA-safe text shades over relaxing the rule.
+
+**Options Considered:**
+- (a) Concept hexes everywhere, with AA relaxed. Rejected: it breaks 10_DESIGN §6 and the build-time contrast test.
+- (b) Concept hexes for non-text, darker same-hue shades for text. Chosen.
+- (c) Wait for revised hexes.
+
+**Chosen Solution:** (b).
+
+| Role | Light | Dark |
+|---|---|---|
+| Background / surface / elevated | `#FFFFFF` / `#F8FAFC` / `#F1F5F9` | `#0B0C0E` / `#111317` / `#1A1D21` |
+| Border | `#E2E8F0` | `#262A31` |
+| Primary text (`foreground`) | `#475569` | `#E5E7EB` |
+| Secondary text (`muted-foreground`) | `#5F6E84` (concept `#94A3B8`) | `#808A99` (concept `#687280`) |
+| Muted text (`subtle-foreground`, placeholders/disabled only) | `#CBD5E1` | `#3A3F46` |
+| Blue: `ring` / `primary` (links, buttons) | `#3B82F6` / `#2563EB` | `#7CA7FF` / `#7CA7FF` |
+| Purple: `backlink` / `backlink-text` | `#8B5CF6` / `#7C3AED` | `#C084FC` |
+| Green: `positive` / `positive-text` | `#22C55E` / `#15803D` | `#6EE7B7` |
+| Amber: `highlight` / `highlight-text` | `#F59E0B` / `#B45309` | `#FBBF24` |
+| Rose: `mention` / `mention-text` | `#EC4899` / `#BE185D` | `#F472B6` |
+| Teal: `tag` / `tag-text` | `#14B8A6` / `#0F766E` | `#22D3EE` |
+| Destructive | `#DC2626` (unchanged) | `#DC2626` (unchanged) |
+
+Secondary text is slightly darker than the shade first proposed (`#64748B` / `#7A8494`) so it also clears 4.5:1 on the elevated surface, not only on the background.
+
+**Tradeoffs:**
+- **Hue roles:** more than one accent hue loosens 10_DESIGN's "one accent" rule. Each hue now carries exactly one meaning, so colour stays informative rather than decorative.
+- **Text shades:** light-theme accent text is a shade darker than the concept.
+
+**Enforcement:** `design-tokens.test.ts` checks every text token against all three surfaces in both themes, and the focus ring at 3:1. The axe sweep checks the rendered composites (tints).
+
+**Future Revisit:** Code-block highlighting keeps the single-accent scheme of ADR-34. Revisit if multi-hue syntax colours are wanted.

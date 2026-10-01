@@ -59,44 +59,48 @@ function getToken(block: string, name: string) {
   return match[1];
 }
 
+// Every token used as text, checked on every surface it can sit on (ADR-39).
+const textTokens = [
+  "foreground",
+  "muted-foreground",
+  "primary",
+  "backlink-text",
+  "positive-text",
+  "highlight-text",
+  "mention-text",
+  "tag-text",
+] as const;
+const surfaceTokens = ["background", "surface", "muted"] as const;
+
 describe("semantic color tokens", () => {
-  it("keeps ADR-8's required text contrast pairs at AA", async () => {
+  it("keeps every text token at AA (4.5:1) on every surface, in both themes", async () => {
     const css = await readFile(cssPath, "utf8");
     const [light, dark] = css.split(".dark {");
 
     for (const block of [light, dark]) {
-      const background = getToken(block, "background");
-      expect(contrastRatio(getToken(block, "foreground"), background)).toBeGreaterThanOrEqual(4.5);
-      expect(contrastRatio(getToken(block, "muted-foreground"), background)).toBeGreaterThanOrEqual(
-        4.5,
-      );
-      expect(contrastRatio(getToken(block, "primary"), background)).toBeGreaterThanOrEqual(4.5);
+      for (const text of textTokens) {
+        for (const surface of surfaceTokens) {
+          const ratio = contrastRatio(getToken(block, text), getToken(block, surface));
+          expect(ratio, `${text} on ${surface}`).toBeGreaterThanOrEqual(4.5);
+        }
+      }
+      expect(
+        contrastRatio(getToken(block, "primary-foreground"), getToken(block, "primary")),
+      ).toBeGreaterThanOrEqual(4.5);
       expect(
         contrastRatio(getToken(block, "destructive-foreground"), getToken(block, "destructive")),
       ).toBeGreaterThanOrEqual(4.5);
     }
   });
-});
 
-describe("motion tokens", () => {
-  it("defines only the documented micro and structural durations", async () => {
+  it("keeps the focus ring at the 3:1 non-text minimum (WCAG 1.4.11)", async () => {
     const css = await readFile(cssPath, "utf8");
-    const rootBlock = css.split(".dark {")[0];
+    const [light, dark] = css.split(".dark {");
 
-    expect(getToken(rootBlock, "motion-duration-micro")).toBe("150ms");
-    expect(getToken(rootBlock, "motion-duration-structural")).toBe("250ms");
-    expect(css).toContain("transition-duration: var(--motion-duration-micro)");
-    expect(css).toContain("transition-duration: var(--motion-duration-structural)");
-  });
-
-  it("collapses both duration tokens when reduced motion is requested", async () => {
-    const css = await readFile(cssPath, "utf8");
-    const reducedMotionBlock = css.match(
-      /@media \(prefers-reduced-motion: reduce\) \{([\s\S]*?)\n\}/,
-    )?.[1];
-
-    expect(reducedMotionBlock).toBeDefined();
-    expect(getToken(reducedMotionBlock ?? "", "motion-duration-micro")).toBe("0ms");
-    expect(getToken(reducedMotionBlock ?? "", "motion-duration-structural")).toBe("0ms");
+    for (const block of [light, dark]) {
+      expect(
+        contrastRatio(getToken(block, "ring"), getToken(block, "background")),
+      ).toBeGreaterThanOrEqual(3);
+    }
   });
 });

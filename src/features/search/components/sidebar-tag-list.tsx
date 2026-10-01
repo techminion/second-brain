@@ -34,8 +34,8 @@ export function SidebarTagList() {
                 <Link
                   aria-current={active ? "page" : undefined}
                   className={cn(
-                    "hover:bg-muted rounded-full border px-2 py-0.5 text-xs",
-                    active && "bg-muted",
+                    "bg-tag/10 text-tag-text hover:ring-tag/60 rounded-full px-2 py-0.5 text-xs hover:ring-1",
+                    active && "ring-tag ring-1",
                   )}
                   href={`/tags/${tag.id}`}
                 >
