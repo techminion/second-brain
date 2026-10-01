@@ -19,6 +19,8 @@ type ShellPanelSide = "left" | "right";
 
 interface ShellPanelProps {
   children?: ReactNode;
+  /** Shown beside the collapse toggle while expanded (the sidebar's account menu, UX-04). */
+  headerStart?: ReactNode;
   label: string;
   side: ShellPanelSide;
 }
@@ -50,7 +52,7 @@ function isOverlaySide(side: ShellPanelSide, tier: BreakpointTier): boolean {
   return side === "right" || tier === "mobile";
 }
 
-function ShellPanel({ children, label, side }: Readonly<ShellPanelProps>) {
+function ShellPanel({ children, headerStart, label, side }: Readonly<ShellPanelProps>) {
   const panels = useShellPanels();
   const isExpanded = side === "left" ? panels.isLeftExpanded : panels.isRightExpanded;
   const toggle = side === "left" ? panels.toggleLeft : panels.toggleRight;
@@ -107,8 +109,12 @@ function ShellPanel({ children, label, side }: Readonly<ShellPanelProps>) {
         data-state={isExpanded ? "expanded" : "collapsed"}
       >
         <div
-          className={cn("flex h-12 shrink-0 items-center px-2", side === "left" && "justify-end")}
+          className={cn(
+            "flex h-12 shrink-0 items-center gap-1 px-2",
+            side === "left" && "justify-end",
+          )}
         >
+          {isExpanded && headerStart ? <div className="min-w-0 flex-1">{headerStart}</div> : null}
           {toggleButton}
         </div>
         {isExpanded ? children : null}

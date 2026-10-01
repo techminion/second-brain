@@ -19,6 +19,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/shared/ui/dropdown-menu";
+import { SidebarSection } from "@/shared/ui/sidebar-section";
 import { Skeleton } from "@/shared/ui/skeleton";
 
 import { ancestorIds, flattenVisible } from "../folder-tree-model";
@@ -394,21 +395,8 @@ export function FolderTree() {
     });
 
   return (
-    <section aria-labelledby="sidebar-folders" className="flex flex-col gap-1">
-      <div
-        {...dropProps(null)}
-        className={cn(
-          "flex h-9 items-center justify-between rounded-md px-2",
-          dropTarget === rootDropId && "ring-ring ring-2",
-        )}
-      >
-        <h2
-          className="text-muted-foreground flex items-center gap-2 text-sm font-medium"
-          id="sidebar-folders"
-        >
-          <FolderIcon aria-hidden="true" className="size-4 shrink-0" />
-          Folders
-        </h2>
+    <SidebarSection
+      actions={
         <Button
           aria-label="New folder"
           className="text-muted-foreground hover:text-foreground size-7 shrink-0"
@@ -419,8 +407,15 @@ export function FolderTree() {
         >
           <FolderPlus aria-hidden="true" className="size-4" />
         </Button>
-      </div>
-
+      }
+      headerProps={{
+        ...dropProps(null),
+        className: cn(dropTarget === rootDropId && "ring-ring ring-2"),
+      }}
+      Icon={FolderIcon}
+      id="sidebar-folders"
+      title="Folders"
+    >
       {query.isPending ? (
         <div aria-hidden="true" className="flex flex-col gap-1 px-2">
           <Skeleton className="h-6 w-4/5" />
@@ -451,6 +446,6 @@ export function FolderTree() {
           }
         }}
       />
-    </section>
+    </SidebarSection>
   );
 }

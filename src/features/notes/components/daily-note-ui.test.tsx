@@ -9,7 +9,10 @@ import { OpenTodayRedirect } from "./open-today-redirect";
 const push = vi.fn();
 const replace = vi.fn();
 
-vi.mock("next/navigation", () => ({ useRouter: () => ({ push, replace }) }));
+vi.mock("next/navigation", () => ({
+  usePathname: () => "/",
+  useRouter: () => ({ push, replace }),
+}));
 
 afterEach(() => {
   push.mockReset();
@@ -20,17 +23,33 @@ describe("DailyNoteNavigation", () => {
   it("links Today to /daily and shows its shortcut", () => {
     render(<DailyNoteNavigation />);
 
-    expect(screen.getByRole("heading", { name: "Daily note" })).toBeInTheDocument();
     expect(screen.getByRole("link", { name: /Today/ })).toHaveAttribute("href", "/daily");
+    expect(screen.getByRole("link", { name: /Today/ })).toHaveTextContent("⌘D");
   });
 
-  it("opens the chosen date's note", () => {
+  it("opens the chosen date's note from the calendar", () => {
     render(<DailyNoteNavigation />);
-    const input = screen.getByLabelText("Open daily note for date");
 
-    fireEvent.change(input, { target: { value: "2026-09-01" } });
+    fireEvent.click(screen.getByRole("button", { name: "Open daily note for date" }));
+    const grid = screen.getByRole("grid", { name: "Open daily note for date" });
+    const today = grid.querySelector<HTMLButtonElement>(`[data-date="${localIsoDate()}"]`);
+    expect(today).toHaveAttribute("aria-current", "date");
+    fireEvent.click(today as HTMLButtonElement);
 
-    expect(push).toHaveBeenCalledWith("/daily/2026-09-01");
+    expect(push).toHaveBeenCalledWith(`/daily/${localIsoDate()}`);
+  });
+
+  it("moves between days with the arrow keys", () => {
+    render(<DailyNoteNavigation />);
+
+    fireEvent.click(screen.getByRole("button", { name: "Open daily note for date" }));
+    const grid = screen.getByRole("grid", { name: "Open daily note for date" });
+    fireEvent.keyDown(grid, { key: "ArrowRight" });
+    const tomorrow = shiftIsoDate(localIsoDate(), 1);
+    const focused = grid.querySelector<HTMLButtonElement>(`[data-date="${tomorrow}"]`);
+    expect(focused).toHaveAttribute("tabindex", "0");
+    fireEvent.keyDown(grid, { key: "PageDown" });
+    expect(screen.getByRole("grid")).toBeInTheDocument();
   });
 });
 

@@ -5,24 +5,18 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 import { cn } from "@/shared/lib/utils";
+import { SidebarSection } from "@/shared/ui/sidebar-section";
 
 import { useTags } from "../hooks/use-tags";
 
-/** Sidebar Tags section (TAG-07): every tag, linking to its browse view. */
+/** Sidebar Tags section (TAG-07, UX-04): every tag, linking to its browse view; collapsible. */
 export function SidebarTagList() {
   const pathname = usePathname();
   const query = useTags();
   const tags = query.data ?? [];
 
   return (
-    <section aria-labelledby="sidebar-tags" className="flex flex-col gap-1">
-      <h2
-        className="text-muted-foreground flex h-9 items-center gap-2 px-2 text-sm font-medium"
-        id="sidebar-tags"
-      >
-        <Tags aria-hidden="true" className="size-4 shrink-0" />
-        Tags
-      </h2>
+    <SidebarSection Icon={Tags} id="sidebar-tags" title="Tags">
       {query.isPending ? null : tags.length === 0 ? (
         <p className="text-muted-foreground px-2 text-sm">No tags yet.</p>
       ) : (
@@ -46,6 +40,6 @@ export function SidebarTagList() {
           })}
         </ul>
       )}
-    </section>
+    </SidebarSection>
   );
 }

@@ -4,27 +4,22 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { SidebarNoteList } from "./sidebar-note-list";
 
 const useNotesList = vi.fn();
-const createMutate = vi.fn();
-const push = vi.fn();
 let pathname = "/";
 
 vi.mock("../hooks/use-notes-list", () => ({ useNotesList: () => useNotesList() }));
-vi.mock("../hooks/use-note-mutations", () => ({
-  useCreateNote: () => ({ isPending: false, mutate: createMutate }),
-}));
 vi.mock("next/navigation", () => ({
   usePathname: () => pathname,
-  useRouter: () => ({ push }),
 }));
 
-function page(items: { id: string; title: string; updatedAt: string }[]) {
-  return { pages: [{ items }], pageParams: [undefined] };
+function page(items: { id: string; title: string; updatedAt: string; body?: string }[]) {
+  return {
+    pages: [{ items: items.map((item) => ({ body: "", ...item })) }],
+    pageParams: [undefined],
+  };
 }
 
 afterEach(() => {
   useNotesList.mockReset();
-  createMutate.mockReset();
-  push.mockReset();
   pathname = "/";
 });
 
@@ -75,17 +70,37 @@ describe("SidebarNoteList", () => {
     expect(screen.getByRole("link", { name: /First/ })).toHaveAttribute("aria-current", "page");
   });
 
-  it("creates a note and navigates to it", () => {
-    createMutate.mockImplementation(
-      (_input, options?: { onSuccess?: (n: { id: string }) => void }) =>
-        options?.onSuccess?.({ id: "new-id" }),
-    );
+  it("groups notes by recency and shows a plain-text preview", () => {
+    const now = new Date();
+    const yesterday = new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1, 12);
+    useNotesList.mockReturnValue({
+      data: page([
+        {
+          body: "# Goals\n\nShip **search**",
+          id: "n1",
+          title: "Roadmap",
+          updatedAt: now.toISOString(),
+        },
+        { id: "n2", title: "Ideas", updatedAt: yesterday.toISOString() },
+      ]),
+      isPending: false,
+    });
+
+    render(<SidebarNoteList />);
+
+    expect(screen.getByRole("list", { name: "Today" })).toHaveTextContent("Roadmap");
+    expect(screen.getByRole("list", { name: "Yesterday" })).toHaveTextContent("Ideas");
+    expect(screen.getByRole("link", { name: /Roadmap/ })).toHaveTextContent("Goals Ship search");
+  });
+
+  it("collapses and expands from its heading", () => {
     useNotesList.mockReturnValue({ data: page([]), isPending: false });
 
     render(<SidebarNoteList />);
-    fireEvent.click(screen.getByRole("button", { name: "New note" }));
+    const toggle = screen.getByRole("button", { name: "Notes" });
+    fireEvent.click(toggle);
 
-    expect(createMutate).toHaveBeenCalledWith({ title: "Untitled" }, expect.any(Object));
-    expect(push).toHaveBeenCalledWith("/notes/new-id");
+    expect(toggle).toHaveAttribute("aria-expanded", "false");
+    expect(screen.queryByText("No notes yet.")).not.toBeVisible();
   });
 });

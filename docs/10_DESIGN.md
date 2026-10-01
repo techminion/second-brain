@@ -37,7 +37,8 @@ All values are Tailwind theme tokens — never hardcoded hex/px in component cod
 |---|---|
 | Spacing unit | Tailwind's 4px base scale, exclusively — no arbitrary values (`p-[13px]` is a lint error, [11_CONTRIBUTING.md](11_CONTRIBUTING.md)) |
 | Editor measure | `max-w-prose`-equivalent (~65–70ch) centered column — reading-optimal line length regardless of window width |
-| App shell | Three-zone layout: collapsible sidebar (navigation: folders, tags, daily note) · main content (editor/graph/search) · collapsible right panel (backlinks, note-scoped chat) |
+| App shell | Three-zone layout: collapsible sidebar · main content (editor/graph/search) · collapsible right panel (backlinks, note-scoped chat), shown only on note pages (UX-06) |
+| Sidebar order (UX-04) | Header: the account menu (name, Settings, Log out) beside the collapse toggle. Then the New note button and the destinations: Search, Today (with a calendar pop-up for other days), Graph, Trash. Then the collapsible Folders, Tags and Notes sections in one scroll area. Notes are grouped Today / Yesterday / Previous 7 days / Previous 30 days / Older, each with a one-line plain-text preview (UX-05). |
 | Radii | `rounded-md` default for interactive elements, `rounded-lg` for surfaces (cards, popovers, dialogs) — two radii total |
 | Elevation | Borders over shadows for structure; shadows reserved for genuinely floating elements (popovers, dialogs, command palette) |
 

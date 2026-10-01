@@ -21,6 +21,48 @@ Estimated Context Needed:
 
 ---
 
+## 2026-10-01 — Claude — Sidebar redesign (UX-04, UX-05, UX-06)
+
+**Session Date:** 2026-10-01
+**Agent:** Claude
+**Objective:** Merge #146 (note page), then Phase 2 of the UX plan: the sidebar, at the user's "go ahead with the sidebar".
+
+**Files Added:**
+- `shared/ui/sidebar-section.tsx`: a collapsible section (disclosure heading, header actions, drop-target header props, open state in localStorage) plus `sidebarItemClassName`.
+- `shared/ui/calendar.tsx`: a Monday-first month grid with the WAI-ARIA date-grid keyboard (arrows, PageUp/PageDown, Home/End).
+- `shared/lib/markdown-plain-text.ts`, plus its test.
+- `notes/group-by-recency.ts`, plus its test.
+- `notes/components/new-note-button.tsx`, plus its test.
+- `shell/components/account-menu.tsx`, `shell/components/sidebar-link.tsx` and `shell/components/note-context-panel.tsx`.
+
+**Files Modified:**
+- `sidebar-navigation.tsx`: now a client component, laid out as New note, Search, Today, Graph and Trash, then the sections.
+- `shell-panel.tsx`: a `headerStart` slot for the account menu.
+- `app-shell.tsx`: `account` and `sidebarNewNote` props, and the right panel via `NoteContextPanel`.
+- `src/app/(app)/layout.tsx`: loads the profile for the account menu; the shell still renders if the lookup fails.
+- `daily-note-navigation.tsx`: Today plus a calendar pop-up.
+- `sidebar-note-list.tsx`: grouped, with previews. Its header "+" was removed; the New note button replaces it.
+- `folder-tree.tsx` and `sidebar-tag-list.tsx`: use `SidebarSection`.
+- `popover.tsx`: exports `PopoverPortal`.
+- E2E:
+  - `auth-session`: Log out goes through the account menu.
+  - `daily-note`: the date is picked in the calendar.
+- 10_DESIGN §3.2.
+
+**Bugs found while building:**
+- **Server-to-client props:** a server component passed lucide icon components to a client link. Next.js rejects function props, so the sidebar is now a client component.
+- **Log out inside the menu:** a `type="submit"` button with `form=` inside Radix's menu never submitted, because the item unmounts on select. The item now calls `requestSubmit()` on the outer form.
+
+**Verification:**
+- **Unit:** 818 pass.
+- **E2E:** auth-session, daily-note, note-lifecycle, wiki-links, note-audit, folders, graph, a11y, tags, search, quick-open and note-delete pass locally (after the Log out fix).
+
+**Watch item:** `wiki-link-extension.test.tsx` "[[ autocomplete … inserts the chosen one" failed once in the first full local run and then passed in 7 later runs, alone and in the full suite. The failure output was not captured. If CI shows it, capture the output before touching the test.
+
+**Suggested Next Task:** UX-07: the Home dashboard, plus a working New note command and a browser-safe shortcut.
+
+---
+
 ## 2026-10-01 — Claude — Note page redesign (UX-02, UX-03)
 
 **Session Date:** 2026-10-01

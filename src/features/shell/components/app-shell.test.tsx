@@ -3,7 +3,9 @@ import { describe, expect, it, vi } from "vitest";
 
 const push = vi.fn();
 
+// A note route, where the context panel (backlinks) is shown (UX-06).
 vi.mock("next/navigation", () => ({
+  usePathname: () => "/notes/n1",
   useRouter: () => ({ push }),
 }));
 
