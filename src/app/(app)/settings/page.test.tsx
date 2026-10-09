@@ -28,13 +28,35 @@ vi.mock("@/features/user/components/update-profile-form", () => ({
   ),
 }));
 
+vi.mock("@/features/user/components/theme-selector", () => ({
+  ThemeSelector: () => <div data-testid="theme-selector" />,
+}));
+
 describe("SettingsPage", () => {
   it("renders the page heading", async () => {
     getClaims.mockResolvedValue({ data: { claims: { sub: "uid-1" } }, error: null });
 
     render(await SettingsPage());
 
-    expect(screen.getByRole("heading", { level: 1, name: "Account settings" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { level: 1, name: "Settings" })).toBeInTheDocument();
+  });
+
+  it("titles the page Settings", async () => {
+    const { metadata } = await import("./page");
+
+    expect(metadata.title).toBe("Settings");
+  });
+
+  it("shows an Appearance section with the theme selector (UX-09)", async () => {
+    getClaims.mockResolvedValue({ data: { claims: { sub: "uid-1" } }, error: null });
+
+    render(await SettingsPage());
+
+    const section = screen.getByRole("region", { name: "Appearance" });
+    expect(section).toContainElement(screen.getByTestId("theme-selector"));
+    // Between Profile and Danger zone.
+    const headings = screen.getAllByRole("heading", { level: 2 }).map((h) => h.textContent);
+    expect(headings).toEqual(["Profile", "Appearance", "Danger zone"]);
   });
 
   it("displays the user email as read-only", async () => {
@@ -59,5 +81,16 @@ describe("SettingsPage", () => {
     const { container } = render(await SettingsPage());
 
     expect(container).toBeEmptyDOMElement();
+  });
+
+  it("keeps the Danger zone heading legible in dark mode (UX-09 review)", async () => {
+    getClaims.mockResolvedValue({ data: { claims: { sub: "uid-1" } }, error: null });
+
+    render(await SettingsPage());
+
+    expect(screen.getByRole("heading", { level: 2, name: "Danger zone" })).toHaveClass(
+      "text-destructive",
+      "dark:text-red-400",
+    );
   });
 });

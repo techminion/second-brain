@@ -1,9 +1,10 @@
 import { DeleteAccountForm } from "@/features/user/components/delete-account-form";
+import { ThemeSelector } from "@/features/user/components/theme-selector";
 import { UpdateProfileForm } from "@/features/user/components/update-profile-form";
 import { createUserService } from "@/features/user/user-service";
 import { createServerActionSupabaseClient } from "@/shared/lib/supabase-server-action-client";
 
-export const metadata = { title: "Account settings" };
+export const metadata = { title: "Settings" };
 
 export default async function SettingsPage() {
   const client = await createServerActionSupabaseClient();
@@ -19,7 +20,7 @@ export default async function SettingsPage() {
 
   return (
     <div className="mx-auto max-w-lg px-6 py-10">
-      <h1 className="mb-8 text-2xl font-semibold">Account settings</h1>
+      <h1 className="mb-8 text-2xl font-semibold">Settings</h1>
       <section aria-labelledby="profile-heading" className="flex flex-col gap-6">
         <h2 className="text-lg font-medium" id="profile-heading">
           Profile
@@ -31,10 +32,22 @@ export default async function SettingsPage() {
         <UpdateProfileForm initialDisplayName={profile.displayName} />
       </section>
       <section
+        aria-labelledby="appearance-heading"
+        className="mt-12 flex flex-col gap-6 border-t pt-8"
+      >
+        <h2 className="text-lg font-medium" id="appearance-heading">
+          Appearance
+        </h2>
+        <ThemeSelector />
+      </section>
+      <section
         aria-labelledby="danger-zone-heading"
         className="mt-12 flex flex-col gap-6 border-t pt-8"
       >
-        <h2 className="text-destructive text-lg font-medium" id="danger-zone-heading">
+        <h2
+          className="text-destructive text-lg font-medium dark:text-red-400"
+          id="danger-zone-heading"
+        >
           Danger zone
         </h2>
         <div className="flex flex-col gap-2">

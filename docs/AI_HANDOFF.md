@@ -21,6 +21,29 @@ Estimated Context Needed:
 
 ---
 
+## 2026-10-10 — Daedalus — Settings → Appearance (UX-09)
+
+**Session Date:** 2026-10-10
+**Agent:** Daedalus (builder); Argus verifies, Hermes opens the PR.
+**Objective:** SETUP-13 shipped the theme plumbing (cookie, no-flash script, `ThemeProvider`, `/api/theme`) with no UI to change it.
+
+**Files Added:**
+- `user/components/theme-selector.tsx`, plus its test: Light / Dark / System as native radios in a `role="radiogroup"` labelled "Theme".
+- `src/app/api/theme/route.test.ts`: valid → 204 + HttpOnly cookie; invalid or malformed → 400.
+- `e2e/settings-appearance.spec.ts`.
+
+**Files Modified:**
+- `shared/lib/theme-provider.tsx`: a non-ok POST now counts as a failure (fetch resolves on 4xx/5xx) and shows "Couldn't save your theme preference."; the theme still applies for the session.
+- `settings/page.tsx`: Appearance section between Profile and Danger zone; h1 and title "Settings".
+- Tests: `theme-provider.test.tsx`, `settings/page.test.tsx`; E2E `a11y.spec.ts` waits for the "Settings" h1 and axes /settings in dark too.
+- Docs: 10_DESIGN §7, CHANGELOG, TASK_QUEUE, PROJECT_STATE.
+
+**Notes:** the cookie stays `second-brain-theme` (renaming would reset everyone's choice). No ADR: ADR-9 covers the cookie.
+
+**Suggested Next Task:** UX-10 (mobile light pass).
+
+---
+
 ## 2026-10-09 — Daedalus — Home dashboard + New note command (UX-07, ADR-41)
 
 **Session Date:** 2026-10-09

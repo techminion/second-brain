@@ -80,9 +80,11 @@ test("@a11y authenticated shell and settings have no WCAG 2.1 AA violations", as
     await expectNoViolationsInDark(page);
 
     await page.goto("/settings");
-    await page.getByRole("heading", { name: "Account settings" }).waitFor();
+    await page.getByRole("heading", { level: 1, name: "Settings" }).waitFor();
 
     await expectNoViolations(page);
+    // UX-09: Settings (with the Appearance section) in the dark palette too.
+    await expectNoViolationsInDark(page);
 
     // NOTE-10 note editor page. Seed a note through the authenticated Web API
     // (the browser context's session cookies ride along), then axe the route.
