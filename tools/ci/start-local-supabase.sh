@@ -52,6 +52,20 @@ publishable_key="$(read_status_value PUBLISHABLE_KEY)"
 secret_key="$(read_status_value SECRET_KEY)"
 db_url="$(read_status_value DB_URL)"
 
+# Assert the image actually running, not just the requested version (ADR-40).
+db_container="$(docker ps --filter "label=com.supabase.cli.project=second-brain-ci" \
+  --filter "name=supabase_db_" --format '{{.Names}}' | head -n 1)"
+if [[ -z "$db_container" ]]; then
+  echo "Could not find the local Supabase Postgres container." >&2
+  exit 1
+fi
+db_image="$(docker inspect --format '{{.Config.Image}}' "$db_container")"
+if [[ "${db_image##*:}" != "$postgres_version" ]]; then
+  echo "Local Postgres container ${db_container} runs ${db_image}; expected tag ${postgres_version}." >&2
+  exit 1
+fi
+echo "Local Postgres image: ${db_image}"
+
 running_postgres="$(psql "$db_url" --no-psqlrc --tuples-only --no-align --command 'select version()')"
 echo "Local stack Postgres: ${running_postgres}"
 

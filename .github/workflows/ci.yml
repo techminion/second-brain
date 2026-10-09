@@ -11,6 +11,24 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  supabase-config-guard:
+    name: Supabase config guard
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7
+      - name: Fail if supabase/config.toml exists
+        # ADR-24, CI-09, ADR-40: the prod Supabase GitHub integration reads
+        # supabase/config.toml, so it must never be committed. The CI stack's
+        # config lives in tools/ci/supabase-local/config.toml.
+        run: |
+          if [[ -e supabase/config.toml || -L supabase/config.toml ]]; then
+            echo "::error file=supabase/config.toml::supabase/config.toml must not exist: the prod Supabase GitHub integration reads it (ADR-24, CI-09, ADR-40). Use tools/ci/supabase-local/config.toml for the CI stack."
+            exit 1
+          fi
+          echo "OK: supabase/config.toml is absent."
+
   dependency-audit:
     name: Dependency audit
     runs-on: ubuntu-latest
