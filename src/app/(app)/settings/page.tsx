@@ -44,7 +44,10 @@ export default async function SettingsPage() {
         aria-labelledby="danger-zone-heading"
         className="mt-12 flex flex-col gap-6 border-t pt-8"
       >
-        <h2 className="text-destructive text-lg font-medium" id="danger-zone-heading">
+        <h2
+          className="text-destructive text-lg font-medium dark:text-red-400"
+          id="danger-zone-heading"
+        >
           Danger zone
         </h2>
         <div className="flex flex-col gap-2">

@@ -82,4 +82,15 @@ describe("SettingsPage", () => {
 
     expect(container).toBeEmptyDOMElement();
   });
+
+  it("keeps the Danger zone heading legible in dark mode (UX-09 review)", async () => {
+    getClaims.mockResolvedValue({ data: { claims: { sub: "uid-1" } }, error: null });
+
+    render(await SettingsPage());
+
+    expect(screen.getByRole("heading", { level: 2, name: "Danger zone" })).toHaveClass(
+      "text-destructive",
+      "dark:text-red-400",
+    );
+  });
 });
