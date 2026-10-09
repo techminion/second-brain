@@ -35,7 +35,12 @@ test("opens today's daily note by shortcut and navigates to a past date", async 
     // the whole /daily → /daily/<today> → /notes/<id> redirect chain; clicking
     // the link and waiting for todayUrl returned before the chain finished,
     // letting its last redirect overtake the date-field navigation below.
-    await expect(page.getByRole("link", { name: /Today/ })).toHaveAttribute("href", "/daily");
+    // Scoped to the sidebar: Home's quick actions (UX-07) also have a Today link.
+    await expect(
+      page
+        .getByRole("complementary", { name: "Application sidebar" })
+        .getByRole("link", { name: /Today/ }),
+    ).toHaveAttribute("href", "/daily");
     await page.goto("/daily");
     await page.waitForURL(todayUrl);
     await expect(page.getByLabel("Note title")).toHaveValue(today);
