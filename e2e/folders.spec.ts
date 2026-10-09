@@ -54,9 +54,11 @@ test("creates nested folders, moves a note, and deletes with relocation", async 
     await page.waitForURL("/");
     await expect(folders.getByRole("treeitem", { name: "Q3" })).toHaveCount(0);
 
+    const before = page.url();
     await folders.getByRole("treeitem", { name: "Work" }).getByText("Work").click();
     // Wait for the folder page: Home's "Recent notes" (UX-07) also links Roadmap.
-    await page.waitForURL(/\/folders\//);
+    // Require a new /folders/ URL so this can't resolve on the page we were on.
+    await page.waitForURL((url) => url.href !== before && /^\/folders\/[^/]+$/.test(url.pathname));
     await expect(page.getByRole("main").getByRole("link", { name: /Roadmap/ })).toBeVisible();
   } finally {
     await deleteUserByEmail(email);

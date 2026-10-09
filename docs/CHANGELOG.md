@@ -20,6 +20,10 @@ All notable changes to Second Brain are documented here, following [Keep a Chang
 - **2026-07-22** — Pinned `sharp` to `^0.35.3` via an npm `overrides` entry, clearing the high-severity libvips advisories (CVE-2026-33327/33328/35590/35591) that Next.js 15 pulled in transitively through `sharp@0.34.x`. Unblocks the `Dependency audit` gate without changing the documented Next.js 15 pin (SEC-07).
 
 ### Added
+- **2026-10-10** — Settings has an About section with a link to the app's source code, as the AGPL-3.0 licence requires (§13).
+
+### Fixed
+- **2026-10-10** — Creating a note no longer pulls you to it if you moved to another page while it was being created, and if the note was created but couldn't be opened you're told so instead of being told it failed (UX-07 follow-up).
 - **2026-09-28** — Full-text search: press ⇧⌘F (or use "Global search" in the ⌘K palette) to search the titles and text of all your notes. Matching words are highlighted in each result; use quotes for an exact phrase, a leading minus to exclude a word, and `or` for either word. Results are linkable (`/search?q=…`), navigable with the arrow keys, and never include trashed notes; every search is timed against the 300ms budget (FTS-01..10, FR-SEARCH-1..4, ADR-36).
 - **2026-09-28** — Press ⌘P (Ctrl+P) anywhere — even while writing — to jump to a note by title: it opens on your most recently edited notes, finds titles as you type (tolerating typos), and opens the chosen note with Enter. It is also in the ⌘K palette as "Quick-open note" (SRCH-07).
 - **2026-09-28** — Press ⌘F (Ctrl+F) on a note to find text within it: every match is highlighted, the bar shows "2 of 5", Enter / ⇧Enter step through matches, and Escape returns to the note with the match selected. Pasting markdown now keeps its formatting — headings, lists, checkboxes, quotes, tables and bold text arrive as real blocks — and text copied from web pages or documents converts to markdown when saved (EDIT-11/18).

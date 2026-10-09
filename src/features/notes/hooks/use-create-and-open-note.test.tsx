@@ -1,7 +1,7 @@
 import { act, renderHook } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { useCreateAndOpenNote } from "./use-create-and-open-note";
+import { resetCreateAndOpenNoteForTests, useCreateAndOpenNote } from "./use-create-and-open-note";
 
 const { toastError } = vi.hoisted(() => ({ toastError: vi.fn() }));
 
@@ -42,12 +42,17 @@ beforeEach(() => {
   });
 });
 
-/** Settle every create a test left in flight, so the shared guard resets. */
+/**
+ * Settle every create a test left in flight and flush the then/finally chain,
+ * then reset the shared guard outright, so no test leaks into the next.
+ */
 afterEach(async () => {
   await act(async () => {
     inFlight.forEach((d) => d.resolve({ id: "cleanup" }));
-    await Promise.resolve();
+    await new Promise((r) => setTimeout(r, 0));
   });
+  resetCreateAndOpenNoteForTests();
+  window.history.replaceState(null, "", "/");
   mutateAsync.mockReset();
   push.mockReset();
   toastError.mockReset();
@@ -148,5 +153,42 @@ describe("useCreateAndOpenNote", () => {
     act(() => result.current.createAndOpen());
 
     expect(mutateAsync).toHaveBeenCalledTimes(2);
+  });
+
+  it("does not navigate if the user moved to another page meanwhile (UX-07 follow-up)", async () => {
+    window.history.replaceState(null, "", "/search");
+    const { result } = renderHook(() => useCreateAndOpenNote());
+
+    act(() => result.current.createAndOpen());
+    window.history.replaceState(null, "", "/settings");
+    await settle(() => inFlight[0].resolve({ id: "late" }));
+
+    expect(push).not.toHaveBeenCalled();
+    expect(toastError).not.toHaveBeenCalled();
+    // The guard is still released.
+    act(() => result.current.createAndOpen());
+    expect(mutateAsync).toHaveBeenCalledTimes(2);
+  });
+
+  it("separates a navigation failure from a create failure (UX-07 follow-up)", async () => {
+    push.mockImplementationOnce(() => {
+      throw new Error("router");
+    });
+    const { result } = renderHook(() => useCreateAndOpenNote());
+
+    act(() => result.current.createAndOpen());
+    await settle(() => inFlight[0].resolve({ id: "made" }));
+
+    expect(toastError).toHaveBeenCalledTimes(1);
+    expect(toastError).toHaveBeenCalledWith("Note created. Open it from the sidebar.");
+  });
+
+  it("keeps the create-failure message for a failed create", async () => {
+    const { result } = renderHook(() => useCreateAndOpenNote());
+
+    act(() => result.current.createAndOpen());
+    await settle(() => inFlight[0].reject(new Error("network")));
+
+    expect(toastError).toHaveBeenCalledWith("Could not create the note. Please try again.");
   });
 });
