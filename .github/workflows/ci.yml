@@ -23,7 +23,7 @@ jobs:
         # supabase/config.toml, so it must never be committed. The CI stack's
         # config lives in tools/ci/supabase-local/config.toml.
         run: |
-          if [[ -e supabase/config.toml ]]; then
+          if [[ -e supabase/config.toml || -L supabase/config.toml ]]; then
             echo "::error file=supabase/config.toml::supabase/config.toml must not exist: the prod Supabase GitHub integration reads it (ADR-24, CI-09, ADR-40). Use tools/ci/supabase-local/config.toml for the CI stack."
             exit 1
           fi
