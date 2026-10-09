@@ -18,3 +18,9 @@ An AI-native knowledge operating system: a unified knowledge graph of markdown n
 Next.js 15 · React 19 · TypeScript · Tailwind + shadcn/ui · Tiptap · React Flow · Supabase (Postgres + pgvector, Auth, Storage, RLS) · OpenAI · Vercel — canonical table in [docs/03_ARCHITECTURE.md §2.1](docs/03_ARCHITECTURE.md#21-technology-stack).
 
 This project is documentation-driven: the docs are the source of truth, and no feature is complete until its documentation is updated.
+
+## License
+
+Copyright (c) 2026 Amey Khaire.
+
+Licensed under the GNU Affero General Public License v3.0 only (AGPL-3.0-only). See [LICENSE](LICENSE) for the full text.
