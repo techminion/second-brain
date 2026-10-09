@@ -41,9 +41,13 @@
   white-space: nowrap;
 }
 
-/* The current note (local mode) stays primary in every colour mode. */
+/* The current note (local mode) stays primary in every colour mode, plus a
+   ring so it reads differently from --graph-1 (the same blue). */
 .node[data-current="true"] .dot {
   background: hsl(var(--primary));
+  box-shadow:
+    0 0 0 2px hsl(var(--background)),
+    0 0 0 4px hsl(var(--foreground));
 }
 
 /* Multi-tag notes: a hollow centre, so the cue is shape, not colour. */

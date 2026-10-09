@@ -683,8 +683,8 @@ Secondary text is slightly darker than the shade first proposed (`#64748B` / `#7
 - **Folder:** a note takes its **top-level** folder; subfolders inherit their root, matching the FR-GRAPH-3 folder filter. Unfiled notes are neutral ("No folder").
 - **Tag:** a note takes its **alphabetically first** tag (case-insensitive by name, then id). Notes with more than one tag get a ring (hollow dot), so that information is carried by shape. Untagged notes are neutral ("Untagged").
 - **Ranking:** groups are ordered by node count (desc), then name, then id, so the same data always gets the same colours. The first eight get colours; the rest share the neutral "Other".
-- **Never colour-only (WCAG 1.4.1):** a legend lists every group with swatch, name and count, and node titles stay as labels. Group entries in the legend apply the existing folder/tag filter.
-- The `GraphNode` API shape gains `folderId` and `tagIds` (additive). The current note (local mode) stays `primary`, and the hover highlight stays `ring`/`primary`.
+- **Never colour-only (WCAG 1.4.1):** a legend lists every group with swatch, name and count, and node titles stay as labels. Group entries in the legend apply the existing folder/tag filter (pressing the active one clears it), and each node's group is part of its accessible name. The palette is referenced as `hsl(var(--graph-N))`, not through `@theme`, because Tailwind v4 only emits theme variables it sees used statically.
+- The `GraphNode` API shape gains `folderId` and `tagIds` (additive). The current note (local mode) stays `primary` with a ring (so it differs from `--graph-1`), and the hover highlight stays `ring`/`primary`.
 
 **Alternatives considered:** user-chosen colours per folder/tag (needs a DB column; out of scope); hashing names to colours (stable, but with eight slots it collides even with few groups); colouring by every tag (a pie dot is unreadable at node size).
 

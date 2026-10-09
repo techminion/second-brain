@@ -12,9 +12,14 @@ interface GraphLegendProps {
   onSelect?: (id: string) => void;
 }
 
-/** CSS custom property value for a palette slot, or undefined for the neutral. */
+/**
+ * CSS colour for a palette slot, or undefined for the neutral. References the
+ * raw `--graph-N` tokens: Tailwind v4 drops `@theme` variables that are only
+ * used through a runtime-built `var(--color-graph-${n})`, so a theme mapping
+ * would leave all but the statically referenced slots undefined.
+ */
 export function graphColourVar(colour: number | null): string | undefined {
-  return colour === null ? undefined : `var(--color-graph-${colour})`;
+  return colour === null ? undefined : `hsl(var(--graph-${colour}))`;
 }
 
 function Swatch({ colour, ring = false }: Readonly<{ colour: number | null; ring?: boolean }>) {
@@ -46,11 +51,8 @@ export function GraphLegend({
   }
 
   return (
-    <section
-      aria-label="Graph legend"
-      className="bg-background/95 absolute bottom-2 left-2 z-10 max-h-48 w-52 overflow-y-auto rounded-md border p-2 text-xs shadow-sm"
-    >
-      <ul className="flex flex-col gap-0.5">
+    <section aria-label="Graph legend" className="text-xs">
+      <ul className="flex flex-wrap gap-x-1 gap-y-0.5">
         {entries.map((entry) => {
           const content = (
             <>

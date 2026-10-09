@@ -24,10 +24,15 @@ export interface TagLike {
 }
 
 export interface NodeColour {
-  /** 1..8 → `--color-graph-N`; null → the neutral default dot. */
+  /** 1..8 → `--graph-N`; null → the neutral default dot. */
   colour: number | null;
   /** Tag mode: the note has more than one tag (drawn as a ring, not colour). */
   multi: boolean;
+  /**
+   * The group in words, for accessible names ("folder Work", "tag Research",
+   * "no folder", "untagged"). The real name even past the 8 colours.
+   */
+  groupLabel: string;
 }
 
 export interface LegendEntry {
@@ -131,6 +136,11 @@ export function assignGraphColours(
     const group = groupOf.get(node.id) ?? null;
     byNode.set(node.id, {
       colour: group ? (colourOf.get(group) ?? null) : null,
+      groupLabel: group
+        ? `${mode === "folder" ? "folder" : "tag"} ${names.get(group)!}${multi.has(node.id) ? ", multiple tags" : ""}`
+        : mode === "folder"
+          ? "no folder"
+          : "untagged",
       multi: multi.has(node.id),
     });
   }

@@ -216,7 +216,7 @@ describe("GraphView", () => {
       fireEvent.click(screen.getByRole("radio", { name: "Folder" }));
 
       expect(dot(container, "a").style.getPropertyValue("--node-colour")).toBe(
-        "var(--color-graph-1)",
+        "hsl(var(--graph-1))",
       );
       expect(dot(container, "c").style.getPropertyValue("--node-colour")).toBe("");
       const legend = screen.getByRole("region", { name: "Graph legend" });
@@ -240,6 +240,22 @@ describe("GraphView", () => {
       expect(
         within(screen.getByRole("group", { name: "Folder" })).getByRole("button", { name: "Work" }),
       ).toHaveAttribute("aria-pressed", "true");
+
+      // Pressing it again clears the filter.
+      // The legend re-mounts after the filtered fetch, so look it up again.
+      fireEvent.click(
+        within(await screen.findByRole("region", { name: "Graph legend" })).getByRole("button", {
+          name: /^Work, 2 notes/,
+        }),
+      );
+      // (The unfiltered graph is cached, so check the chip rather than a refetch.)
+      await waitFor(() =>
+        expect(
+          within(screen.getByRole("group", { name: "Folder" })).getByRole("button", {
+            name: "Work",
+          }),
+        ).toHaveAttribute("aria-pressed", "false"),
+      );
     });
 
     it("colours by first tag with a ring for multi-tag notes, restored from storage", async () => {
@@ -251,7 +267,7 @@ describe("GraphView", () => {
       expect(screen.getByRole("radio", { name: "Tag" })).toBeChecked();
       await waitFor(() =>
         expect(dot(container, "a").style.getPropertyValue("--node-colour")).toBe(
-          "var(--color-graph-1)",
+          "hsl(var(--graph-1))",
         ),
       );
       expect(nodeElement(container, "a")).toHaveAttribute("data-multi", "true");
@@ -270,12 +286,27 @@ describe("GraphView", () => {
 
       await waitFor(() =>
         expect(dot(container, "b").style.getPropertyValue("--node-colour")).toBe(
-          "var(--color-graph-1)",
+          "hsl(var(--graph-1))",
         ),
       );
       const legend = screen.getByRole("region", { name: "Graph legend" });
       expect(legend).toHaveTextContent("Work");
       expect(within(legend).queryByRole("button")).not.toBeInTheDocument();
+    });
+
+    it("puts the group in the accessible names of nodes and list items", async () => {
+      window.localStorage.setItem("margin.graph.colourBy", "tag");
+      fetchGraph.mockResolvedValue(coloured);
+      const { container } = renderView({ kind: "global" });
+      await screen.findByRole("navigation", { name: "Notes in graph" });
+
+      await waitFor(() =>
+        expect(
+          screen.getByRole("button", { name: /^Alpha, tag Research, multiple tags/ }),
+        ).toBeInTheDocument(),
+      );
+      expect(screen.getByRole("button", { name: /^Gamma, untagged/ })).toBeInTheDocument();
+      expect(nodeElement(container, "b")).toHaveTextContent("Beta, tag Research");
     });
   });
 });

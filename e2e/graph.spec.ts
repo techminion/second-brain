@@ -100,6 +100,29 @@ test("colours the graph by folder with a legend", async ({ page }) => {
     await expect(legend.getByRole("button", { name: /^Work, 2 notes/ })).toBeVisible();
     await expect(legend.getByRole("button", { name: /^Home, 1 note/ })).toBeVisible();
 
+    // The palette really renders: nodes in one folder share a colour, the two
+    // folders differ, and each legend swatch matches its nodes.
+    const background = (locator: ReturnType<typeof page.locator>) =>
+      locator.evaluate((element) => getComputedStyle(element).backgroundColor);
+    const dot = (title: string) =>
+      page.locator(".react-flow__node", { hasText: title }).locator("span").first();
+    const swatch = (name: RegExp) =>
+      legend.getByRole("button", { name }).locator("span[aria-hidden='true']").first();
+    const [plan, spec, garden, workSwatch, homeSwatch] = await Promise.all([
+      background(dot("Plan")),
+      background(dot("Spec")),
+      background(dot("Garden")),
+      background(swatch(/^Work, 2 notes/)),
+      background(swatch(/^Home, 1 note/)),
+    ]);
+    expect(plan).toBe(spec);
+    expect(plan).toBe(workSwatch);
+    expect(garden).toBe(homeSwatch);
+    expect(plan).not.toBe(garden);
+    for (const colour of [plan, garden]) {
+      expect(colour).not.toMatch(/^rgba\(0, 0, 0, 0\)$/);
+    }
+
     await page.reload();
     await expect(colourBy.getByRole("radio", { name: "Folder" })).toBeChecked();
     await legend.getByRole("button", { name: /^Work, 2 notes/ }).click();

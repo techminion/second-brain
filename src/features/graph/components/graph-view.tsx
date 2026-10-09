@@ -57,6 +57,8 @@ interface NoteNodeData extends Record<string, unknown> {
   colour: number | null;
   /** UX-11: more than one tag, drawn as a ring. */
   multi: boolean;
+  /** UX-11: the group in words (screen readers), or null when not colouring. */
+  groupLabel: string | null;
 }
 
 type NoteNode = Node<NoteNodeData, "note">;
@@ -90,7 +92,10 @@ function NoteNodeView({ data }: NodeProps<NoteNode>) {
           } as CSSProperties
         }
       />
-      <span className={styles.label}>{data.title || "Untitled"}</span>
+      <span className={styles.label}>
+        {data.title || "Untitled"}
+        {data.groupLabel ? <span className="sr-only">, {data.groupLabel}</span> : null}
+      </span>
       <Handle
         isConnectable={false}
         position={Position.Top}
@@ -256,6 +261,7 @@ export function GraphView({ mode }: Readonly<{ mode: GraphViewMode }>) {
           onOpen: () => open(node.id),
           orphan: node.orphan,
           colour: colouring.byNode.get(node.id)?.colour ?? null,
+          groupLabel: colouring.byNode.get(node.id)?.groupLabel ?? null,
           multi: colouring.byNode.get(node.id)?.multi ?? false,
           size: node.size,
           title: node.title,
@@ -368,41 +374,47 @@ export function GraphView({ mode }: Readonly<{ mode: GraphViewMode }>) {
         </div>
       ) : (
         <div className="flex min-h-0 flex-1 gap-3">
-          <section
-            aria-label="Graph canvas — use the notes list for keyboard access"
-            className={styles.canvas}
-            data-testid="graph-canvas"
-          >
-            <ReactFlow
-              edges={edges}
-              fitView
-              maxZoom={2.5}
-              minZoom={0.1}
-              nodes={nodes}
-              edgesFocusable={false}
-              nodesConnectable={false}
-              nodesFocusable={false}
-              nodeTypes={nodeTypes}
-              onNodeMouseEnter={(_event, node) => setHoveredId(node.id)}
-              onNodeMouseLeave={() => setHoveredId(null)}
-              onlyRenderVisibleElements={laidOut.length > 300}
-              proOptions={{ hideAttribution: true }}
+          <div className="flex min-h-0 min-w-0 flex-1 flex-col gap-2">
+            <section
+              aria-label="Graph canvas — use the notes list for keyboard access"
+              className={styles.canvas}
+              data-testid="graph-canvas"
             >
-              <Controls position="bottom-right" showInteractive={false} />
-            </ReactFlow>
+              <ReactFlow
+                edges={edges}
+                fitView
+                maxZoom={2.5}
+                minZoom={0.1}
+                nodes={nodes}
+                edgesFocusable={false}
+                nodesConnectable={false}
+                nodesFocusable={false}
+                nodeTypes={nodeTypes}
+                onNodeMouseEnter={(_event, node) => setHoveredId(node.id)}
+                onNodeMouseLeave={() => setHoveredId(null)}
+                onlyRenderVisibleElements={laidOut.length > 300}
+                proOptions={{ hideAttribution: true }}
+              >
+                <Controls showInteractive={false} />
+              </ReactFlow>
+            </section>
             <GraphLegend
               activeId={colourBy === "folder" ? folderId : tagId}
               entries={colouring.legend}
               onSelect={
                 mode.kind === "global"
-                  ? (id) => (colourBy === "folder" ? setFolderId(id) : setTagId(id))
+                  ? (id) =>
+                      // Pressing the active entry again clears its filter.
+                      colourBy === "folder"
+                        ? setFolderId((active) => (active === id ? undefined : id))
+                        : setTagId((active) => (active === id ? undefined : id))
                   : undefined
               }
               showMultiHint={
                 colourBy === "tag" && [...colouring.byNode.values()].some((n) => n.multi)
               }
             />
-          </section>
+          </div>
           <nav aria-label="Notes in graph" className="w-56 shrink-0 overflow-y-auto">
             {graph && graph.edges.length === 0 ? (
               <p className="text-muted-foreground mb-2 text-xs">
@@ -426,7 +438,14 @@ export function GraphView({ mode }: Readonly<{ mode: GraphViewMode }>) {
                     onMouseLeave={() => setHoveredId(null)}
                     type="button"
                   >
-                    <span className="truncate">{node.title || "Untitled"}</span>
+                    <span className="truncate">
+                      {node.title || "Untitled"}
+                      {colouring.byNode.get(node.id) ? (
+                        <span className="sr-only">
+                          , {colouring.byNode.get(node.id)!.groupLabel}
+                        </span>
+                      ) : null}
+                    </span>
                     <span className="text-muted-foreground text-xs">
                       {node.degree} {node.degree === 1 ? "link" : "links"}
                     </span>

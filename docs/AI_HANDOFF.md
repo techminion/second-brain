@@ -27,9 +27,11 @@ Estimated Context Needed:
 
 **Files Added:** `graph/graph-colours.ts` (pure assignment + legend entries), `graph/components/graph-legend.tsx`, their tests, `tests/integration/graph-repository.integration.test.ts`.
 
-**Files Modified:** `graph/types.ts` (`GraphNode` gains `folderId`/`tagIds`; `GraphNodeRecord` is now an alias), `graph-service.ts` (`toNode` passes them through), `graph-view.tsx` (Colour by radio group, `--node-colour` per dot, legend, localStorage `margin.graph.colourBy`; tags/folders now also load in local mode for legend names; React Flow controls moved bottom-right so the legend can sit bottom-left), `graph-view.module.css` (dot reads `--node-colour`, multi ring), `app/globals.css` (`--graph-1..8` + `--color-graph-N`), `design-tokens.test.ts` (3:1 check), `e2e/graph.spec.ts` (new colour-by test). Existing graph test fixtures only gained the two new fields.
+**Files Modified:** `graph/types.ts` (`GraphNode` gains `folderId`/`tagIds`; `GraphNodeRecord` is now an alias), `graph-service.ts` (`toNode` passes them through), `graph-view.tsx` (Colour by radio group, `--node-colour` per dot, legend, localStorage `margin.graph.colourBy`; tags/folders now also load in local mode for legend names; the legend sits below the canvas so it never covers nodes), `graph-view.module.css` (dot reads `--node-colour`, multi ring), `app/globals.css` (`--graph-1..8`, referenced directly as `hsl(var(--graph-N))` because Tailwind v4 drops `@theme` colours only used via a runtime-built `var()`), `design-tokens.test.ts` (3:1 check), `e2e/graph.spec.ts` (new colour-by test). Existing graph test fixtures only gained the two new fields.
 
 **Docs:** ADR-42, 10_DESIGN §10, 05_API, CHANGELOG, TASK_QUEUE, PROJECT_STATE.
+
+**Review fixes (Argus):** palette referenced via raw `--graph-N` (only graph-1 was emitted before; built CSS now has all 8 in both themes); group in words in node and list accessible names; pressing an active legend entry clears its filter; the local-graph current note has a ring so it differs from `--graph-1`; legend moved out of the canvas.
 
 **Not run here:** integration and E2E (no credentials on the box).
 

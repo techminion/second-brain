@@ -30,9 +30,9 @@ describe("assignGraphColours (UX-11)", () => {
       { folders },
     );
 
-    expect(result.byNode.get("a")).toEqual({ colour: 1, multi: false });
-    expect(result.byNode.get("b")).toEqual({ colour: 1, multi: false });
-    expect(result.byNode.get("c")).toEqual({ colour: 2, multi: false });
+    expect(result.byNode.get("a")).toMatchObject({ colour: 1, multi: false });
+    expect(result.byNode.get("b")).toMatchObject({ colour: 1, multi: false });
+    expect(result.byNode.get("c")).toMatchObject({ colour: 2, multi: false });
     expect(result.byNode.get("d")?.colour).toBeNull();
     expect(result.byNode.get("e")?.colour).toBeNull();
     expect(result.legend).toEqual([
@@ -49,9 +49,9 @@ describe("assignGraphColours (UX-11)", () => {
       { tags },
     );
 
-    expect(result.byNode.get("a")).toEqual({ colour: 1, multi: true });
-    expect(result.byNode.get("b")).toEqual({ colour: 2, multi: false });
-    expect(result.byNode.get("c")).toEqual({ colour: null, multi: false });
+    expect(result.byNode.get("a")).toMatchObject({ colour: 1, multi: true });
+    expect(result.byNode.get("b")).toMatchObject({ colour: 2, multi: false });
+    expect(result.byNode.get("c")).toMatchObject({ colour: null, multi: false });
     expect(result.legend.map((entry) => entry.name)).toEqual(["Alpha", "mid", "Untagged"]);
   });
 
@@ -85,5 +85,15 @@ describe("assignGraphColours (UX-11)", () => {
       name: "Other",
     });
     expect(result.byNode.get("n-f10")?.colour).toBeNull();
+  });
+
+  it("describes each node's group in words, for accessible names", () => {
+    const byFolder = assignGraphColours([node("a", "f1a"), node("b")], "folder", { folders });
+    expect(byFolder.byNode.get("a")?.groupLabel).toBe("folder Work");
+    expect(byFolder.byNode.get("b")?.groupLabel).toBe("no folder");
+
+    const byTag = assignGraphColours([node("a", null, ["t-z", "t-a"]), node("c")], "tag", { tags });
+    expect(byTag.byNode.get("a")?.groupLabel).toBe("tag Alpha, multiple tags");
+    expect(byTag.byNode.get("c")?.groupLabel).toBe("untagged");
   });
 });
