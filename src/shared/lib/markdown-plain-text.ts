@@ -35,7 +35,16 @@ export function stripInlineMarkdown(
   markdown: string,
   { inlineBlockMarkers = false }: StripInlineMarkdownOptions = {},
 ): string {
-  let text = markdown;
+  // The code-span stand-ins can't come from the input: drop any that do, so a
+  // note can never forge or corrupt a placeholder.
+  let text = markdown.replace(/[\uE010\uE011]/g, "");
+
+  if (inlineBlockMarkers) {
+    // Collapse runs of horizontal whitespace first, so the mid-string
+    // separator rules below can't backtrack over long space runs. Any line
+    // breaks are kept for the line-start rules.
+    text = text.replace(/[^\S\r\n]+/g, " ");
+  }
 
   if (inlineBlockMarkers) {
     // Fence runs anywhere (```ts / ~~~), with an attached language word.
@@ -55,7 +64,10 @@ export function stripInlineMarkdown(
 
   text = text
     // Table separator rows (| --- | :---: |).
-    .replace(/^\s*\|?\s*:?-{3,}:?\s*(\|\s*:?-{3,}:?\s*)*\|?\s*$/gm, " ")
+    // Horizontal whitespace only, so a match can't backtrack across lines.
+    // Unambiguous (each space run has one place to go), so it can't backtrack
+    // quadratically on long runs of spaces.
+    .replace(/^[ \t]*(?:\|[ \t]*)?:?-{3,}:?[ \t]*(?:\|[ \t]*:?-{3,}:?[ \t]*)*(?:\|[ \t]*)?$/gm, " ")
     // Images, then links: keep the alt/link text.
     .replace(new RegExp(String.raw`!\[([^\]]*)\]\(${linkUrl}\)`, "g"), "$1")
     .replace(new RegExp(String.raw`\[([^\]]+)\]\(${linkUrl}(?:\s+"[^"]*")?\)`, "g"), "$1")
@@ -68,7 +80,7 @@ export function stripInlineMarkdown(
       .replace(/\]\([^)\s]*\)?/g, "")
       .replace(/\[\[|\]\]/g, "")
       // Table separators and horizontal rules mid-string.
-      .replace(/\|?(\s*:?-{3,}:?\s*\|)+(\s*:?-{3,}:?\s*)?/g, " ")
+      .replace(/\|?( ?:?-{3,}:? ?\|)+( ?:?-{3,}:? ?)?/g, " ")
       .replace(new RegExp(`${inlineLead}([-*_])(\\s*\\2){2,}(?=\\s|$)`, "g"), "$1 ")
       // Headings after whitespace or `…`, with any markers right after them.
       .replace(new RegExp(`${inlineLead}#{1,6}\\s+${listMarkerRun}*`, "g"), "$1")

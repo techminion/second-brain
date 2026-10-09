@@ -111,4 +111,18 @@ describe("snippetToPlainParts", () => {
     expect(performance.now() - started).toBeLessThan(200);
     expect(parts.map((p) => p.text).join("").length).toBeLessThanOrEqual(2000);
   });
+
+  it("stays fast on spaces around a separator (Argus's case)", () => {
+    const input = `${" ".repeat(998)}---${" ".repeat(998)}y`;
+    const started = performance.now();
+    snippetToPlainParts(input);
+    expect(performance.now() - started).toBeLessThan(100);
+  });
+
+  it("ignores placeholder characters smuggled into the input", () => {
+    const text = snippetToPlainParts("a \uE0100\uE011 `b * c` d")
+      .map((p) => p.text)
+      .join("");
+    expect(text).toBe("a 0 b * c d");
+  });
 });
