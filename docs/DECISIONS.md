@@ -674,3 +674,21 @@ Secondary text is slightly darker than the shade first proposed (`#64748B` / `#7
 **Tradeoffs:** a three-key chord is less discoverable than ⌘N, so the hint is shown on the sidebar New note button, the palette, Home and the empty state. The palette and the visible button remain the fallback if a browser or OS later claims the chord.
 
 **Future Revisit:** if a target browser or OS is found to claim ⌥⌘N, record it here and fall back to the palette plus the button.
+
+## ADR-42 — Categorical graph palette and grouping rules
+
+**Context:** Every graph node was the same colour, so folders and tags were invisible on the canvas (UX-11). The grouping data (`folderId`, `tagIds`) already existed server-side but was dropped before the API.
+
+**Decision:** /graph gets a "Colour by: None / Folder / Tag" control, saved in `localStorage` (`margin.graph.colourBy`, default None). Nodes take one of eight categorical tokens, `--graph-1..8` (light and dark), each with at least 3:1 non-text contrast on the canvas (`--background` and `--surface`) in its theme (WCAG 1.4.11, checked in `design-tokens.test.ts`).
+- **Folder:** a note takes its **top-level** folder; subfolders inherit their root, matching the FR-GRAPH-3 folder filter. Unfiled notes are neutral ("No folder").
+- **Tag:** a note takes its **alphabetically first** tag (case-insensitive by name, then id). Notes with more than one tag get a ring (hollow dot), so that information is carried by shape. Untagged notes are neutral ("Untagged").
+- **Ranking:** groups are ordered by node count (desc), then name, then id, so the same data always gets the same colours. The first eight get colours; the rest share the neutral "Other".
+- **Never colour-only (WCAG 1.4.1):** a legend lists every group with swatch, name and count, and node titles stay as labels. Group entries in the legend apply the existing folder/tag filter (pressing the active one clears it), and each node's group is part of its accessible name. The palette is referenced as `hsl(var(--graph-N))`, not through `@theme`, because Tailwind v4 only emits theme variables it sees used statically.
+- The `GraphNode` API shape gains `folderId` and `tagIds` (additive). The current note (local mode) stays `primary` with a ring (so it differs from `--graph-1`), and the hover highlight stays `ring`/`primary`.
+
+**Alternatives considered:** user-chosen colours per folder/tag (needs a DB column; out of scope); hashing names to colours (stable, but with eight slots it collides even with few groups); colouring by every tag (a pie dot is unreadable at node size).
+
+**Tradeoffs:** a group's colour can change when counts change (a folder that overtakes another swaps slots). That's accepted in exchange for the busiest groups always getting distinct colours.
+
+**Future Revisit:** if users ask for fixed colours, store a colour index on folders and tags and use the ranking only as the default.
+

@@ -108,3 +108,32 @@ describe("GraphService.getLocalGraph (GRAPH-02)", () => {
     await expect(service.getLocalGraph("user-id", "x")).rejects.toBeInstanceOf(NotFoundError);
   });
 });
+
+describe("GraphService node shape (UX-11)", () => {
+  it("passes folderId and tagIds through on global nodes", async () => {
+    const { service } = setup();
+    const graph = await service.getGraph("user-id");
+
+    expect(graph.nodes.find((n) => n.id === "a")).toEqual({
+      folderId: "f1",
+      id: "a",
+      tagIds: ["t1"],
+      title: "A",
+      type: "note",
+    });
+    expect(graph.nodes.find((n) => n.id === "c")).toMatchObject({ folderId: null, tagIds: [] });
+  });
+
+  it("passes them through on filtered and local nodes", async () => {
+    const { service } = setup();
+
+    const filtered = await service.getGraph("user-id", { tagId: "t1" });
+    expect(filtered.nodes.find((n) => n.id === "b")).toMatchObject({
+      folderId: "f2",
+      tagIds: ["t1"],
+    });
+
+    const local = await service.getLocalGraph("user-id", "a");
+    expect(local.nodes.find((n) => n.id === "b")).toMatchObject({ folderId: "f2", tagIds: ["t1"] });
+  });
+});

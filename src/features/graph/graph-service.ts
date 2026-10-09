@@ -11,7 +11,13 @@ type FolderTreeSource = Pick<FolderService, "getTree">;
 const maxLocalDepth = 3;
 
 function toNode(record: GraphNodeRecord): GraphNode {
-  return { id: record.id, title: record.title, type: record.type };
+  return {
+    folderId: record.folderId,
+    id: record.id,
+    tagIds: [...record.tagIds],
+    title: record.title,
+    type: record.type,
+  };
 }
 
 function subtreeIds(nodes: FolderTreeNode[], rootId: string): Set<string> {

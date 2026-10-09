@@ -60,3 +60,80 @@ test("opens the graph, clicks a node, and filters by tag", async ({ page }) => {
     await deleteUserByEmail(email);
   }
 });
+
+// UX-11: colour by folder, with a legend that survives a reload and applies
+// the folder filter. Lookups are scoped to the radiogroup, the legend and the
+// filter chip group, so the sidebar folder tree can never match.
+test("colours the graph by folder with a legend", async ({ page }) => {
+  test.skip(!supabaseUrl || !serviceRoleKey, "requires dev-project credentials");
+
+  const email = `ameybro11+graphcolour${Date.now()}@gmail.com`;
+  const password = "Correct-Horse-42-Battery";
+
+  try {
+    await page.goto("/signup");
+    await page.getByLabel("Email").fill(email);
+    await page.getByLabel("Password").fill(password);
+    await page.getByRole("button", { name: "Create account" }).click();
+    await page.waitForURL("/");
+
+    const folder = async (name: string) => {
+      const response = await page.request.post("/api/folders", { data: { name } });
+      return ((await response.json()) as { data: { id: string } }).data.id;
+    };
+    const create = async (title: string, folderId: string, tag: string) => {
+      const response = await page.request.post("/api/notes", { data: { folderId, title } });
+      const id = ((await response.json()) as { data: { id: string } }).data.id;
+      await page.request.post(`/api/notes/${id}/tags`, { data: { name: tag } });
+    };
+    const work = await folder("Work");
+    const home = await folder("Home");
+    await create("Plan", work, "alpha");
+    await create("Spec", work, "beta");
+    await create("Garden", home, "alpha");
+
+    await page.goto("/graph");
+    const colourBy = page.getByRole("main").getByRole("radiogroup", { name: "Colour by" });
+    await colourBy.getByText("Folder").click();
+
+    const legend = page.getByRole("main").getByRole("region", { name: "Graph legend" });
+    await expect(legend.getByRole("button", { name: /^Work, 2 notes/ })).toBeVisible();
+    await expect(legend.getByRole("button", { name: /^Home, 1 note/ })).toBeVisible();
+
+    // The palette really renders: nodes in one folder share a colour, the two
+    // folders differ, and each legend swatch matches its nodes.
+    const background = (locator: ReturnType<typeof page.locator>) =>
+      locator.evaluate((element) => getComputedStyle(element).backgroundColor);
+    const dot = (title: string) =>
+      page.locator(".react-flow__node", { hasText: title }).locator("span").first();
+    const swatch = (name: RegExp) =>
+      legend.getByRole("button", { name }).locator("span[aria-hidden='true']").first();
+    const [plan, spec, garden, workSwatch, homeSwatch] = await Promise.all([
+      background(dot("Plan")),
+      background(dot("Spec")),
+      background(dot("Garden")),
+      background(swatch(/^Work, 2 notes/)),
+      background(swatch(/^Home, 1 note/)),
+    ]);
+    expect(plan).toBe(spec);
+    expect(plan).toBe(workSwatch);
+    expect(garden).toBe(homeSwatch);
+    expect(plan).not.toBe(garden);
+    for (const colour of [plan, garden]) {
+      expect(colour).not.toMatch(/^rgba\(0, 0, 0, 0\)$/);
+    }
+
+    await page.reload();
+    await expect(colourBy.getByRole("radio", { name: "Folder" })).toBeChecked();
+    await legend.getByRole("button", { name: /^Work, 2 notes/ }).click();
+
+    const folderChips = page.getByRole("main").getByRole("group", { name: "Folder" });
+    await expect(folderChips.getByRole("button", { name: "Work" })).toHaveAttribute(
+      "aria-pressed",
+      "true",
+    );
+    await expect(page.locator(".react-flow__node")).toHaveCount(2);
+  } finally {
+    await deleteUserByEmail(email);
+  }
+});

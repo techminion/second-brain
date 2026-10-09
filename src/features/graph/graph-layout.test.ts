@@ -8,7 +8,9 @@ function graph(nodeCount: number, edges: [number, number][]): Graph {
   return {
     edges: edges.map(([a, b]) => ({ sourceId: `n${a}`, targetId: `n${b}` })),
     nodes: Array.from({ length: nodeCount }, (_, index) => ({
+      folderId: null,
       id: `n${index}`,
+      tagIds: [],
       title: `Note ${index}`,
       type: "note" as const,
     })),
