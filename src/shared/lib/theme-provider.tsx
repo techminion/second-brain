@@ -1,7 +1,7 @@
 "use client";
 
 import { createContext, type ReactNode, useContext, useEffect, useState } from "react";
-import { Toaster } from "sonner";
+import { toast, Toaster } from "sonner";
 
 import { resolveTheme, type ThemePreference } from "./theme";
 
@@ -28,14 +28,23 @@ export function ThemeProvider({ children, initialTheme }: ThemeProviderProps) {
     setThemeState(newTheme);
     document.documentElement.classList.toggle("dark", resolveTheme(newTheme));
 
-    // Call route handler to store the preference in a HttpOnly cookie (ADR-9)
+    // Call route handler to store the preference in a HttpOnly cookie (ADR-9).
+    // `fetch` resolves on 4xx/5xx, so a non-ok response is a failure too
+    // (UX-09); the theme still applies for this session either way.
     fetch("/api/theme", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ preference: newTheme }),
-    }).catch((err) => {
-      console.error("Failed to persist theme preference cookie:", err);
-    });
+    })
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error(`Theme preference not saved (HTTP ${response.status})`);
+        }
+      })
+      .catch((err: unknown) => {
+        console.error("Failed to persist theme preference cookie:", err);
+        toast.error("Couldn't save your theme preference.");
+      });
   };
 
   useEffect(() => {

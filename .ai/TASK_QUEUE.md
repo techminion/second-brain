@@ -24,7 +24,7 @@ Promoted 2026-10-01: the user paused AI and asked for a friendlier UI, planned w
 | UX-06 | Right panel only on note routes | P1 | S | BACK-04 | Claude | Done (#147) | M1 | `NoteContextPanel` renders the right panel only on `/notes/:id`, `/daily` and `/daily/:date` |
 | UX-07 | Home dashboard + New note command/shortcut | P0 | M | NOTE-09, DAILY-03 | Daedalus | In Review | M1 | Phase 3; fixes Home always showing the empty state and the disabled New note command. `HomeDashboard` (today card, quick actions, 8 recent notes; onboarding only at zero notes); palette handler registry (`shell/commands/command-handlers.tsx`); `⌥⌘N` / Ctrl+Alt+N (ADR-41) |
 | UX-08 | Search snippets without markdown syntax | P1 | S | FTS-05 | — | Queued | M1 | Phase 4 |
-| UX-09 | Settings → Appearance | P1 | S | SETUP-13 | — | Queued | M1 | Phase 4 |
+| UX-09 | Settings → Appearance | P1 | S | SETUP-13 | Daedalus | In Review | M1 | Phase 4. `ThemeSelector` (`user/components/theme-selector.tsx`): native-radio "Theme" radiogroup in an Appearance section; `setTheme` now treats a non-ok POST as a failure and toasts; h1/title "Settings"; cookie name `second-brain-theme` unchanged |
 | UX-10 | Mobile light pass | P2 | M | SHELL-06, UX-02 | — | Queued | M1 | Phase 4 |
 | UX-11 | Graph colours + legend | P2 | M | GRAPH-04, UX-01 | — | Queued | M1 | Phase 4 |
 
