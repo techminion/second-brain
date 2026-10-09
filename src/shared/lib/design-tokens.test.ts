@@ -103,4 +103,21 @@ describe("semantic color tokens", () => {
       ).toBeGreaterThanOrEqual(3);
     }
   });
+
+  it("keeps every graph palette colour at 3:1 on the canvas, in both themes (UX-11, ADR-42)", async () => {
+    const css = await readFile(cssPath, "utf8");
+    const [light, dark] = css.split(".dark {");
+
+    for (const block of [light, dark]) {
+      for (let index = 1; index <= 8; index += 1) {
+        const colour = getToken(block, `graph-${index}`);
+        for (const surface of ["background", "surface"]) {
+          expect(
+            contrastRatio(colour, getToken(block, surface)),
+            `--graph-${index} on --${surface}`,
+          ).toBeGreaterThanOrEqual(3);
+        }
+      }
+    }
+  });
 });

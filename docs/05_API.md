@@ -39,7 +39,7 @@ Referenced across multiple services below; full field-level definition lives in 
 | `Folder` | `{ id, name, parentFolderId, createdAt, updatedAt }` |
 | `Attachment` | `KnowledgeObjectSummary & { mimeType, sizeBytes, url }` — `url` is a short-lived signed URL, generated per request, never stored |
 | `SearchResult` | `{ object: KnowledgeObjectSummary; snippet: string; score: number; matchType: 'fulltext' \| 'semantic' \| 'hybrid' }` |
-| `GraphNode` / `GraphEdge` | `{ id, title, type }` / `{ sourceId, targetId }` |
+| `GraphNode` / `GraphEdge` | `{ id, title, type, folderId: string \| null, tagIds: string[] }` / `{ sourceId, targetId }` (`folderId`/`tagIds` added for UX-11 graph colouring; additive) |
 | `Conversation` | `{ id, scope: 'note' \| 'vault', noteId?, messages: ChatMessage[] }` |
 | `ChatMessage` | `{ id, role: 'user' \| 'assistant', content, citations: { knowledgeObjectId }[], createdAt }` |
 | `Paginated<T>` | `{ items: T[]; nextCursor?: string }` |

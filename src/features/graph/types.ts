@@ -4,6 +4,10 @@ export interface GraphNode {
   id: string;
   title: string;
   type: KnowledgeObjectType;
+  /** The note's folder, or null at the root (UX-11: colour by folder). */
+  folderId: string | null;
+  /** The note's tag ids (UX-11: colour by tag). */
+  tagIds: string[];
 }
 
 export interface GraphEdge {
@@ -21,7 +25,4 @@ export interface GraphFilter {
   tagId?: string;
 }
 
-export interface GraphNodeRecord extends GraphNode {
-  folderId: string | null;
-  tagIds: string[];
-}
+export type GraphNodeRecord = GraphNode;

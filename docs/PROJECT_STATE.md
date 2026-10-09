@@ -83,6 +83,7 @@ Done: Sprint 0 (governance), Sprint 1 (repo & tooling — 21 tasks), Sprint 2 (s
 ## In Progress
 
 - UX-07 (Home dashboard, working New note command, ⌥⌘N / Ctrl+Alt+N shortcut, ADR-41): In Review on branch `ux-07-home-empty-state`. UX-04/05/06 (sidebar) merged via #147 (`e487c2e`).
+- UX-11 (graph colour by folder/tag + legend, ADR-42): In Review on branch `ux-11-graph-colours-legend`, cut from origin/main.
 
 ## Blocked
 

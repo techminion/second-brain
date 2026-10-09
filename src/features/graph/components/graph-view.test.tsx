@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import type { ReactNode } from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
@@ -16,7 +16,11 @@ vi.mock("../graph-api", () => ({
   fetchLocalGraph: (...args: unknown[]) => fetchLocalGraph(...args),
 }));
 vi.mock("@/features/search/search-api", () => ({
-  fetchTags: () => Promise.resolve([{ id: "t1", name: "Research" }]),
+  fetchTags: () =>
+    Promise.resolve([
+      { id: "t1", name: "Research" },
+      { id: "t2", name: "Zoology" },
+    ]),
 }));
 vi.mock("@/features/folders/folder-api", () => ({
   fetchFolderTree: () =>
@@ -53,10 +57,10 @@ const sample: Graph = {
     { sourceId: "b", targetId: "c" },
   ],
   nodes: [
-    { id: "a", title: "Alpha", type: "note" },
-    { id: "b", title: "Beta", type: "note" },
-    { id: "c", title: "Gamma", type: "note" },
-    { id: "d", title: "Orphan", type: "note" },
+    { folderId: null, id: "a", title: "Alpha", tagIds: [], type: "note" },
+    { folderId: null, id: "b", title: "Beta", tagIds: [], type: "note" },
+    { folderId: null, id: "c", title: "Gamma", tagIds: [], type: "note" },
+    { folderId: null, id: "d", title: "Orphan", tagIds: [], type: "note" },
   ],
 };
 
@@ -174,5 +178,104 @@ describe("GraphView", () => {
     renderView({ kind: "global" });
 
     expect(await screen.findByText(/No links yet/)).toBeInTheDocument();
+  });
+
+  describe("colour by folder or tag (UX-11)", () => {
+    const coloured: Graph = {
+      edges: [{ sourceId: "a", targetId: "b" }],
+      nodes: [
+        { folderId: "f1", id: "a", tagIds: ["t1", "t2"], title: "Alpha", type: "note" },
+        { folderId: "f1", id: "b", tagIds: ["t1"], title: "Beta", type: "note" },
+        { folderId: null, id: "c", tagIds: [], title: "Gamma", type: "note" },
+      ],
+    };
+
+    function dot(container: HTMLElement, id: string) {
+      return nodeElement(container, id).querySelector("span") as HTMLElement;
+    }
+
+    afterEach(() => window.localStorage.clear());
+
+    it("defaults to None: no node colour and no legend", async () => {
+      fetchGraph.mockResolvedValue(coloured);
+      const { container } = renderView({ kind: "global" });
+      await screen.findByRole("navigation", { name: "Notes in graph" });
+
+      const group = screen.getByRole("radiogroup", { name: "Colour by" });
+      expect(within(group).getByRole("radio", { name: "None" })).toBeChecked();
+      expect(dot(container, "a").style.getPropertyValue("--node-colour")).toBe("");
+      expect(screen.queryByRole("region", { name: "Graph legend" })).not.toBeInTheDocument();
+    });
+
+    it("colours by folder, shows a legend with counts, and saves the choice", async () => {
+      fetchGraph.mockResolvedValue(coloured);
+      const { container } = renderView({ kind: "global" });
+      await screen.findByRole("navigation", { name: "Notes in graph" });
+      await screen.findByRole("button", { name: "Work" });
+
+      fireEvent.click(screen.getByRole("radio", { name: "Folder" }));
+
+      expect(dot(container, "a").style.getPropertyValue("--node-colour")).toBe(
+        "var(--color-graph-1)",
+      );
+      expect(dot(container, "c").style.getPropertyValue("--node-colour")).toBe("");
+      const legend = screen.getByRole("region", { name: "Graph legend" });
+      const items = within(legend).getAllByRole("listitem");
+      expect(items[0]).toHaveTextContent("Work2");
+      expect(items[1]).toHaveTextContent("No folder1");
+      expect(window.localStorage.getItem("margin.graph.colourBy")).toBe("folder");
+    });
+
+    it("applies the folder filter from a legend entry", async () => {
+      fetchGraph.mockResolvedValue(coloured);
+      renderView({ kind: "global" });
+      await screen.findByRole("navigation", { name: "Notes in graph" });
+      await screen.findByRole("button", { name: "Work" });
+      fireEvent.click(screen.getByRole("radio", { name: "Folder" }));
+
+      const legend = screen.getByRole("region", { name: "Graph legend" });
+      fireEvent.click(within(legend).getByRole("button", { name: /^Work, 2 notes/ }));
+
+      await waitFor(() => expect(fetchGraph).toHaveBeenLastCalledWith({ folderId: "f1" }));
+      expect(
+        within(screen.getByRole("group", { name: "Folder" })).getByRole("button", { name: "Work" }),
+      ).toHaveAttribute("aria-pressed", "true");
+    });
+
+    it("colours by first tag with a ring for multi-tag notes, restored from storage", async () => {
+      window.localStorage.setItem("margin.graph.colourBy", "tag");
+      fetchGraph.mockResolvedValue(coloured);
+      const { container } = renderView({ kind: "global" });
+      await screen.findByRole("navigation", { name: "Notes in graph" });
+
+      expect(screen.getByRole("radio", { name: "Tag" })).toBeChecked();
+      await waitFor(() =>
+        expect(dot(container, "a").style.getPropertyValue("--node-colour")).toBe(
+          "var(--color-graph-1)",
+        ),
+      );
+      expect(nodeElement(container, "a")).toHaveAttribute("data-multi", "true");
+      expect(nodeElement(container, "b")).toHaveAttribute("data-multi", "false");
+      const legend = screen.getByRole("region", { name: "Graph legend" });
+      expect(legend).toHaveTextContent("Research");
+      expect(legend).toHaveTextContent("Untagged");
+      expect(legend).toHaveTextContent("Ring: more than one tag");
+    });
+
+    it("colours the local graph too, with a non-interactive legend", async () => {
+      window.localStorage.setItem("margin.graph.colourBy", "folder");
+      fetchLocalGraph.mockResolvedValue(coloured);
+      const { container } = renderView({ depth: 1, kind: "local", noteId: "a" });
+      await screen.findByRole("navigation", { name: "Notes in graph" });
+
+      await waitFor(() =>
+        expect(dot(container, "b").style.getPropertyValue("--node-colour")).toBe(
+          "var(--color-graph-1)",
+        ),
+      );
+      const legend = screen.getByRole("region", { name: "Graph legend" });
+      expect(legend).toHaveTextContent("Work");
+      expect(within(legend).queryByRole("button")).not.toBeInTheDocument();
+    });
   });
 });

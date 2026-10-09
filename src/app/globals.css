@@ -42,6 +42,14 @@
   --color-mention-text: hsl(var(--mention-text));
   --color-tag: hsl(var(--tag));
   --color-tag-text: hsl(var(--tag-text));
+  --color-graph-1: hsl(var(--graph-1));
+  --color-graph-2: hsl(var(--graph-2));
+  --color-graph-3: hsl(var(--graph-3));
+  --color-graph-4: hsl(var(--graph-4));
+  --color-graph-5: hsl(var(--graph-5));
+  --color-graph-6: hsl(var(--graph-6));
+  --color-graph-7: hsl(var(--graph-7));
+  --color-graph-8: hsl(var(--graph-8));
   --radius-md: var(--radius-md);
   --radius-lg: var(--radius-lg);
   --font-sans: var(--font-inter), system-ui, sans-serif;
@@ -76,6 +84,15 @@
   --mention-text: 335.1 77.6% 42%;
   --tag: 173.4 80.4% 40%;
   --tag-text: 175.3 77.4% 26.1%;
+  /* Categorical graph palette (UX-11, ADR-42): ≥3:1 on the canvas. */
+  --graph-1: 221.2 83.2% 53.3%;
+  --graph-2: 24.6 95% 40%;
+  --graph-3: 142.1 76.2% 30%;
+  --graph-4: 0 72.2% 50.6%;
+  --graph-5: 262.1 83.3% 57.8%;
+  --graph-6: 175 84% 28%;
+  --graph-7: 330 81% 45%;
+  --graph-8: 40 96% 33%;
   --radius-md: 0.375rem;
   --radius-lg: 0.5rem;
   --motion-duration-micro: 150ms;
@@ -110,6 +127,14 @@
   --mention-text: 328.6 85.5% 70.2%;
   --tag: 187.9 85.7% 53.3%;
   --tag-text: 187.9 85.7% 53.3%;
+  --graph-1: 213 94% 68%;
+  --graph-2: 27 96% 61%;
+  --graph-3: 142 69% 58%;
+  --graph-4: 0 91% 71%;
+  --graph-5: 255 92% 76%;
+  --graph-6: 172 66% 50%;
+  --graph-7: 329 86% 70%;
+  --graph-8: 48 96% 53%;
 }
 
 @media (prefers-reduced-motion: reduce) {

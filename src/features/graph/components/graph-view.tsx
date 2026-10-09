@@ -15,7 +15,7 @@ import {
 import { Network } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { type CSSProperties, useCallback, useEffect, useMemo, useState } from "react";
 
 import { fetchFolderTree } from "@/features/folders/folder-api";
 import { fetchTags } from "@/features/search/search-api";
@@ -23,10 +23,25 @@ import { foldersRootKey, tagsRootKey } from "@/shared/lib/query-keys";
 import { cn } from "@/shared/lib/utils";
 import { Skeleton } from "@/shared/ui/skeleton";
 
+import { assignGraphColours, type ColourBy, colourByOptions } from "../graph-colours";
 import { layoutGraph, neighborhood, readLayoutCache, writeLayoutCache } from "../graph-layout";
 import { useGlobalGraph, useLocalGraph } from "../hooks/use-graph";
 import type { Graph } from "../types";
+import { graphColourVar, GraphLegend } from "./graph-legend";
 import styles from "./graph-view.module.css";
+
+const colourByStorageKey = "margin.graph.colourBy";
+
+function readColourBy(): ColourBy {
+  try {
+    const stored = window.localStorage.getItem(colourByStorageKey);
+    return colourByOptions.some((option) => option.value === stored)
+      ? (stored as ColourBy)
+      : "none";
+  } catch {
+    return "none";
+  }
+}
 
 export type GraphViewMode = { kind: "global" } | { kind: "local"; noteId: string; depth: number };
 
@@ -38,6 +53,10 @@ interface NoteNodeData extends Record<string, unknown> {
   current: boolean;
   highlight: boolean;
   faded: boolean;
+  /** UX-11: palette slot 1..8, or null for the default dot. */
+  colour: number | null;
+  /** UX-11: more than one tag, drawn as a ring. */
+  multi: boolean;
 }
 
 type NoteNode = Node<NoteNodeData, "note">;
@@ -49,6 +68,7 @@ function NoteNodeView({ data }: NodeProps<NoteNode>) {
       data-current={data.current}
       data-faded={data.faded}
       data-highlight={data.highlight}
+      data-multi={data.multi}
       data-orphan={data.orphan}
       onClick={data.onOpen}
     >
@@ -60,7 +80,16 @@ function NoteNodeView({ data }: NodeProps<NoteNode>) {
         style={{ ...centerHandle, top: data.size / 2 }}
         type="target"
       />
-      <span className={styles.dot} style={{ height: data.size, width: data.size }} />
+      <span
+        className={styles.dot}
+        style={
+          {
+            "--node-colour": graphColourVar(data.colour),
+            height: data.size,
+            width: data.size,
+          } as CSSProperties
+        }
+      />
       <span className={styles.label}>{data.title || "Untitled"}</span>
       <Handle
         isConnectable={false}
@@ -117,6 +146,35 @@ function Chips({
   );
 }
 
+function ColourByControl({
+  onChange,
+  value,
+}: Readonly<{ onChange: (value: ColourBy) => void; value: ColourBy }>) {
+  return (
+    <div aria-label="Colour by" className="flex items-center gap-1 text-xs" role="radiogroup">
+      <span aria-hidden="true" className="text-muted-foreground">
+        Colour by:
+      </span>
+      {colourByOptions.map((option) => (
+        <label
+          className="has-checked:bg-primary has-checked:text-primary-foreground has-focus-visible:ring-ring hover:bg-muted cursor-pointer rounded-full border px-2 py-0.5 has-focus-visible:ring-2"
+          key={option.value}
+        >
+          <input
+            checked={value === option.value}
+            className="sr-only"
+            name="graph-colour-by"
+            onChange={() => onChange(option.value)}
+            type="radio"
+            value={option.value}
+          />
+          {option.label}
+        </label>
+      ))}
+    </div>
+  );
+}
+
 /**
  * Knowledge graph (GRAPH-04..15, FR-GRAPH-1..4, 10_DESIGN §10): notes as
  * nodes, wiki links as edges. Click opens a note; hover (or focusing an item
@@ -129,6 +187,21 @@ export function GraphView({ mode }: Readonly<{ mode: GraphViewMode }>) {
   const [tagId, setTagId] = useState<string | undefined>();
   const [folderId, setFolderId] = useState<string | undefined>();
   const [hoveredId, setHoveredId] = useState<string | null>(null);
+  // UX-11: None until mount (matches the server render), then the saved choice.
+  const [colourBy, setColourByState] = useState<ColourBy>("none");
+
+  useEffect(() => {
+    setColourByState(readColourBy());
+  }, []);
+
+  const setColourBy = useCallback((next: ColourBy) => {
+    setColourByState(next);
+    try {
+      window.localStorage.setItem(colourByStorageKey, next);
+    } catch {
+      // Private mode or a full quota: the choice still applies for this visit.
+    }
+  }, []);
 
   const global = useGlobalGraph({ folderId, tagId }, mode.kind === "global");
   const local = useLocalGraph(
@@ -138,13 +211,12 @@ export function GraphView({ mode }: Readonly<{ mode: GraphViewMode }>) {
   const query = mode.kind === "local" ? local : global;
   const currentId = mode.kind === "local" ? mode.noteId : null;
 
+  // Also loaded in local mode: the legend needs folder and tag names (UX-11).
   const tags = useQuery({
-    enabled: mode.kind === "global",
     queryFn: fetchTags,
     queryKey: [...tagsRootKey, "list"],
   });
   const folders = useQuery({
-    enabled: mode.kind === "global",
     queryFn: fetchFolderTree,
     queryKey: [...foldersRootKey, "tree"],
   });
@@ -157,6 +229,15 @@ export function GraphView({ mode }: Readonly<{ mode: GraphViewMode }>) {
       writeLayoutCache(laidOut);
     }
   }, [laidOut]);
+
+  const colouring = useMemo(
+    () =>
+      assignGraphColours(graph?.nodes ?? [], colourBy, {
+        folders: folders.data,
+        tags: tags.data,
+      }),
+    [colourBy, folders.data, graph, tags.data],
+  );
 
   const open = useCallback((id: string) => router.push(`/notes/${id}`), [router]);
 
@@ -174,6 +255,8 @@ export function GraphView({ mode }: Readonly<{ mode: GraphViewMode }>) {
           highlight: node.id === hoveredId,
           onOpen: () => open(node.id),
           orphan: node.orphan,
+          colour: colouring.byNode.get(node.id)?.colour ?? null,
+          multi: colouring.byNode.get(node.id)?.multi ?? false,
           size: node.size,
           title: node.title,
         },
@@ -185,7 +268,7 @@ export function GraphView({ mode }: Readonly<{ mode: GraphViewMode }>) {
         position: node.position,
         type: "note",
       })),
-    [currentId, highlightSet, hoveredId, laidOut, open],
+    [colouring, currentId, highlightSet, hoveredId, laidOut, open],
   );
 
   const edges: Edge[] = useMemo(
@@ -252,6 +335,8 @@ export function GraphView({ mode }: Readonly<{ mode: GraphViewMode }>) {
         ) : null}
       </header>
 
+      <ColourByControl onChange={setColourBy} value={colourBy} />
+
       {mode.kind === "global" ? (
         <div className="flex flex-col gap-2">
           <Chips
@@ -303,8 +388,20 @@ export function GraphView({ mode }: Readonly<{ mode: GraphViewMode }>) {
               onlyRenderVisibleElements={laidOut.length > 300}
               proOptions={{ hideAttribution: true }}
             >
-              <Controls showInteractive={false} />
+              <Controls position="bottom-right" showInteractive={false} />
             </ReactFlow>
+            <GraphLegend
+              activeId={colourBy === "folder" ? folderId : tagId}
+              entries={colouring.legend}
+              onSelect={
+                mode.kind === "global"
+                  ? (id) => (colourBy === "folder" ? setFolderId(id) : setTagId(id))
+                  : undefined
+              }
+              showMultiHint={
+                colourBy === "tag" && [...colouring.byNode.values()].some((n) => n.multi)
+              }
+            />
           </section>
           <nav aria-label="Notes in graph" className="w-56 shrink-0 overflow-y-auto">
             {graph && graph.edges.length === 0 ? (

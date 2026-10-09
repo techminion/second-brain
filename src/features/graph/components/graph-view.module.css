@@ -24,9 +24,11 @@
   transition: opacity var(--motion-duration-micro, 120ms) ease-out;
 }
 
+/* UX-11: --node-colour is set per node when colouring by folder or tag
+   (ADR-42); unset, every state below keeps its original colour. */
 .dot {
   border-radius: 9999px;
-  background: hsl(var(--muted-foreground));
+  background: var(--node-colour, hsl(var(--muted-foreground)));
   outline: 2px solid transparent;
 }
 
@@ -39,8 +41,15 @@
   white-space: nowrap;
 }
 
+/* The current note (local mode) stays primary in every colour mode. */
 .node[data-current="true"] .dot {
   background: hsl(var(--primary));
+}
+
+/* Multi-tag notes: a hollow centre, so the cue is shape, not colour. */
+.node[data-multi="true"] .dot {
+  box-shadow: inset 0 0 0 3px hsl(var(--background));
+  border: 2px solid var(--node-colour, hsl(var(--muted-foreground)));
 }
 
 .node[data-current="true"] .label {
@@ -49,7 +58,7 @@
 
 /* Orphans: honestly muted — nothing links here yet (10_DESIGN §10). */
 .node[data-orphan="true"] .dot {
-  background: hsl(var(--border));
+  background: var(--node-colour, hsl(var(--border)));
 }
 
 .node[data-orphan="true"] .label {
