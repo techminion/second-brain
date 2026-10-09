@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useCallback } from "react";
+import { toast } from "sonner";
 
 import { useCreateNote } from "./use-note-mutations";
 
@@ -17,31 +18,39 @@ let createInFlight = false;
  * create an "Untitled" note (NOTE-08 optimistic mutation) and open it. A call
  * from any caller while a create is still in flight is a no-op, so a held or
  * repeated shortcut, or a shortcut plus a click, never creates duplicates.
+ *
+ * Uses `mutateAsync` rather than `mutate(…, { onSuccess, onSettled })`:
+ * TanStack Query v5 drops per-call callbacks once the calling component
+ * unmounts, and the optimistic insert itself unmounts Home's onboarding
+ * button. The promise settles regardless, so the navigation always happens
+ * and the shared guard is always released.
  */
 export function useCreateAndOpenNote(): { createAndOpen: () => void; isPending: boolean } {
   const router = useRouter();
-  const { isPending, mutate } = useCreateNote();
+  const { isPending, mutateAsync } = useCreateNote();
 
   const createAndOpen = useCallback(() => {
     if (isPending || createInFlight) {
       return;
     }
     createInFlight = true;
+    let pending: Promise<{ id: string }>;
     try {
-      mutate(
-        { title: "Untitled" },
-        {
-          onSettled: () => {
-            createInFlight = false;
-          },
-          onSuccess: (note) => router.push(`/notes/${note.id}`),
-        },
-      );
+      pending = mutateAsync({ title: "Untitled" });
     } catch (error) {
       createInFlight = false;
       throw error;
     }
-  }, [isPending, mutate, router]);
+    void pending
+      .then((note) => router.push(`/notes/${note.id}`))
+      .catch(() => {
+        // The mutation's own onError already rolled back the optimistic row.
+        toast.error("Could not create the note. Please try again.");
+      })
+      .finally(() => {
+        createInFlight = false;
+      });
+  }, [isPending, mutateAsync, router]);
 
   return { createAndOpen, isPending };
 }

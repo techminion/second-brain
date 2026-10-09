@@ -167,7 +167,15 @@ describe("useShortcut", () => {
     expect(event.defaultPrevented).toBe(false);
   });
 
-  it("skips Ctrl+Alt that typed another character when AltGraph is not reported", () => {
+  it("fires Ctrl+Alt+N on a Cyrillic layout (key т) when AltGraph is false", () => {
+    const { onFire } = renderShortcut({ alt: true, code: "KeyN", key: "n" });
+
+    fireEvent.keyDown(document, { altKey: true, code: "KeyN", ctrlKey: true, key: "т" });
+
+    expect(onFire).toHaveBeenCalledTimes(1);
+  });
+
+  it("without getModifierState, skips Ctrl+Alt that typed another character", () => {
     const { onFire } = renderShortcut({ alt: true, code: "KeyN", key: "n" });
 
     const event = new KeyboardEvent("keydown", {
@@ -177,13 +185,32 @@ describe("useShortcut", () => {
       ctrlKey: true,
       key: "ń",
     });
+    Object.defineProperty(event, "getModifierState", { value: undefined });
     document.dispatchEvent(event);
 
     expect(onFire).not.toHaveBeenCalled();
     expect(event.defaultPrevented).toBe(false);
   });
 
-  it("still fires a genuine Ctrl+Alt+N (key n or N) under the fallback", () => {
+  it("without getModifierState, still fires a genuine Ctrl+Alt+N (key n or N)", () => {
+    const { onFire } = renderShortcut({ alt: true, code: "KeyN", key: "n" });
+
+    for (const key of ["n", "N"]) {
+      const event = new KeyboardEvent("keydown", {
+        altKey: true,
+        cancelable: true,
+        code: "KeyN",
+        ctrlKey: true,
+        key,
+      });
+      Object.defineProperty(event, "getModifierState", { value: undefined });
+      document.dispatchEvent(event);
+    }
+
+    expect(onFire).toHaveBeenCalledTimes(2);
+  });
+
+  it("fires a genuine Ctrl+Alt+N (key n or N) with AltGraph false", () => {
     const { onFire } = renderShortcut({ alt: true, code: "KeyN", key: "n" });
 
     fireEvent.keyDown(document, { altKey: true, code: "KeyN", ctrlKey: true, key: "n" });

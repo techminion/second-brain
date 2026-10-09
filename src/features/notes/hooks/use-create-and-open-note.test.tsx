@@ -1,44 +1,75 @@
 import { act, renderHook } from "@testing-library/react";
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { useCreateAndOpenNote } from "./use-create-and-open-note";
 
-type Options = { onSettled?: () => void; onSuccess?: (n: { id: string }) => void };
+const { toastError } = vi.hoisted(() => ({ toastError: vi.fn() }));
 
-const mutate = vi.fn<(input: unknown, options?: Options) => void>();
+const mutateAsync = vi.fn<(input: unknown) => Promise<{ id: string }>>();
 const push = vi.fn();
 let isPending = false;
 
 vi.mock("./use-note-mutations", () => ({
-  useCreateNote: () => ({ isPending, mutate }),
+  useCreateNote: () => ({ isPending, mutateAsync }),
 }));
 vi.mock("next/navigation", () => ({ useRouter: () => ({ push }) }));
+vi.mock("sonner", () => ({ toast: { error: toastError } }));
 
-/** Settle every create a test left in flight, so the shared guard resets. */
-function settleAll() {
-  for (const [, options] of mutate.mock.calls) {
-    act(() => options?.onSettled?.());
-  }
+interface Deferred {
+  promise: Promise<{ id: string }>;
+  resolve: (note: { id: string }) => void;
+  reject: (error: unknown) => void;
 }
 
-afterEach(() => {
-  settleAll();
-  mutate.mockReset();
+function deferred(): Deferred {
+  let resolve!: Deferred["resolve"];
+  let reject!: Deferred["reject"];
+  const promise = new Promise<{ id: string }>((res, rej) => {
+    resolve = res;
+    reject = rej;
+  });
+  return { promise, reject, resolve };
+}
+
+let inFlight: Deferred[] = [];
+
+beforeEach(() => {
+  inFlight = [];
+  mutateAsync.mockImplementation(() => {
+    const d = deferred();
+    inFlight.push(d);
+    return d.promise;
+  });
+});
+
+/** Settle every create a test left in flight, so the shared guard resets. */
+afterEach(async () => {
+  await act(async () => {
+    inFlight.forEach((d) => d.resolve({ id: "cleanup" }));
+    await Promise.resolve();
+  });
+  mutateAsync.mockReset();
   push.mockReset();
+  toastError.mockReset();
   isPending = false;
 });
 
+async function settle(action: () => void) {
+  await act(async () => {
+    action();
+    // Let the then/catch/finally chain run.
+    await new Promise((r) => setTimeout(r, 0));
+  });
+}
+
 describe("useCreateAndOpenNote", () => {
-  it("creates an Untitled note and opens it", () => {
-    mutate.mockImplementation((_input, options) => {
-      options?.onSuccess?.({ id: "new-id" });
-      options?.onSettled?.();
-    });
+  it("creates an Untitled note and opens it", async () => {
     const { result } = renderHook(() => useCreateAndOpenNote());
 
     act(() => result.current.createAndOpen());
+    await settle(() => inFlight[0].resolve({ id: "new-id" }));
 
-    expect(mutate).toHaveBeenCalledWith({ title: "Untitled" }, expect.any(Object));
+    expect(mutateAsync).toHaveBeenCalledWith({ title: "Untitled" });
     expect(push).toHaveBeenCalledWith("/notes/new-id");
   });
 
@@ -48,12 +79,11 @@ describe("useCreateAndOpenNote", () => {
 
     act(() => result.current.createAndOpen());
 
-    expect(mutate).not.toHaveBeenCalled();
+    expect(mutateAsync).not.toHaveBeenCalled();
     expect(result.current.isPending).toBe(true);
   });
 
   it("ignores repeat calls before the pending state re-renders", () => {
-    // mutate does not settle, as with a slow request.
     const { result } = renderHook(() => useCreateAndOpenNote());
 
     act(() => {
@@ -61,46 +91,62 @@ describe("useCreateAndOpenNote", () => {
       result.current.createAndOpen();
     });
 
-    expect(mutate).toHaveBeenCalledTimes(1);
+    expect(mutateAsync).toHaveBeenCalledTimes(1);
   });
 
-  it("shares the in-flight guard across callers (shortcut + click)", () => {
-    // Two independent hook instances, like the shortcut and the sidebar button.
+  it("shares the in-flight guard across callers (shortcut + click)", async () => {
     const shortcut = renderHook(() => useCreateAndOpenNote());
     const button = renderHook(() => useCreateAndOpenNote());
 
     act(() => shortcut.result.current.createAndOpen());
     act(() => button.result.current.createAndOpen());
+    expect(mutateAsync).toHaveBeenCalledTimes(1);
 
-    expect(mutate).toHaveBeenCalledTimes(1);
-
-    // Once the first create settles, any caller can create again.
-    settleAll();
+    await settle(() => inFlight[0].resolve({ id: "first" }));
     act(() => button.result.current.createAndOpen());
 
-    expect(mutate).toHaveBeenCalledTimes(2);
+    expect(mutateAsync).toHaveBeenCalledTimes(2);
   });
 
-  it("allows a new create once the previous one settles", () => {
-    mutate.mockImplementation((_input, options) => options?.onSettled?.());
-    const { result } = renderHook(() => useCreateAndOpenNote());
+  it("still opens the note when the caller unmounts mid-create, then lets others create", async () => {
+    // Home's onboarding button unmounts as soon as the optimistic row lands.
+    const onboarding = renderHook(() => useCreateAndOpenNote());
+    act(() => onboarding.result.current.createAndOpen());
+    onboarding.unmount();
 
-    act(() => result.current.createAndOpen());
-    act(() => result.current.createAndOpen());
+    await settle(() => inFlight[0].resolve({ id: "from-onboarding" }));
 
-    expect(mutate).toHaveBeenCalledTimes(2);
+    expect(push).toHaveBeenCalledWith("/notes/from-onboarding");
+
+    const sidebar = renderHook(() => useCreateAndOpenNote());
+    act(() => sidebar.result.current.createAndOpen());
+    expect(mutateAsync).toHaveBeenCalledTimes(2);
   });
 
-  it("releases the guard if mutate throws synchronously", () => {
-    mutate.mockImplementationOnce(() => {
+  it("releases the guard and reports the error when an unmounted caller's create fails", async () => {
+    const onboarding = renderHook(() => useCreateAndOpenNote());
+    act(() => onboarding.result.current.createAndOpen());
+    onboarding.unmount();
+
+    await settle(() => inFlight[0].reject(new Error("network")));
+
+    expect(push).not.toHaveBeenCalled();
+    expect(toastError).toHaveBeenCalledTimes(1);
+
+    const sidebar = renderHook(() => useCreateAndOpenNote());
+    act(() => sidebar.result.current.createAndOpen());
+    expect(mutateAsync).toHaveBeenCalledTimes(2);
+  });
+
+  it("releases the guard if mutateAsync throws synchronously", () => {
+    mutateAsync.mockImplementationOnce(() => {
       throw new Error("boom");
     });
     const { result } = renderHook(() => useCreateAndOpenNote());
 
     expect(() => act(() => result.current.createAndOpen())).toThrow("boom");
-    mutate.mockImplementation((_input, options) => options?.onSettled?.());
     act(() => result.current.createAndOpen());
 
-    expect(mutate).toHaveBeenCalledTimes(2);
+    expect(mutateAsync).toHaveBeenCalledTimes(2);
   });
 });

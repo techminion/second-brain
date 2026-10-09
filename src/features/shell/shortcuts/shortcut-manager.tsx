@@ -83,12 +83,17 @@ function matchesAlt(binding: ShortcutBinding, event: KeyboardEvent): boolean {
   if (binding.alt !== true) {
     return true;
   }
-  if (!event.altKey || event.getModifierState?.("AltGraph")) {
+  if (!event.altKey) {
     return false;
   }
-  // Fallback for browsers that don't report AltGraph: on Windows, AltGr is
-  // sent as Ctrl+Alt. If Ctrl+Alt (no ⌘) produced a printable character other
-  // than the bound key, the layout typed something (e.g. "ń"), so let it type.
+  if (typeof event.getModifierState === "function") {
+    // AltGr (sent as Ctrl+Alt on Windows) types a character; leave it alone.
+    return !event.getModifierState("AltGraph");
+  }
+  // Fallback only where AltGraph cannot be queried: if Ctrl+Alt (no ⌘)
+  // produced a printable character other than the bound key, assume AltGr
+  // typed it (e.g. "ń"). Not used otherwise, because it would also block a
+  // genuine Ctrl+Alt+N on Cyrillic/Greek layouts, where `key` is "т"/"ν".
   if (event.ctrlKey && !event.metaKey && isPrintableCharacter(event.key)) {
     return event.key.toLowerCase() === binding.key;
   }

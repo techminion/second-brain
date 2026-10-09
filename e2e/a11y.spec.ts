@@ -32,11 +32,19 @@ async function expectNoViolations(page: Parameters<typeof AxeBuilder>[0]["page"]
 async function expectNoViolationsInDark(
   page: Parameters<typeof AxeBuilder>[0]["page"],
 ): Promise<void> {
+  // Zero the colour transitions (globals.css reduced-motion tokens) so axe
+  // never samples a button mid-way between the light and dark palettes.
+  await page.emulateMedia({ reducedMotion: "reduce" });
   await page.evaluate(() => document.documentElement.classList.add("dark"));
   try {
+    // Fallback in case a transition is not token-driven: let one frame pass.
+    await page.evaluate(
+      () => new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve))),
+    );
     await expectNoViolations(page);
   } finally {
     await page.evaluate(() => document.documentElement.classList.remove("dark"));
+    await page.emulateMedia({ reducedMotion: null });
   }
 }
 
