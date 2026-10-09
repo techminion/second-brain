@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { markdownToPlainText } from "./markdown-plain-text";
+import { markdownToPlainText, stripInlineMarkdown } from "./markdown-plain-text";
 
 describe("markdownToPlainText", () => {
   it.each([
@@ -25,5 +25,21 @@ describe("markdownToPlainText", () => {
 
   it("returns an empty string for blank input", () => {
     expect(markdownToPlainText("  \n\n ")).toBe("");
+  });
+
+  it("stays fast on spaces around a separator, in both modes", () => {
+    const input = `${" ".repeat(998)}---${" ".repeat(998)}y`;
+    const started = performance.now();
+    markdownToPlainText(input);
+    stripInlineMarkdown(input, { inlineBlockMarkers: true });
+    expect(performance.now() - started).toBeLessThan(100);
+  });
+
+  it("still strips table separator rows", () => {
+    expect(markdownToPlainText("| a | b |\n| --- | :---: |\n| 1 | 2 |")).toBe("a b 1 2");
+  });
+
+  it("drops forged code-span placeholders from the input", () => {
+    expect(markdownToPlainText("x \uE0100\uE011 `y`")).toBe("x 0 y");
   });
 });

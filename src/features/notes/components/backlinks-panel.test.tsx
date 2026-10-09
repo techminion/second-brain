@@ -28,7 +28,31 @@ describe("BacklinksPanel", () => {
 
     expect(useBacklinks).toHaveBeenCalledWith("n1");
     expect(screen.getByRole("link", { name: /Source/ })).toHaveAttribute("href", "/notes/s1");
-    expect(screen.getByText("…see [[Target]] here…")).toBeInTheDocument();
+    // UX-08: backlink snippets are shown without markdown syntax.
+    expect(screen.getByText("…see Target here…")).toBeInTheDocument();
+  });
+
+  it("strips markdown from backlink snippets (UX-08)", () => {
+    useBacklinks.mockReturnValue({
+      data: [
+        {
+          object: { id: "s1", title: "Source" },
+          // Single line: wikiLinkSnippet and note-service collapse whitespace.
+          snippet: "## Plan - item > quote **ship** [[Target]] via [docs](https://x) `code`",
+        },
+      ],
+      isError: false,
+      isPending: false,
+    });
+
+    render(<BacklinksPanel />);
+
+    const link = screen.getByRole("link", { name: /Source/ });
+    // The heading goes; " - " and " > " mid-sentence read as prose and stay.
+    expect(link).toHaveTextContent("Plan - item > quote ship Target via docs code");
+    for (const syntax of ["#", "**", "[[", "](", "`"]) {
+      expect(link.textContent).not.toContain(syntax);
+    }
   });
 
   it("teaches linking when there are no backlinks (BACK-05)", () => {

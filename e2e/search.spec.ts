@@ -99,3 +99,38 @@ test("searches notes by content and never leaks trash or other users' notes", as
     await deleteUserByEmail(other);
   }
 });
+
+// UX-08: result snippets show the note's text without markdown syntax, and the
+// match stays highlighted even inside a heading, bold or a wiki link.
+test("search snippets strip markdown and keep highlights", async ({ page }) => {
+  test.skip(!supabaseUrl || !serviceRoleKey, "requires dev-project credentials");
+
+  const stamp = Date.now();
+  const email = `ameybro11+search-md${stamp}@gmail.com`;
+  const term = `quillmark${stamp}`;
+
+  try {
+    await signUp(page, email);
+    await createNote(
+      page,
+      "Markdown heavy",
+      `## ${term} heading\n\n- **${term}** in bold and [[${term} link]] here\n\n> quoted text`,
+    );
+
+    await page.goto(`/search?q=${term}`);
+    // Scoped to the results list and this note's link, so the sidebar's note
+    // list or Home's recent notes can never match.
+    const result = page
+      .getByRole("list", { name: "Search results" })
+      .getByRole("link", { name: /Markdown heavy/ });
+    await expect(result).toHaveCount(1);
+    await expect(result.locator("mark").first()).toHaveText(term);
+    const text = (await result.textContent()) ?? "";
+    expect(text).toContain(term);
+    for (const syntax of ["#", "**", "[[", "]]"]) {
+      expect(text).not.toContain(syntax);
+    }
+  } finally {
+    await deleteUserByEmail(email);
+  }
+});

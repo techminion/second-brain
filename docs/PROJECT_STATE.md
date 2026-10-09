@@ -82,7 +82,7 @@ Done: Sprint 0 (governance), Sprint 1 (repo & tooling — 21 tasks), Sprint 2 (s
 
 ## In Progress
 
-- UX-07 (Home dashboard, working New note command, ⌥⌘N / Ctrl+Alt+N shortcut, ADR-41): In Review on branch `ux-07-home-empty-state`. UX-04/05/06 (sidebar) merged via #147 (`e487c2e`).
+- UX-08 (search and backlink snippets without markdown syntax): In Review on branch `ux-08-search-snippet-plaintext`. UX-07 (Home dashboard, New note command, ⌥⌘N, ADR-41) merged via #151 (`2e88c61`).
 
 ## Blocked
 
