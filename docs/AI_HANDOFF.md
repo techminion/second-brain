@@ -21,6 +21,37 @@ Estimated Context Needed:
 
 ---
 
+## 2026-10-09 — Daedalus — Home dashboard + New note command (UX-07, ADR-41)
+
+**Session Date:** 2026-10-09
+**Agent:** Daedalus (builder); Argus verifies, Hermes opens the PR.
+**Objective:** Fix the audit's two P0 bugs: Home always rendered the empty state, and the palette's New note command was disabled with an unusable `⌘N` shortcut.
+
+**Files Added:**
+- `shell/commands/command-handlers.tsx`, plus its test: a shell-owned registry so a feature can supply the handler for a palette action without the shell importing it (the SRCH-07 quick-open pattern).
+- `notes/hooks/use-create-and-open-note.ts`, plus its test: the single create-and-open path, guarded against in-flight repeats.
+- `notes/components/new-note-command.tsx`, plus its test: registers the palette handler and the `⌥⌘N` / Ctrl+Alt+N shortcut; mounted in the layout's `overlays`.
+- `notes/components/home-dashboard.tsx`, plus its test.
+- `e2e/home-dashboard.spec.ts`.
+
+**Files Modified:**
+- `shortcut-manager.tsx`: `alt` and `code` binding fields; AltGr guard.
+- `command-registry.ts`: `new-note` action, `⌥⌘N`. `command-palette.tsx`: runs registered handlers; a feature action with no handler renders disabled.
+- `app-shell.tsx`: `CommandHandlersProvider`.
+- `knowledge-graph-empty-state.tsx`: `⌥⌘N` hint and a `newNoteSlot`.
+- `new-note-button.tsx`: uses the shared hook; aria-hidden `⌥⌘N` hint (the accessible name stays "New note").
+- `src/app/(app)/page.tsx`: renders `HomeDashboard`, composing the shell's empty state with the notes New note button (the feature-boundaries rule forbids notes → shell/components).
+- E2E: `a11y` axes Home empty and populated in light and dark; `note-lifecycle`, `wiki-links` and `note-audit` now scope their "New note" click to the sidebar, since Home also has one.
+- Docs: 10_DESIGN §8, ADR-41, CHANGELOG, TASK_QUEUE, PROJECT_STATE.
+
+**Verification:** typecheck, lint and format clean; 854 unit tests pass. E2E and integration were not run in this session (no `.env` credentials on the box).
+
+**Risks:** Home and the sidebar share `noteKeys.list({})`; don't add a `limit` on Home. Optimistic creates briefly link to an `optimistic-…` id, as in the sidebar.
+
+**Suggested Next Task:** UX-08 (search snippets without markdown).
+
+---
+
 ## 2026-10-01 — Claude — Sidebar redesign (UX-04, UX-05, UX-06)
 
 **Session Date:** 2026-10-01

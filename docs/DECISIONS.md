@@ -654,3 +654,23 @@ Secondary text is slightly darker than the shade first proposed (`#64748B` / `#7
 **Applied to specs:** ADR-10 and ADR-12 carry an "amended by ADR-40" note. [03_ARCHITECTURE.md §8](03_ARCHITECTURE.md#8-deployment-architecture) (no-local-stack bullet), [09_SECURITY.md §5](09_SECURITY.md#5-service-role-key-usage) (test-harness row), [11_CONTRIBUTING.md](11_CONTRIBUTING.md) (integration test row) and `.ai/ARCHITECTURE_RULES.md` rule 7.
 
 **Future Revisit:** When production moves to the self-hosted stack, ADR-27's GitHub integration is retired and the `supabase/config.toml` constraint can be revisited in that decision. Revisit the run-time cost if `supabase start` regularly exceeds three minutes.
+
+## ADR-41 — New note is ⌥⌘N / Ctrl+Alt+N, because browsers reserve ⌘N
+
+**Decision:** The New note shortcut is `⌥⌘N` on macOS and `Ctrl+Alt+N` elsewhere (10_DESIGN §8), replacing the `⌘N` the design originally specified. It matches the physical key (`event.code === "KeyN"`), requires Alt, and never fires when AltGr is held.
+
+**Status:** Accepted (2026-10-09) — UX-07.
+
+**Context:** The UX audit (Sprint 12) found the palette's New note command disabled and no `⌘N` binding. Binding `⌘N` would not have helped: Chromium, Firefox and Safari open a new window on ⌘N/Ctrl+N before the page's `keydown` handler runs, so `preventDefault()` cannot stop it.
+
+**Options Considered:**
+- (a) `⌘N` / `Ctrl+N`. Rejected: reserved by every target browser.
+- (b) `⇧⌘N`. Rejected: incognito/private window in Chrome and Edge; reopens a closed window in Firefox.
+- (c) `Alt+N` alone. Rejected: on macOS ⌥N is a dead key (`˜`) used to type ñ, so it would break typing.
+- (d) `⌥⌘N` / `Ctrl+Alt+N`. Chosen: not reserved by Chrome, Firefox, Safari or Edge for web pages.
+
+**Chosen Solution:** (d). The shortcut manager gains `alt` (exact match only when `true`; otherwise "don't care", so existing bindings are unchanged) and `code` (match `event.code` instead of `event.key`). An `alt: true` binding skips events where `getModifierState("AltGraph")` is true, because on Windows Ctrl+Alt is AltGr and AltGr+N types a character on some layouts (e.g. `ń` in Polish). Only where `getModifierState` is unavailable does it fall back to skipping Ctrl+Alt events whose `key` is a printable character other than `n`; that heuristic is not used otherwise because it would also block a genuine Ctrl+Alt+N on Cyrillic or Greek layouts (where `key` is `т` or `ν`), so we accept that a browser misreporting AltGraph could let AltGr+N create a note. The handler ignores `event.repeat` and in-flight creates, so a held key creates one note.
+
+**Tradeoffs:** a three-key chord is less discoverable than ⌘N, so the hint is shown on the sidebar New note button, the palette, Home and the empty state. The palette and the visible button remain the fallback if a browser or OS later claims the chord.
+
+**Future Revisit:** if a target browser or OS is found to claim ⌥⌘N, record it here and fall back to the palette plus the button.

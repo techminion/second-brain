@@ -1,6 +1,7 @@
 import { fireEvent, render, screen, within } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+import { CommandHandlersProvider, useRegisterCommandHandler } from "../commands/command-handlers";
 import { QuickOpenStateProvider, useQuickOpenState } from "../overlays/quick-open-state";
 import { ShortcutProvider } from "../shortcuts/shortcut-manager";
 import { CommandPalette } from "./command-palette";
@@ -26,15 +27,23 @@ function PanelStateProbe() {
   );
 }
 
-function renderPalette() {
+function NewNoteHandlerProbe({ onNewNote }: Readonly<{ onNewNote: () => void }>) {
+  useRegisterCommandHandler("new-note", onNewNote);
+  return null;
+}
+
+function renderPalette(onNewNote?: () => void) {
   return render(
     <ShortcutProvider>
-      <ShellPanelsProvider>
-        <QuickOpenStateProvider>
-          <PanelStateProbe />
-          <CommandPalette />
-        </QuickOpenStateProvider>
-      </ShellPanelsProvider>
+      <CommandHandlersProvider>
+        <ShellPanelsProvider>
+          <QuickOpenStateProvider>
+            <PanelStateProbe />
+            {onNewNote ? <NewNoteHandlerProbe onNewNote={onNewNote} /> : null}
+            <CommandPalette />
+          </QuickOpenStateProvider>
+        </ShellPanelsProvider>
+      </CommandHandlersProvider>
     </ShortcutProvider>,
   );
 }
@@ -92,7 +101,7 @@ describe("CommandPalette", () => {
     renderPalette();
     openPalette();
 
-    expect(screen.getByRole("dialog")).toHaveTextContent("⌘N");
+    expect(screen.getByRole("dialog")).toHaveTextContent("⌥⌘N");
     expect(screen.getByRole("dialog")).toHaveTextContent("⇧⌘F");
   });
 
@@ -131,10 +140,50 @@ describe("CommandPalette", () => {
     renderPalette();
     openPalette();
 
-    fireEvent.change(screen.getByRole("combobox"), { target: { value: "new note" } });
-    fireEvent.click(screen.getByRole("option", { name: /new note/i }));
+    fireEvent.change(screen.getByRole("combobox"), { target: { value: "search in current" } });
+    fireEvent.click(screen.getByRole("option", { name: /search in current note/i }));
 
     expect(pushMock).not.toHaveBeenCalled();
+    expect(screen.getByRole("dialog")).toBeInTheDocument();
+  });
+
+  it("disables New note when no feature has registered its handler (UX-07)", () => {
+    renderPalette();
+    openPalette();
+
+    fireEvent.change(screen.getByRole("combobox"), { target: { value: "new note" } });
+    const option = screen.getByRole("option", { name: /new note/i });
+    expect(option).toHaveAttribute("aria-disabled", "true");
+
+    fireEvent.click(option);
+    expect(pushMock).not.toHaveBeenCalled();
+    expect(screen.getByRole("dialog")).toBeInTheDocument();
+  });
+
+  it("runs the registered New note handler once on Enter and closes (UX-07)", () => {
+    const onNewNote = vi.fn();
+    renderPalette(onNewNote);
+    openPalette();
+
+    fireEvent.change(screen.getByRole("combobox"), { target: { value: "new note" } });
+    const option = screen.getByRole("option", { name: /new note/i });
+    expect(option).toHaveAttribute("aria-disabled", "false");
+    expect(option).toHaveTextContent("⌥⌘N");
+
+    fireEvent.keyDown(screen.getByRole("combobox"), { key: "Enter" });
+
+    expect(onNewNote).toHaveBeenCalledTimes(1);
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+  });
+
+  it("runs the registered New note handler on click", () => {
+    const onNewNote = vi.fn();
+    renderPalette(onNewNote);
+    openPalette();
+
+    fireEvent.click(screen.getByRole("option", { name: /new note/i }));
+
+    expect(onNewNote).toHaveBeenCalledTimes(1);
   });
 
   it("moves the active item down with ArrowDown", () => {

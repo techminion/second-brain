@@ -6,11 +6,18 @@ import { useCallback, useEffect, useState } from "react";
 
 import { cn } from "@/shared/lib/utils";
 
-import { type Command, COMMANDS } from "../commands/command-registry";
+import { useCommandHandlers } from "../commands/command-handlers";
+import { type Command, type CommandAction, COMMANDS } from "../commands/command-registry";
 import { useQuickOpenState } from "../overlays/quick-open-state";
 import { useShortcut } from "../shortcuts/shortcut-manager";
 import styles from "./command-palette.module.css";
 import { useShellPanels } from "./shell-panels-context";
+
+const builtInActions: ReadonlySet<CommandAction> = new Set([
+  "quick-open",
+  "toggle-right-panel",
+  "toggle-sidebar",
+]);
 
 function matchesQuery(command: Command, query: string): boolean {
   if (!query) return true;
@@ -24,12 +31,25 @@ export function CommandPalette() {
   const router = useRouter();
   const { toggleLeft, toggleRight } = useShellPanels();
   const quickOpen = useQuickOpenState();
+  const handlers = useCommandHandlers();
+
+  // A feature-provided action is only available while its feature has
+  // registered a handler (UX-07); otherwise the command degrades to disabled.
+  // `handlers` is a new object whenever a handler is (un)registered.
+  const isDisabled = useCallback(
+    (command: Command): boolean =>
+      Boolean(
+        command.disabled ||
+        (command.action && !builtInActions.has(command.action) && !handlers.has(command.action)),
+      ),
+    [handlers],
+  );
 
   const filtered = COMMANDS.filter((cmd) => matchesQuery(cmd, query));
 
   const executeCommand = useCallback(
     (command: Command) => {
-      if (command.disabled) return;
+      if (isDisabled(command)) return;
       setOpen(false);
       if (command.href) {
         router.push(command.href);
@@ -39,9 +59,11 @@ export function CommandPalette() {
         toggleRight();
       } else if (command.action === "quick-open") {
         quickOpen.setOpen(true);
+      } else if (command.action) {
+        handlers.get(command.action)?.();
       }
     },
-    [quickOpen, router, toggleLeft, toggleRight],
+    [handlers, isDisabled, quickOpen, router, toggleLeft, toggleRight],
   );
 
   // ⌘K opens from anywhere except a rich-text editor, which binds ⌘K itself.
@@ -118,26 +140,29 @@ export function CommandPalette() {
               id="command-palette-list"
               role="listbox"
             >
-              {filtered.map((cmd, index) => (
-                <li
-                  key={cmd.id}
-                  aria-disabled={cmd.disabled ?? false}
-                  aria-selected={index === activeIndex}
-                  className={cn(
-                    "flex cursor-pointer items-center justify-between rounded px-3 py-2 text-sm",
-                    index === activeIndex && !cmd.disabled && "bg-accent",
-                    cmd.disabled && "cursor-default opacity-50",
-                  )}
-                  id={`cmd-${cmd.id}`}
-                  onClick={() => executeCommand(cmd)}
-                  role="option"
-                >
-                  <span>{cmd.label}</span>
-                  {cmd.shortcut && (
-                    <span className="text-muted-foreground ml-auto text-xs">{cmd.shortcut}</span>
-                  )}
-                </li>
-              ))}
+              {filtered.map((cmd, index) => {
+                const disabled = isDisabled(cmd);
+                return (
+                  <li
+                    key={cmd.id}
+                    aria-disabled={disabled}
+                    aria-selected={index === activeIndex}
+                    className={cn(
+                      "flex cursor-pointer items-center justify-between rounded px-3 py-2 text-sm",
+                      index === activeIndex && !disabled && "bg-accent",
+                      disabled && "cursor-default opacity-50",
+                    )}
+                    id={`cmd-${cmd.id}`}
+                    onClick={() => executeCommand(cmd)}
+                    role="option"
+                  >
+                    <span>{cmd.label}</span>
+                    {cmd.shortcut && (
+                      <span className="text-muted-foreground ml-auto text-xs">{cmd.shortcut}</span>
+                    )}
+                  </li>
+                );
+              })}
             </ul>
           ) : (
             <p className="text-muted-foreground p-4 text-center text-sm">No commands found.</p>

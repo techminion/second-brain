@@ -4,6 +4,7 @@ import { FolderTree } from "@/features/folders/components/folder-tree";
 import { BacklinksPanel } from "@/features/notes/components/backlinks-panel";
 import { DailyNoteNavigation } from "@/features/notes/components/daily-note-navigation";
 import { NewNoteButton } from "@/features/notes/components/new-note-button";
+import { NewNoteCommand } from "@/features/notes/components/new-note-command";
 import { SidebarNoteList } from "@/features/notes/components/sidebar-note-list";
 import { QuickOpen } from "@/features/search/components/quick-open";
 import { SidebarTagList } from "@/features/search/components/sidebar-tag-list";
@@ -38,7 +39,12 @@ export default async function AppLayout({ children }: Readonly<AppLayoutProps>) 
     <AppShell
       account={account}
       contextPanel={<BacklinksPanel />}
-      overlays={<QuickOpen />}
+      overlays={
+        <>
+          <QuickOpen />
+          <NewNoteCommand />
+        </>
+      }
       sidebarDaily={<DailyNoteNavigation />}
       sidebarFolders={<FolderTree />}
       sidebarNewNote={<NewNoteButton />}

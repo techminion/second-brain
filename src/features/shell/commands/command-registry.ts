@@ -1,4 +1,4 @@
-type CommandAction = "quick-open" | "toggle-right-panel" | "toggle-sidebar";
+type CommandAction = "new-note" | "quick-open" | "toggle-right-panel" | "toggle-sidebar";
 
 interface Command {
   id: string;
@@ -11,7 +11,9 @@ interface Command {
 
 // Static registry — SHELL-04 MVP. Feature tasks add commands as routes are built.
 const COMMANDS: readonly Command[] = [
-  { id: "new-note", label: "New note", shortcut: "⌘N", disabled: true },
+  // ⌥⌘N, not ⌘N: browsers reserve ⌘N/Ctrl+N for a new window (ADR-41). The
+  // handler is registered by the notes feature (command-handlers.tsx).
+  { id: "new-note", label: "New note", shortcut: "⌥⌘N", action: "new-note" },
   { id: "quick-open", label: "Quick-open note", shortcut: "⌘P", action: "quick-open" },
   { id: "daily-note", label: "Today's daily note", shortcut: "⌘D", href: "/daily" },
   { id: "daily-note-yesterday", label: "Yesterday's daily note", href: "/daily?offset=-1" },
