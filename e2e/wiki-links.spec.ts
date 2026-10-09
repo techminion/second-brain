@@ -77,7 +77,9 @@ test("links a new note to an existing one and the backlink appears live", async 
     // A's backlinks list B without a manual refresh (FR-LINK-6).
     const entry = backlinks.getByRole("link", { name: /Weekly review/ });
     await expect(entry).toBeVisible();
-    await expect(entry).toContainText("Progress on [[Project Atlas]]");
+    // UX-08: backlink snippets show plain text, without the [[ ]] syntax.
+    await expect(entry).toContainText("Progress on Project Atlas");
+    await expect(entry).not.toContainText("[[");
     await entry.click();
     await expect(page.getByLabel("Note title")).toHaveValue("Weekly review");
   } finally {
