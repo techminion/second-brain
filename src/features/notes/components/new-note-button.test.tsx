@@ -13,8 +13,12 @@ vi.mock("next/navigation", () => ({ useRouter: () => ({ push }) }));
 
 describe("NewNoteButton", () => {
   it("creates an untitled note and opens it", () => {
-    mutate.mockImplementation((_input, options?: { onSuccess?: (n: { id: string }) => void }) =>
-      options?.onSuccess?.({ id: "new-id" }),
+    mutate.mockImplementation(
+      (_input, options?: { onSettled?: () => void; onSuccess?: (n: { id: string }) => void }) => {
+        options?.onSuccess?.({ id: "new-id" });
+        // Settle, so the shared in-flight guard is released for later tests.
+        options?.onSettled?.();
+      },
     );
 
     render(<NewNoteButton />);

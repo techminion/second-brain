@@ -64,6 +64,8 @@ test("@a11y authenticated shell and settings have no WCAG 2.1 AA violations", as
     await page.getByLabel("Password").fill(password);
     await page.getByRole("button", { name: "Create account" }).click();
     await page.waitForURL("/");
+    // Wait for the resolved empty Home, not the loading skeleton (UX-07).
+    await page.getByRole("heading", { name: "Your knowledge graph is empty" }).waitFor();
 
     await expectNoViolations(page);
     // UX-07: the empty Home in the dark palette too.

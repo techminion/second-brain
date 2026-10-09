@@ -83,7 +83,21 @@ function matchesAlt(binding: ShortcutBinding, event: KeyboardEvent): boolean {
   if (binding.alt !== true) {
     return true;
   }
-  return event.altKey && !event.getModifierState?.("AltGraph");
+  if (!event.altKey || event.getModifierState?.("AltGraph")) {
+    return false;
+  }
+  // Fallback for browsers that don't report AltGraph: on Windows, AltGr is
+  // sent as Ctrl+Alt. If Ctrl+Alt (no ⌘) produced a printable character other
+  // than the bound key, the layout typed something (e.g. "ń"), so let it type.
+  if (event.ctrlKey && !event.metaKey && isPrintableCharacter(event.key)) {
+    return event.key.toLowerCase() === binding.key;
+  }
+  return true;
+}
+
+function isPrintableCharacter(key: string): boolean {
+  // Named keys ("Enter", "Dead", "Unidentified") are longer than one code point.
+  return [...key].length === 1 && key.trim() !== "";
 }
 
 export function ShortcutProvider({ children }: Readonly<{ children: ReactNode }>) {

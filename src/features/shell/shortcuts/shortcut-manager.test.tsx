@@ -167,6 +167,40 @@ describe("useShortcut", () => {
     expect(event.defaultPrevented).toBe(false);
   });
 
+  it("skips Ctrl+Alt that typed another character when AltGraph is not reported", () => {
+    const { onFire } = renderShortcut({ alt: true, code: "KeyN", key: "n" });
+
+    const event = new KeyboardEvent("keydown", {
+      altKey: true,
+      cancelable: true,
+      code: "KeyN",
+      ctrlKey: true,
+      key: "ń",
+    });
+    document.dispatchEvent(event);
+
+    expect(onFire).not.toHaveBeenCalled();
+    expect(event.defaultPrevented).toBe(false);
+  });
+
+  it("still fires a genuine Ctrl+Alt+N (key n or N) under the fallback", () => {
+    const { onFire } = renderShortcut({ alt: true, code: "KeyN", key: "n" });
+
+    fireEvent.keyDown(document, { altKey: true, code: "KeyN", ctrlKey: true, key: "n" });
+    fireEvent.keyDown(document, { altKey: true, code: "KeyN", ctrlKey: true, key: "N" });
+
+    expect(onFire).toHaveBeenCalledTimes(2);
+  });
+
+  it("does not apply the Ctrl+Alt fallback to ⌥⌘N, whose key is a dead-key character", () => {
+    const { onFire } = renderShortcut({ alt: true, code: "KeyN", key: "n" });
+
+    fireEvent.keyDown(document, { altKey: true, code: "KeyN", key: "˜", metaKey: true });
+    fireEvent.keyDown(document, { altKey: true, code: "KeyN", ctrlKey: true, key: "Dead" });
+
+    expect(onFire).toHaveBeenCalledTimes(2);
+  });
+
   it("treats alt as don't-care for key bindings that do not set it", () => {
     const { onFire } = renderShortcut({ key: "e" });
 

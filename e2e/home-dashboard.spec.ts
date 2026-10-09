@@ -51,11 +51,36 @@ test("Home switches from onboarding to a dashboard and creates notes", async ({ 
     await expect(page.getByRole("list", { name: "Recent notes" })).toContainText("Home first note");
     await expect(emptyHeading).toHaveCount(0);
 
-    // 4. Shortcut creates exactly one note, even with repeats.
+    // 4. Shortcut creates exactly one note.
     const before = await countNotes(page);
     await page.keyboard.press(newNoteShortcut);
     await page.waitForURL((url) => noteUrl.test(url.pathname) && url.href !== firstUrl);
     await expect.poll(() => countNotes(page)).toBe(before + 1);
+
+    // 4b. Holding the keys (one keydown, then auto-repeats) creates exactly one.
+    await page.goto("/");
+    await page.getByRole("heading", { level: 1, name: "Home" }).waitFor();
+    const beforeHold = await countNotes(page);
+    await page.evaluate((isMac) => {
+      for (let i = 0; i < 5; i++) {
+        document.dispatchEvent(
+          new KeyboardEvent("keydown", {
+            altKey: true,
+            bubbles: true,
+            cancelable: true,
+            code: "KeyN",
+            ctrlKey: !isMac,
+            key: isMac ? "˜" : "n",
+            metaKey: isMac,
+            repeat: i > 0,
+          }),
+        );
+      }
+    }, process.platform === "darwin");
+    await page.waitForURL(noteUrl);
+    // Give any stray duplicate create time to land before counting.
+    await page.waitForLoadState("networkidle");
+    await expect.poll(() => countNotes(page)).toBe(beforeHold + 1);
 
     // 5. Palette → New note.
     const beforePalette = await countNotes(page);
