@@ -1,0 +1,91 @@
+# Supabase CLI config for the CI-only local stack (ADR-40).
+#
+# This file deliberately does NOT live at supabase/config.toml. Production is
+# connected to this repository through the Supabase GitHub integration
+# (ADR-27, working directory "."), which reads supabase/config.toml; a
+# localhost-flavoured config there could override dashboard-managed production
+# Auth settings (ADR-24, CI-09). tools/ci/start-local-supabase.sh copies this
+# file and supabase/migrations/ into a throwaway workdir under $RUNNER_TEMP.
+#
+# Auth settings mirror supabase/auth-config.md (dev column) so tests exercise
+# the same rules as the hosted projects. Services the app does not use
+# (Realtime, Edge Functions, Studio, analytics/Logflare/Vector, the pooler)
+# stay off to keep `supabase start` short.
+
+project_id = "second-brain-ci"
+
+[api]
+enabled = true
+port = 54321
+schemas = ["public", "graphql_public"]
+extra_search_path = ["public", "extensions"]
+max_rows = 1000
+
+[db]
+port = 54322
+shadow_port = 54320
+health_timeout = "2m"
+major_version = 17
+
+[db.pooler]
+enabled = false
+
+[db.migrations]
+enabled = true
+
+[db.seed]
+enabled = false
+
+[realtime]
+enabled = false
+
+[studio]
+enabled = false
+
+[local_smtp]
+enabled = false
+
+[storage]
+enabled = true
+file_size_limit = "50MiB"
+
+[storage.s3_protocol]
+enabled = false
+
+[storage.vector]
+enabled = false
+
+[auth]
+enabled = true
+site_url = "http://localhost:3000"
+additional_redirect_urls = ["http://localhost:3000/**"]
+jwt_expiry = 3600
+enable_refresh_token_rotation = true
+refresh_token_reuse_interval = 10
+enable_signup = true
+enable_anonymous_sign_ins = false
+enable_manual_linking = false
+# ADR-19: length over composition rules.
+minimum_password_length = 8
+password_requirements = ""
+
+[auth.rate_limit]
+# The harness provisions users through the admin API; keep sign-in headroom
+# generous so parallel suites never trip local rate limits.
+sign_in_sign_ups = 1000
+token_refresh = 1000
+token_verifications = 1000
+
+[auth.email]
+enable_signup = true
+double_confirm_changes = true
+# ADR-19: confirmation off for MVP.
+enable_confirmations = false
+secure_password_change = false
+max_frequency = "1s"
+
+[edge_runtime]
+enabled = false
+
+[analytics]
+enabled = false
