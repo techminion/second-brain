@@ -26,8 +26,20 @@ describe("KnowledgeGraphEmptyState", () => {
   it("surfaces the note, wiki-link, and command-palette shortcuts", () => {
     render(<KnowledgeGraphEmptyState />);
 
-    expect(screen.getByText("⌘N")).toBeInTheDocument();
+    expect(screen.getByText("⌥⌘N")).toBeInTheDocument();
     expect(screen.getByText("[[")).toBeInTheDocument();
     expect(screen.getByText("⌘K")).toBeInTheDocument();
+  });
+
+  it("renders an injected New note action (UX-07)", () => {
+    render(<KnowledgeGraphEmptyState newNoteSlot={<button type="button">New note</button>} />);
+
+    expect(screen.getByRole("button", { name: "New note" })).toBeInTheDocument();
+  });
+
+  it("renders no action slot by default", () => {
+    render(<KnowledgeGraphEmptyState />);
+
+    expect(screen.queryByRole("button")).not.toBeInTheDocument();
   });
 });

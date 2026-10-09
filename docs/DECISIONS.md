@@ -97,7 +97,7 @@ Future Revisit:
 ## ADR-10 — Supabase Cloud-only development workflow
 
 **Decision:** Second Brain uses a shared Supabase Cloud development project for development, integration testing, and previews. No local Supabase Docker stack is used.
-**Status:** Accepted (2026-07-16)
+**Status:** Accepted (2026-07-16); **amended by ADR-40** (2026-10-09: CI runs a local Supabase stack; development is unchanged)
 **Context:** The project owner explicitly does not want local Supabase containers or images consuming computer resources. A Cloud project is already part of the documented architecture; the local stack was a convenience rather than a product requirement.
 **Options Considered:** (a) local Docker stack plus Cloud production; (b) shared Supabase Cloud development project only.
 **Chosen Solution:** (b). All schema changes are versioned migrations committed to the repository, reviewed, and then applied to the Cloud development project. Dashboard and ad-hoc Cloud-schema edits are prohibited to prevent migration drift.
@@ -127,7 +127,7 @@ Future Revisit:
 ## ADR-12 — Service-role key permitted in the Cloud integration-test harness; Supabase client packages approved
 
 **Decision:** [09_SECURITY.md §5](09_SECURITY.md#5-service-role-key-usage) gains a third enumerated service-role context: the Cloud integration-test harness, for test-user lifecycle (create/delete via the GoTrue admin API) and test-data cleanup. Constraints: test code only, never importable from `src/`; targets only the shared Cloud *development* project; the production key is never configured in test environments. Additionally, `@supabase/supabase-js` and `@supabase/ssr` are the approved client packages (recorded in [03_ARCHITECTURE.md §2.1](03_ARCHITECTURE.md#21-technology-stack)).
-**Status:** Accepted (2026-07-16)
+**Status:** Accepted (2026-07-16); **amended by ADR-40** (2026-10-09: the harness may also target the loopback CI-only local stack; production still fails closed)
 **Context:** DB-16 was blocked: GOV-6's repeatable cross-user tests require creating and deleting isolated Auth users, which is service-role-only — but §5's enumeration didn't include it. Session-scoped Next.js clients also require `@supabase/ssr`, which no doc had named.
 **Options Considered:** (a) extend §5 with a tightly-constrained test-harness context; (b) create test users via anon-key `signUp()` and leave cleanup unsolved (accumulating orphan users in the shared dev project); (c) a `SECURITY DEFINER` SQL function deleting from `auth.users` callable by tests (a standing privilege-escalation footgun worse than the key itself).
 **Chosen Solution:** (a). The enumeration's value is that every use is *documented and constrained*, not that the count stays at two.
@@ -588,3 +588,89 @@ Secondary text is slightly darker than the shade first proposed (`#64748B` / `#7
 **Enforcement:** `design-tokens.test.ts` checks every text token against all three surfaces in both themes, and the focus ring at 3:1. The axe sweep checks the rendered composites (tints).
 
 **Future Revisit:** Code-block highlighting keeps the single-accent scheme of ADR-34. Revisit if multi-hue syntax colours are wanted.
+
+## ADR-40 — Local Supabase stack in CI
+
+**Decision:** GitHub Actions runs the Supabase CLI local stack (`supabase start`) as the database, Auth and Storage backend for integration tests and, as follow-up steps, for the E2E and accessibility jobs. It replaces the shared Cloud development project (`zkzyfwclvquiargnwgtw`) as the CI test target.
+
+- **Config location:** the CLI config lives in `tools/ci/supabase-local/config.toml`. `tools/ci/start-local-supabase.sh` copies it and `supabase/migrations/` into a throwaway workdir under `$RUNNER_TEMP`. There is deliberately **no `supabase/config.toml`** in the repository.
+- **Fidelity:** Postgres is pinned to the same `supabase/postgres` tag as the migration-check job (`17.6.1.136`, ADR-13/ADR-21). Auth settings mirror [supabase/auth-config.md](../supabase/auth-config.md). Services the app does not use (Realtime, Edge Runtime, Studio, analytics, pooler, mail) are off.
+- **Checks:** the job applies the full migration history, fails unless every file in `supabase/migrations/` is recorded as applied, then runs `npm run test:integration`.
+- **No secrets:** the stack generates its keys on each run, so the job uses no GitHub secret and is fork-safe (GOV-7).
+- **Harness:** the integration harness accepts the loopback local stack as well as the development project. This amends ADR-12 (see "What changes for ADR-12" below).
+
+**Status:** Accepted (2026-10-09) — explicit user (product-owner) decision. Amends ADR-10 (CI only) and ADR-12 (test-harness target). ADR-13, ADR-21 and ADR-27 are unchanged.
+
+**Context:**
+
+- The integration suite, `E2E (preview)` and `Accessibility` all depend on the free-tier Cloud development project. That project auto-pauses when idle; on 2026-09-27 a pause turned the required checks red with no code at fault.
+- The product owner has decided to self-host Supabase rather than move to Supabase Pro. CI must stop depending on a hosted development project either way.
+- ADR-10 ruled out a local Docker stack for *development*, to keep containers off contributor machines. ADR-13 already allowed a CI-only Postgres container on the grounds that a GitHub runner is not a contributor machine. This ADR extends that reasoning from Postgres alone to the full local stack.
+- **The `supabase/config.toml` risk (ADR-27, CI-09, ADR-24).** Production is connected to this repository through the Supabase GitHub integration, which deploys from `main` with working directory `.`. Besides migrations, it applies settings declared in `supabase/config.toml`. CI-09 enabled it on the basis that no such file exists, so production Auth, SMTP and OAuth stay dashboard-managed (ADR-24, [supabase/auth-config.md](../supabase/auth-config.md)). A CI config at that path would set `site_url`, redirect URLs, SMTP and Auth settings to localhost values. The next merge to `main` could then push them to production Auth.
+
+**Options Considered:**
+
+- (a) Keep the Cloud development project and add a keep-alive ping. Rejected: it treats the symptom only. It keeps the shared-state contention between runs, and it does not survive the move to self-hosting.
+- (b) Supabase Branching (per-PR preview databases). Rejected: Pro plan only, billed per branch-hour, and needs credentials (see ADR-13's option (a)).
+- (c) `supabase start` with the config at `supabase/config.toml`, the CLI default. Rejected: it creates the production-config risk above.
+- (d) `supabase start` with the config in `tools/ci/`, assembled into a temporary workdir. **Chosen.**
+- (e) A self-hosted staging stack as the CI target. Rejected for required checks: it needs a secret, so it is not fork-safe, and it couples CI to a host under maintenance. It remains the planned target for an optional preview smoke test.
+
+**Chosen Solution:** (d).
+
+- **Isolation:** every run gets a fresh, empty stack, so tests stop sharing state and Auth rate limits with other runs and with manual development work.
+- **Production safety:** nothing the Supabase GitHub integration reads changes. `supabase/` still holds only `migrations/`, `templates/` and `auth-config.md`.
+- **Fidelity:** the same Postgres tag as the migration check, the same migrations, and Auth rules copied from the hosted projects' documented settings.
+
+**What changes for ADR-12:**
+
+| | Before (ADR-12) | After (ADR-40) |
+|---|---|---|
+| Allowed harness targets | The Cloud development project only (hostname pin `zkzyfwclvquiargnwgtw.supabase.co`) | The Cloud development project, **or** a loopback local stack (`127.0.0.1`, `localhost`) |
+| Service-role key in tests | The development project's key | The development project's key, or the local stack's per-run secret key, which is not a secret and protects no real data |
+
+**Still holds, for production and everywhere else:**
+
+- The harness fails closed on any other hostname, including production (`hqzakxpbxqzxismmgnyn.supabase.co`) and any future self-hosted production or staging host. Adding a host needs its own decision.
+- The production service-role key and the production database password are never configured in any test environment or in GitHub Actions (ADR-12, ADR-21).
+- Harness code stays in test code and is never importable from `src/`. [09_SECURITY.md §5](09_SECURITY.md#5-service-role-key-usage) still lists exactly three service-role contexts.
+- The localhost allowance lives in the test harness only. Application code and the Preview and Production deployments are unaffected.
+
+**What stays from ADR-10:** contributors are still not required to run Docker. Day-to-day development keeps using the Cloud development project. The loopback allowance means a contributor *may* run `tools/ci/start-local-supabase.sh` locally to reproduce a CI failure, but nothing depends on it.
+
+**Tradeoffs:**
+
+- **Run time:** `supabase start` pulls and boots several images, adding roughly one to two minutes per run. Mitigated by excluding unused services; image caching is a later option.
+- **Drift:** the local stack is a CLI-versioned approximation of the hosted platform. The CLI version (`supabase/setup-cli`) and the Postgres tag are pinned and must be bumped together with the migration-check image and the replay baseline.
+- **Auth config is now in two places:** `tools/ci/supabase-local/config.toml` must be kept in step with `supabase/auth-config.md` by review. A mismatch makes tests unrepresentative but cannot affect production.
+- **Path discipline:** the safety of this setup depends on `supabase/config.toml` never being committed. A reviewer must reject any PR that adds that file unless it carries its own decision superseding this ADR and CI-09's validation.
+
+**Risks:**
+
+- **Someone runs `supabase init` or `supabase start` at the repository root.** That creates `supabase/config.toml`. Mitigation: the review rule above. A CI guard that fails when the file exists is a cheap follow-up.
+- **Loopback allowance misused.** A stray localhost URL in a developer's environment only ever reaches a local stack, never production; the fail-closed check against every other host is unchanged.
+- **E2E and accessibility still use the Cloud development project** until they move to the runner (`npm run build && npm run start` against the local stack). Until then, a paused development project can still turn `E2E (preview)` and `Accessibility` red.
+
+**Applied to specs:** ADR-10 and ADR-12 carry an "amended by ADR-40" note. [03_ARCHITECTURE.md §8](03_ARCHITECTURE.md#8-deployment-architecture) (no-local-stack bullet), [09_SECURITY.md §5](09_SECURITY.md#5-service-role-key-usage) (test-harness row), [11_CONTRIBUTING.md](11_CONTRIBUTING.md) (integration test row) and `.ai/ARCHITECTURE_RULES.md` rule 7.
+
+**Future Revisit:** When production moves to the self-hosted stack, ADR-27's GitHub integration is retired and the `supabase/config.toml` constraint can be revisited in that decision. Revisit the run-time cost if `supabase start` regularly exceeds three minutes.
+
+## ADR-41 — New note is ⌥⌘N / Ctrl+Alt+N, because browsers reserve ⌘N
+
+**Decision:** The New note shortcut is `⌥⌘N` on macOS and `Ctrl+Alt+N` elsewhere (10_DESIGN §8), replacing the `⌘N` the design originally specified. It matches the physical key (`event.code === "KeyN"`), requires Alt, and never fires when AltGr is held.
+
+**Status:** Accepted (2026-10-09) — UX-07.
+
+**Context:** The UX audit (Sprint 12) found the palette's New note command disabled and no `⌘N` binding. Binding `⌘N` would not have helped: Chromium, Firefox and Safari open a new window on ⌘N/Ctrl+N before the page's `keydown` handler runs, so `preventDefault()` cannot stop it.
+
+**Options Considered:**
+- (a) `⌘N` / `Ctrl+N`. Rejected: reserved by every target browser.
+- (b) `⇧⌘N`. Rejected: incognito/private window in Chrome and Edge; reopens a closed window in Firefox.
+- (c) `Alt+N` alone. Rejected: on macOS ⌥N is a dead key (`˜`) used to type ñ, so it would break typing.
+- (d) `⌥⌘N` / `Ctrl+Alt+N`. Chosen: not reserved by Chrome, Firefox, Safari or Edge for web pages.
+
+**Chosen Solution:** (d). The shortcut manager gains `alt` (exact match only when `true`; otherwise "don't care", so existing bindings are unchanged) and `code` (match `event.code` instead of `event.key`). An `alt: true` binding skips events where `getModifierState("AltGraph")` is true, because on Windows Ctrl+Alt is AltGr and AltGr+N types a character on some layouts (e.g. `ń` in Polish). Only where `getModifierState` is unavailable does it fall back to skipping Ctrl+Alt events whose `key` is a printable character other than `n`; that heuristic is not used otherwise because it would also block a genuine Ctrl+Alt+N on Cyrillic or Greek layouts (where `key` is `т` or `ν`), so we accept that a browser misreporting AltGraph could let AltGr+N create a note. The handler ignores `event.repeat` and in-flight creates, so a held key creates one note.
+
+**Tradeoffs:** a three-key chord is less discoverable than ⌘N, so the hint is shown on the sidebar New note button, the palette, Home and the empty state. The palette and the visible button remain the fallback if a browser or OS later claims the chord.
+
+**Future Revisit:** if a target browser or OS is found to claim ⌥⌘N, record it here and fall back to the palette plus the button.

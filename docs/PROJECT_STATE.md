@@ -8,7 +8,7 @@
 
 ## Current Sprint
 
-**Sprint 12 — UX overhaul** (in progress, scope in [.ai/TASK_QUEUE.md](../.ai/TASK_QUEUE.md)): the user paused AI work on 2026-10-01 and asked for a friendlier UI. The audit found the Home page always showing the empty state, a disabled New note command, a form-like editor box and clutter in the note header and sidebar. Plan: UX-01 palette (ADR-39, #145) → note page (UX-02/03, #146) → sidebar (UX-04/05/06, in review) → sidebar → Home → polish. Sprint 11 (semantic search) is paused after EMB-02/14 (#144); Sprint 10 (full-text search) is complete.
+**Sprint 12 — UX overhaul** (in progress, scope in [.ai/TASK_QUEUE.md](../.ai/TASK_QUEUE.md)): the user paused AI work on 2026-10-01 and asked for a friendlier UI. The audit found the Home page always showing the empty state, a disabled New note command, a form-like editor box and clutter in the note header and sidebar. Plan: UX-01 palette (ADR-39, #145) → note page (UX-02/03, #146) → sidebar (UX-04/05/06, #147) → Home → polish. Sprint 11 (semantic search) is paused after EMB-02/14 (#144); Sprint 10 (full-text search) is complete.
 Done: Sprint 0 (governance), Sprint 1 (repo & tooling — 21 tasks), Sprint 2 (schema, auth core & app shell), Sprint 3 (M0 closeout + note/editor foundation), Sprint 4 (note service + editor round-trip + M0 tail — M0 100% complete), Sprints 5–6 (note-taking UI, M1 collect, M2 backend — #130), Sprint 7 (graph view — #132), Sprint 8 (M2 close-out — #133), Sprint 9 (editor polish + M1 tail — #134–#140)
 
 ## Overall Progress
@@ -17,7 +17,7 @@ Done: Sprint 0 (governance), Sprint 1 (repo & tooling — 21 tasks), Sprint 2 (s
 |---|---|
 | Engineering documentation (12 docs) | ✅ Complete, audited twice for consistency |
 | Governance layer (this file set) | ✅ Complete |
-| Implementation | 154 Done / 320 tasks ([12_TASKS.md](12_TASKS.md)) — 56 via PR #130 (`3805f3e`), CI-09, GRAPH-04..17 via #132 (`112c115`), LINK-11/12 + BACK-06 via #133 (`c6ee782`), EDIT-06/07/10/12/13/14 via #134 (`42f9820`), EDIT-08/09 via #135 (`747bc13`), EDIT-11/18 via #136 (`b83f2a5`), EDIT-15/17 via #137 (`ca4406a`), SRCH-07 via #138 (`2853245`), NOTE-13 via #139 (`ded7081`), NOTE-14 via #140 (`f8a69d4`), FTS-01/02/03/10 via #141 (`f8a5416`), FTS-04..09 via #142 (`be83e18`), EMB-02/14 via #144 (`a1cd04c`), UX-01 via #145 (`406fbfc`), UX-02/03 via #146 (`ecd88dd`) |
+| Implementation | 157 Done / 320 tasks ([12_TASKS.md](12_TASKS.md)) — 56 via PR #130 (`3805f3e`), CI-09, GRAPH-04..17 via #132 (`112c115`), LINK-11/12 + BACK-06 via #133 (`c6ee782`), EDIT-06/07/10/12/13/14 via #134 (`42f9820`), EDIT-08/09 via #135 (`747bc13`), EDIT-11/18 via #136 (`b83f2a5`), EDIT-15/17 via #137 (`ca4406a`), SRCH-07 via #138 (`2853245`), NOTE-13 via #139 (`ded7081`), NOTE-14 via #140 (`f8a69d4`), FTS-01/02/03/10 via #141 (`f8a5416`), FTS-04..09 via #142 (`be83e18`), EMB-02/14 via #144 (`a1cd04c`), UX-01 via #145 (`406fbfc`), UX-02/03 via #146 (`ecd88dd`), UX-04/05/06 via #147 (`e487c2e`) |
 
 ## Completed
 
@@ -82,7 +82,7 @@ Done: Sprint 0 (governance), Sprint 1 (repo & tooling — 21 tasks), Sprint 2 (s
 
 ## In Progress
 
-- **UX-04/05/06 sidebar:** in review on `claude/gallant-ride-gl1fkf`. It adds the account menu, the New note button, destination rows, the calendar pop-up, collapsible sections, grouped notes with previews, and the backlinks panel only on note pages. UX-07 (Home and the New note command) is next.
+- UX-07 (Home dashboard, working New note command, ⌥⌘N / Ctrl+Alt+N shortcut, ADR-41): In Review on branch `ux-07-home-empty-state`. UX-04/05/06 (sidebar) merged via #147 (`e487c2e`).
 
 ## Blocked
 
@@ -90,7 +90,7 @@ Done: Sprint 0 (governance), Sprint 1 (repo & tooling — 21 tasks), Sprint 2 (s
 
 ## Upcoming
 
-- **Next:** the UX overhaul in order: UX-02/03 note page → UX-04/05/06 sidebar → UX-07 Home and New note → UX-08..11 polish. AI (EMB-01 onward) is paused by the user; when it resumes, the gateway's embedding model is `vercel-ai-gateway/text-embedding-3-small` (1536 dims, verified by the user) and needs an `EMBEDDING_MODEL` setting added to ADR-37.
+- **Next:** the UX overhaul in order: UX-07 Home and New note → UX-08..11 polish. AI (EMB-01 onward) is paused by the user; when it resumes, the gateway's embedding model is `vercel-ai-gateway/text-embedding-3-small` (1536 dims, verified by the user) and needs an `EMBEDDING_MODEL` setting added to ADR-37.
 - **Earlier plan (after Sprint 5):** rest of EDIT formatting (EDIT-06+), NOTE-13/16, then FOLD/TAG/ATT/DAILY (the rest of M1 Collect). CRED-01 (MCP) tracks to M4; ADR-24/ADR-25 make EMB-01 the first AI task, in M3.
 - **Resolved 2026-07-24 (GOV-8):** `E2E (preview)` and `Accessibility` are now **required** branch-protection contexts (added via the GitHub API). A preview-lane flake now blocks merge until re-triggered — accepted tradeoff.
 - **Watch-item (reviewer flag):** EDIT-16 (XSS hardening test, 09_SECURITY §9 T4) is deferred, but the editor now renders user markdown incl. `@tiptap/extension-image` URLs — prioritize EDIT-16 before the editor reaches real users.

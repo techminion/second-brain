@@ -28,6 +28,26 @@ async function expectNoViolations(page: Parameters<typeof AxeBuilder>[0]["page"]
   expect(summaries).toEqual([]);
 }
 
+/** Re-run axe with the `.dark` palette applied, then restore light. */
+async function expectNoViolationsInDark(
+  page: Parameters<typeof AxeBuilder>[0]["page"],
+): Promise<void> {
+  // Zero the colour transitions (globals.css reduced-motion tokens) so axe
+  // never samples a button mid-way between the light and dark palettes.
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.evaluate(() => document.documentElement.classList.add("dark"));
+  try {
+    // Fallback in case a transition is not token-driven: let one frame pass.
+    await page.evaluate(
+      () => new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve))),
+    );
+    await expectNoViolations(page);
+  } finally {
+    await page.evaluate(() => document.documentElement.classList.remove("dark"));
+    await page.emulateMedia({ reducedMotion: null });
+  }
+}
+
 for (const route of ["/login", "/signup", "/forgot-password"]) {
   test(`@a11y ${route} has no WCAG 2.1 AA violations`, async ({ page }) => {
     await page.goto(route);
@@ -52,8 +72,12 @@ test("@a11y authenticated shell and settings have no WCAG 2.1 AA violations", as
     await page.getByLabel("Password").fill(password);
     await page.getByRole("button", { name: "Create account" }).click();
     await page.waitForURL("/");
+    // Wait for the resolved empty Home, not the loading skeleton (UX-07).
+    await page.getByRole("heading", { name: "Your knowledge graph is empty" }).waitFor();
 
     await expectNoViolations(page);
+    // UX-07: the empty Home in the dark palette too.
+    await expectNoViolationsInDark(page);
 
     await page.goto("/settings");
     await page.getByRole("heading", { name: "Account settings" }).waitFor();
@@ -67,6 +91,13 @@ test("@a11y authenticated shell and settings have no WCAG 2.1 AA violations", as
     });
     expect(created.ok()).toBeTruthy();
     const { data: note } = (await created.json()) as { data: { id: string } };
+
+    // UX-07 Home dashboard, populated, in light and dark.
+    await page.goto("/");
+    await page.getByRole("heading", { level: 1, name: "Home" }).waitFor();
+
+    await expectNoViolations(page);
+    await expectNoViolationsInDark(page);
 
     await page.goto(`/notes/${note.id}`);
     await page.getByLabel("Note body").waitFor();

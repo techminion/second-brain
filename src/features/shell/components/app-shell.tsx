@@ -2,6 +2,7 @@ import type { ReactNode } from "react";
 
 import { signOut } from "@/features/auth/sign-out";
 
+import { CommandHandlersProvider } from "../commands/command-handlers";
 import { QuickOpenStateProvider } from "../overlays/quick-open-state";
 import { ShortcutProvider } from "../shortcuts/shortcut-manager";
 import { AccountMenu } from "./account-menu";
@@ -45,36 +46,38 @@ function AppShell({
 }: Readonly<AppShellProps>) {
   return (
     <ShortcutProvider>
-      <ShellPanelsProvider>
-        <QuickOpenStateProvider>
-          <div className="bg-background flex min-h-svh w-full overflow-hidden">
-            <ShellShortcuts />
-            <CommandPalette />
-            <ShellPanel
-              headerStart={
-                <AccountMenu
-                  displayName={account?.displayName ?? null}
-                  email={account?.email ?? null}
-                  signOutAction={signOut}
+      <CommandHandlersProvider>
+        <ShellPanelsProvider>
+          <QuickOpenStateProvider>
+            <div className="bg-background flex min-h-svh w-full overflow-hidden">
+              <ShellShortcuts />
+              <CommandPalette />
+              <ShellPanel
+                headerStart={
+                  <AccountMenu
+                    displayName={account?.displayName ?? null}
+                    email={account?.email ?? null}
+                    signOutAction={signOut}
+                  />
+                }
+                label="Application sidebar"
+                side="left"
+              >
+                <SidebarNavigation
+                  dailySlot={sidebarDaily}
+                  foldersSlot={sidebarFolders}
+                  newNoteSlot={sidebarNewNote}
+                  notesSlot={sidebarNotes}
+                  tagsSlot={sidebarTags}
                 />
-              }
-              label="Application sidebar"
-              side="left"
-            >
-              <SidebarNavigation
-                dailySlot={sidebarDaily}
-                foldersSlot={sidebarFolders}
-                newNoteSlot={sidebarNewNote}
-                notesSlot={sidebarNotes}
-                tagsSlot={sidebarTags}
-              />
-            </ShellPanel>
-            <main className="min-w-0 flex-1 overflow-auto">{children}</main>
-            <NoteContextPanel>{contextPanel}</NoteContextPanel>
-          </div>
-          {overlays}
-        </QuickOpenStateProvider>
-      </ShellPanelsProvider>
+              </ShellPanel>
+              <main className="min-w-0 flex-1 overflow-auto">{children}</main>
+              <NoteContextPanel>{contextPanel}</NoteContextPanel>
+            </div>
+            {overlays}
+          </QuickOpenStateProvider>
+        </ShellPanelsProvider>
+      </CommandHandlersProvider>
     </ShortcutProvider>
   );
 }

@@ -44,7 +44,7 @@ test("creates nested folders, moves a note, and deletes with relocation", async 
     }
     await folders.getByRole("treeitem", { name: "Q3" }).getByText("Q3").click();
     await page.waitForURL(/\/folders\//);
-    await expect(page.getByRole("link", { name: /Roadmap/ })).toBeVisible();
+    await expect(page.getByRole("main").getByRole("link", { name: /Roadmap/ })).toBeVisible();
 
     // Delete Q3, keeping its contents: the note relocates to Work.
     await page.getByRole("button", { name: "Actions for folder Q3" }).click();
@@ -55,7 +55,9 @@ test("creates nested folders, moves a note, and deletes with relocation", async 
     await expect(folders.getByRole("treeitem", { name: "Q3" })).toHaveCount(0);
 
     await folders.getByRole("treeitem", { name: "Work" }).getByText("Work").click();
-    await expect(page.getByRole("link", { name: /Roadmap/ })).toBeVisible();
+    // Wait for the folder page: Home's "Recent notes" (UX-07) also links Roadmap.
+    await page.waitForURL(/\/folders\//);
+    await expect(page.getByRole("main").getByRole("link", { name: /Roadmap/ })).toBeVisible();
   } finally {
     await deleteUserByEmail(email);
   }

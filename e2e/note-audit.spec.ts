@@ -24,7 +24,11 @@ test("records the note lifecycle in the audit log", async ({ page }) => {
     await page.getByRole("button", { name: "Create account" }).click();
     await page.waitForURL("/");
 
-    await page.getByRole("button", { name: "New note" }).click();
+    // Scoped to the sidebar: Home also renders a "New note" action (UX-07).
+    await page
+      .getByRole("complementary", { name: "Application sidebar" })
+      .getByRole("button", { name: "New note" })
+      .click();
     await page.waitForURL(/\/notes\/[0-9a-f-]+$/);
     const noteId = page.url().split("/").pop() ?? "";
 
