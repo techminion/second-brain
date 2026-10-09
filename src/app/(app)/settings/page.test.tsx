@@ -67,7 +67,7 @@ describe("SettingsPage", () => {
     render(await SettingsPage());
 
     const about = screen.getByRole("region", { name: "About" });
-    const link = within(about).getByRole("link", { name: /Source code on GitHub/ });
+    const link = within(about).getByRole("link", { name: /^Source code \(AGPL-3.0\)/ });
     expect(link.getAttribute("href")).toMatch(/^https:\/\/github\.com\/techminion\/second-brain/);
   });
 });

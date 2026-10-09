@@ -8,9 +8,12 @@ describe("SourceCodeLink (AGPL-3.0 §13)", () => {
     render(<SourceCodeLink commitSha="" />);
 
     const link = screen.getByRole("link", {
-      name: "Source code on GitHub (AGPL-3.0, opens in a new tab)",
+      name: "Source code (AGPL-3.0) on GitHub, opens in a new tab",
     });
     expect(link).toHaveAttribute("href", "https://github.com/techminion/second-brain");
+    // WCAG 2.5.3: the accessible name starts with the visible text.
+    expect(link.textContent).toBe("Source code (AGPL-3.0)");
+    expect(link.getAttribute("aria-label")?.startsWith(link.textContent ?? "")).toBe(true);
     expect(link).toHaveAttribute("target", "_blank");
     expect(link).toHaveAttribute("rel", "noopener noreferrer");
   });

@@ -16,7 +16,7 @@ export function sourceCodeUrl(commitSha = getDeployedCommitSha()): string {
 export function SourceCodeLink({ commitSha }: Readonly<{ commitSha?: string }>) {
   return (
     <a
-      aria-label="Source code on GitHub (AGPL-3.0, opens in a new tab)"
+      aria-label="Source code (AGPL-3.0) on GitHub, opens in a new tab"
       className="text-sm underline underline-offset-4"
       href={sourceCodeUrl(commitSha)}
       rel="noopener noreferrer"
