@@ -42,6 +42,8 @@ Estimated Context Needed:
 - Tests: `shell-panel-responsive` (the two mobile cases rewritten for the top bar; desktop/tablet unchanged), `note-editor`, `new-note-button`.
 - Docs: 10_DESIGN §11, CHANGELOG, TASK_QUEUE, PROJECT_STATE.
 
+**Review fixes (Argus):** panel state is stored with its tier and derived during render, so mobile never renders with the desktop defaults (both drawers were briefly "open" on first load, which left body scroll locked and pulled focus to the context toggle); a single provider-level scroll lock counts open drawers and restores the original overflow at zero; focus returns to the opener only if it was inside the drawer (or on its backdrop), and after navigating from a drawer it goes to the new page's `main h1`.
+
 **Base:** stacked on `ux-07-followups`, which carries the create-and-open hook fixes.
 
 **Decisions:** no new dependency (hand-rolled focus trap rather than Radix Dialog), so no ADR.

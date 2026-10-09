@@ -55,6 +55,17 @@ test("top bar New note, drawer behaviour and a compact note header", async ({ pa
       timeout: 10_000,
     });
 
+    // First load of a note page (UX-10 review): no drawer, no scroll lock, and
+    // focus is not pulled to a drawer toggle.
+    await page.reload();
+    await page.getByLabel("Note title").waitFor();
+    await expect(page.getByRole("dialog")).toHaveCount(0);
+    expect(await page.evaluate(() => document.body.style.overflow)).toBe("");
+    const focusedName = await page.evaluate(
+      () => document.activeElement?.getAttribute("aria-label") ?? "",
+    );
+    expect(focusedName).not.toMatch(/context panel|application sidebar/);
+
     // AC1/AC3: the top bar is 48px; header controls don't overlap each other or
     // the top bar, and nothing scrolls sideways.
     const bar = await topBar(page).boundingBox();
@@ -100,6 +111,7 @@ test("top bar New note, drawer behaviour and a compact note header", async ({ pa
     await page.keyboard.press("Escape");
     await expect(drawer(page)).toHaveCount(0);
     await expect(toggle).toBeFocused();
+    expect(await page.evaluate(() => document.body.style.overflow)).toBe("");
 
     // Tapping a note link in the drawer closes it and shows the note.
     await page.goto("/");
@@ -111,6 +123,10 @@ test("top bar New note, drawer behaviour and a compact note header", async ({ pa
     await page.waitForURL(`/notes/${noteId}`);
     await expect(drawer(page)).toHaveCount(0);
     await expect(page.getByLabel("Note title")).toHaveValue("Mobile note");
+    expect(await page.evaluate(() => document.body.style.overflow)).toBe("");
+    await expect(
+      topBar(page).getByRole("button", { name: "Expand application sidebar" }),
+    ).not.toBeFocused();
   } finally {
     await deleteUserByEmail(email);
   }

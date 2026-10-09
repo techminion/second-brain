@@ -29,6 +29,10 @@ interface ShellPanelsState {
    */
   leftToggleRef: RefObject<HTMLButtonElement | null>;
   rightToggleRef: RefObject<HTMLButtonElement | null>;
+  /** Set when a drawer closes because of navigation: focus goes to the new page. */
+  skipFocusReturnRef: RefObject<boolean>;
+  /** Lock body scroll while a drawer is open; call the result to release. */
+  lockScroll: () => () => void;
 }
 
 const ShellPanelsContext = createContext<ShellPanelsState | null>(null);
@@ -50,44 +54,90 @@ const tierDefaults: Record<BreakpointTier, { left: boolean; right: boolean }> = 
  * breakpoint, and exposes the tier so panels choose in-flow vs. overlay
  * rendering.
  */
+interface PanelState {
+  tier: BreakpointTier;
+  left: boolean;
+  right: boolean;
+}
+
+function forTier(state: PanelState, tier: BreakpointTier): PanelState {
+  return state.tier === tier ? state : { tier, ...tierDefaults[tier] };
+}
+
 export function ShellPanelsProvider({ children }: Readonly<{ children: ReactNode }>) {
   const tier = useBreakpointTier();
-  const [isLeftExpanded, setIsLeftExpanded] = useState(tierDefaults.desktop.left);
-  const [isRightExpanded, setIsRightExpanded] = useState(tierDefaults.desktop.right);
-  const previousTier = useRef<BreakpointTier>("desktop");
+  // Expansion is stored with the tier it belongs to. Crossing a breakpoint is a
+  // deliberate context change, so each rail returns to its tier default; this
+  // is derived during render (not in an effect), so no render ever shows one
+  // tier with another tier's state — e.g. mobile drawers open with the
+  // desktop defaults on first load (UX-10 review).
+  const [stored, setStored] = useState<PanelState>({ tier: "desktop", ...tierDefaults.desktop });
+  const current = forTier(stored, tier);
   const leftToggleRef = useRef<HTMLButtonElement | null>(null);
   const rightToggleRef = useRef<HTMLButtonElement | null>(null);
+  const skipFocusReturnRef = useRef(false);
+  const openDrawers = useRef(0);
+  const savedOverflow = useRef("");
 
-  // Crossing a breakpoint is a deliberate context change, so each rail returns
-  // to its tier default rather than carrying an intent that no longer fits.
-  useEffect(() => {
-    if (tier === previousTier.current) {
-      return;
+  const update = useCallback(
+    (change: (state: PanelState) => Partial<PanelState>) =>
+      setStored((previous) => {
+        const base = forTier(previous, tier);
+        return { ...base, ...change(base) };
+      }),
+    [tier],
+  );
+
+  const toggleLeft = useCallback(() => update((s) => ({ left: !s.left })), [update]);
+  const toggleRight = useCallback(() => update((s) => ({ right: !s.right })), [update]);
+  const collapseLeft = useCallback(() => update(() => ({ left: false })), [update]);
+  const collapseRight = useCallback(() => update(() => ({ right: false })), [update]);
+
+  // One body scroll lock for all open drawers: lock on the first, restore the
+  // original overflow when the last one closes.
+  const lockScroll = useCallback(() => {
+    if (openDrawers.current === 0) {
+      savedOverflow.current = document.body.style.overflow;
+      document.body.style.overflow = "hidden";
     }
-
-    previousTier.current = tier;
-    setIsLeftExpanded(tierDefaults[tier].left);
-    setIsRightExpanded(tierDefaults[tier].right);
-  }, [tier]);
-
-  const toggleLeft = useCallback(() => setIsLeftExpanded((current) => !current), []);
-  const toggleRight = useCallback(() => setIsRightExpanded((current) => !current), []);
-  const collapseLeft = useCallback(() => setIsLeftExpanded(false), []);
-  const collapseRight = useCallback(() => setIsRightExpanded(false), []);
+    openDrawers.current += 1;
+    let released = false;
+    return () => {
+      if (released) {
+        return;
+      }
+      released = true;
+      openDrawers.current -= 1;
+      if (openDrawers.current === 0) {
+        document.body.style.overflow = savedOverflow.current;
+      }
+    };
+  }, []);
 
   const state = useMemo(
     () => ({
       collapseLeft,
       collapseRight,
-      isLeftExpanded,
-      isRightExpanded,
+      isLeftExpanded: current.left,
+      isRightExpanded: current.right,
       leftToggleRef,
+      lockScroll,
       rightToggleRef,
+      skipFocusReturnRef,
       tier,
       toggleLeft,
       toggleRight,
     }),
-    [collapseLeft, collapseRight, isLeftExpanded, isRightExpanded, tier, toggleLeft, toggleRight],
+    [
+      collapseLeft,
+      collapseRight,
+      current.left,
+      current.right,
+      lockScroll,
+      tier,
+      toggleLeft,
+      toggleRight,
+    ],
   );
 
   return <ShellPanelsContext.Provider value={state}>{children}</ShellPanelsContext.Provider>;
@@ -110,7 +160,8 @@ export function useShellPanels(): ShellPanelsState {
  * AppShell (it needs the router's pathname, which the provider does not).
  */
 export function CloseDrawersOnNavigation(): null {
-  const { collapseLeft, collapseRight, tier } = useShellPanels();
+  const { collapseLeft, collapseRight, isLeftExpanded, isRightExpanded, skipFocusReturnRef, tier } =
+    useShellPanels();
   const pathname = usePathname();
   const previousPathname = useRef(pathname);
 
@@ -120,13 +171,26 @@ export function CloseDrawersOnNavigation(): null {
     }
 
     previousPathname.current = pathname;
+    if ((tier === "mobile" && isLeftExpanded) || (tier !== "desktop" && isRightExpanded)) {
+      skipFocusReturnRef.current = true;
+    }
     if (tier === "mobile") {
       collapseLeft();
     }
     if (tier !== "desktop") {
       collapseRight();
     }
-  }, [collapseLeft, collapseRight, pathname, tier]);
+    // isLeft/RightExpanded are read for the flag only; re-running on their
+    // change is harmless because the pathname guard returns early.
+  }, [
+    collapseLeft,
+    collapseRight,
+    isLeftExpanded,
+    isRightExpanded,
+    pathname,
+    skipFocusReturnRef,
+    tier,
+  ]);
 
   return null;
 }

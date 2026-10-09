@@ -195,4 +195,85 @@ describe("ShellPanel responsive behavior (SHELL-06)", () => {
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Expand context panel" })).toHaveFocus();
   });
+
+  describe("first load and scroll lock (UX-10 review)", () => {
+    function fullMobileShell() {
+      return (
+        <ShellPanelsProvider>
+          <CloseDrawersOnNavigation />
+          <ShellPanel label="Application sidebar" side="left">
+            <a href="/x">Inside link</a>
+          </ShellPanel>
+          <main>
+            <MobileTopBar />
+            <h1>Page</h1>
+          </main>
+          <ShellPanel label="Context panel" side="right">
+            <a href="/y">Context link</a>
+          </ShellPanel>
+        </ShellPanelsProvider>
+      );
+    }
+
+    it("starts with both mobile drawers closed: no scroll lock and no focus steal", () => {
+      installMatchMedia("mobile");
+      render(fullMobileShell());
+
+      expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+      expect(document.body.style.overflow).toBe("");
+      expect(document.body).toHaveFocus();
+    });
+
+    it("keeps one lock across two open drawers and restores the original overflow", () => {
+      installMatchMedia("mobile");
+      document.body.style.overflow = "scroll";
+      render(fullMobileShell());
+      const bar = screen.getByRole("region", { name: "Top bar" });
+
+      fireEvent.click(within(bar).getByRole("button", { name: "Expand application sidebar" }));
+      fireEvent.click(within(bar).getByRole("button", { name: "Expand context panel" }));
+      expect(screen.getAllByRole("dialog")).toHaveLength(2);
+      expect(document.body.style.overflow).toBe("hidden");
+
+      fireEvent.click(screen.getByRole("button", { name: "Close Application sidebar" }));
+      expect(document.body.style.overflow).toBe("hidden");
+      fireEvent.click(screen.getByRole("button", { name: "Close Context panel" }));
+      expect(document.body.style.overflow).toBe("scroll");
+    });
+
+    it("does not pull focus back to the toggle if focus had left the drawer", () => {
+      installMatchMedia("mobile");
+      render(
+        <>
+          {fullMobileShell()}
+          <button type="button">Elsewhere</button>
+        </>,
+      );
+
+      fireEvent.click(topBarToggle());
+      const elsewhere = screen.getByRole("button", { name: "Elsewhere" });
+      elsewhere.focus();
+      fireEvent.keyDown(document, { key: "Escape" });
+
+      expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+      expect(elsewhere).toHaveFocus();
+    });
+
+    it("sends focus to the new page's heading after navigating from the drawer", () => {
+      installMatchMedia("mobile");
+      const view = render(fullMobileShell());
+
+      fireEvent.click(topBarToggle());
+      within(screen.getByRole("dialog", { name: "Application sidebar" }))
+        .getByRole("link", { name: "Inside link" })
+        .focus();
+      pathname = "/notes/n2";
+      view.rerender(fullMobileShell());
+
+      expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+      expect(screen.getByRole("heading", { name: "Page" })).toHaveFocus();
+      expect(topBarToggle()).not.toHaveFocus();
+      expect(document.body.style.overflow).toBe("");
+    });
+  });
 });
