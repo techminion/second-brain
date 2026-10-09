@@ -263,7 +263,7 @@ Markdown Note content is **not** stored as files in Storage. Treating Postgres a
 - **Supabase production deploy scope is deliberately migration-only today.** The repository has no `supabase/config.toml`, so the integration cannot apply repository-declared Auth, API, SMTP, OAuth, Storage-bucket, or Edge Function configuration. Production Auth remains dashboard-managed per ADR-24 and [supabase/auth-config.md](../supabase/auth-config.md).
 - **Secrets** (Supabase service role key, OpenAI API key) live in Vercel environment variables, scoped per environment, never committed. Full policy in [09_SECURITY.md](09_SECURITY.md).
 - **The MCP server ships as part of the same Vercel deployment** as the web app (§11, ADR-3) — there is no separate release cadence to manage.
-- **No local Supabase stack.** Development and integration testing use the shared Supabase Cloud development project. Migrations remain versioned in this repository and are applied to Cloud only after review; direct dashboard edits are prohibited to prevent drift (ADR-10, [04_DATABASE.md §11](04_DATABASE.md#11-migration-strategy)).
+- **No local Supabase stack for development.** Development uses the shared Supabase Cloud development project. CI is the exception: integration tests run against a throwaway `supabase start` stack configured from `tools/ci/supabase-local/config.toml`, never `supabase/config.toml` (ADR-40). Migrations remain versioned in this repository and are applied to Cloud only after review; direct dashboard edits are prohibited to prevent drift (ADR-10, [04_DATABASE.md §11](04_DATABASE.md#11-migration-strategy)).
 
 ## 9. Cross-Cutting Concerns
 
