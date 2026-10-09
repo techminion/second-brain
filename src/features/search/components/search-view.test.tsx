@@ -96,7 +96,7 @@ describe("SearchView (FTS-05/09)", () => {
         result(
           "n1",
           "Plan",
-          "## \u0002Roadmap\u0003 - **ship** [[Q3 plan]] via [docs](https://x) `npm test`",
+          "- ## \u0002Roadmap\u0003 **ship** [[Q3 plan]] via [docs](https://x) `npm test`",
         ),
       ],
     });

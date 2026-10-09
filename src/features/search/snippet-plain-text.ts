@@ -50,8 +50,12 @@ const matchEnd = "\uE001";
  * `parseSnippet` does, and empty matches are dropped. The result is plain
  * text for React to escape (09_SECURITY T4).
  */
+// ts_headline excerpts are a few hundred characters; the cap only bounds the
+// regex work on a pathological input.
+export const maxSnippetLength = 2000;
+
 export function snippetToPlainParts(snippet: string): SnippetPart[] {
-  const marked = parseSnippet(snippet)
+  const marked = parseSnippet(snippet.slice(0, maxSnippetLength))
     .map((part) => (part.match ? `${matchStart}${part.text}${matchEnd}` : part.text))
     .join("");
 

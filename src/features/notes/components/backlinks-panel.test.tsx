@@ -37,7 +37,8 @@ describe("BacklinksPanel", () => {
       data: [
         {
           object: { id: "s1", title: "Source" },
-          snippet: "## Plan\n- **ship** [[Target]] via [docs](https://x) `code`",
+          // Single line: wikiLinkSnippet and note-service collapse whitespace.
+          snippet: "## Plan - item > quote **ship** [[Target]] via [docs](https://x) `code`",
         },
       ],
       isError: false,
@@ -47,7 +48,8 @@ describe("BacklinksPanel", () => {
     render(<BacklinksPanel />);
 
     const link = screen.getByRole("link", { name: /Source/ });
-    expect(link).toHaveTextContent("Plan ship Target via docs code");
+    // The heading goes; " - " and " > " mid-sentence read as prose and stay.
+    expect(link).toHaveTextContent("Plan - item > quote ship Target via docs code");
     for (const syntax of ["#", "**", "[[", "](", "`"]) {
       expect(link.textContent).not.toContain(syntax);
     }

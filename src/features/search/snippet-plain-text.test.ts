@@ -15,7 +15,7 @@ function view(snippet: string): string {
 describe("snippetToPlainParts", () => {
   it("strips the UX-08 acceptance example and keeps the heading match", () => {
     // ts_headline joins lines with spaces.
-    const snippet = `## ${S}Roadmap${E} - **ship** [[Q3 plan]] via [docs](https://x)`;
+    const snippet = `- ## ${S}Roadmap${E} **ship** [[Q3 plan]] via [docs](https://x)`;
 
     const parts = snippetToPlainParts(snippet);
 
@@ -32,9 +32,14 @@ describe("snippetToPlainParts", () => {
   it.each([
     ["heading mid-string", `intro ## ${S}Goals${E} next`, "intro <Goals> next"],
     ["h6 after the fragment delimiter", `a … ###### ${S}Deep${E}`, "a … <Deep>"],
-    ["quote mid-string", `said > ${S}think${E} more`, "said <think> more"],
-    ["bullet mid-string", `list - ${S}one${E} + two * three`, "list <one> two three"],
-    ["task boxes", `todo - [ ] ${S}ship${E} - [x] done`, "todo <ship> done"],
+    ["quote after …", `…> ${S}think${E} more`, "…<think> more"],
+    ["bullets after … and at the start", `+ ${S}one${E} …  * two`, "<one> … two"],
+    ["chained markers", `> - [ ] ${S}ship${E} done`, "<ship> done"],
+    ["task box after …", `… - [x] ${S}ship${E}`, "… <ship>"],
+    ["quote mid-string is prose", `said > ${S}think${E} more`, "said > <think> more"],
+    ["dash mid-string is prose", `list - ${S}one${E} + two`, "list - <one> + two"],
+    ["code span keeps its symbols", `run \`${S}a${E} * b\` now`, "run <a> * b now"],
+    ["balanced parens in a URL", `see [${S}Foo${E}](https://w.org/Foo_(bar)) ok`, "see <Foo> ok"],
     ["ordered list at the start", `1. ${S}First${E} step`, "<First> step"],
     ["bold around a match", `go **${S}ship${E}** it`, "go <ship> it"],
     ["italic around a match", `a *${S}word${E}* and _${S}other${E}_`, "a <word> and <other>"],
@@ -89,5 +94,21 @@ describe("snippetToPlainParts", () => {
 
   it("keeps HTML as plain text", () => {
     expect(view(`<script>alert(1)</script> ${S}hit${E}`)).toBe("<script>alert(1)</script> <hit>");
+  });
+
+  it.each([["a - b and 2 * 3 > 5"], ["Mon - Fri 9 - 5"]])(
+    "leaves prose operators alone: %s",
+    (text) => {
+      expect(snippetToPlainParts(text)).toEqual([{ match: false, text }]);
+    },
+  );
+
+  it("caps pathological input and stays fast", () => {
+    const started = performance.now();
+    const parts = snippetToPlainParts(`${" ".repeat(2000)}|${"-".repeat(5)} x`);
+    snippetToPlainParts(" ".repeat(20_000));
+
+    expect(performance.now() - started).toBeLessThan(200);
+    expect(parts.map((p) => p.text).join("").length).toBeLessThanOrEqual(2000);
   });
 });
