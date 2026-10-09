@@ -4,6 +4,14 @@ import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { inject } from "vitest";
 
 const developmentProjectRef = "zkzyfwclvquiargnwgtw";
+// ADR-12 as amended by ADR-40: the harness may target the shared Cloud
+// development project or the CI-only local stack (`supabase start`, loopback
+// only). Any other host, including production, fails closed.
+const allowedHostnames = new Set([
+  `${developmentProjectRef}.supabase.co`,
+  "127.0.0.1",
+  "localhost",
+]);
 const retryDelaysMs = [1_000, 2_000, 4_000] as const;
 
 interface AuthOperationError {
@@ -44,13 +52,15 @@ function getIntegrationEnvironment(): IntegrationEnvironment {
   const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
   if (!supabaseUrl || !supabasePublishableKey || !supabaseServiceRoleKey) {
-    throw new Error("Cloud integration tests require Supabase development-project credentials");
+    throw new Error(
+      "Integration tests require Supabase credentials for the development project or the local CI stack",
+    );
   }
 
-  const expectedHostname = `${developmentProjectRef}.supabase.co`;
-
-  if (new URL(supabaseUrl).hostname !== expectedHostname) {
-    throw new Error("Cloud integration tests may run only against the shared development project");
+  if (!allowedHostnames.has(new URL(supabaseUrl).hostname)) {
+    throw new Error(
+      "Integration tests may run only against the shared development project or the local CI stack",
+    );
   }
 
   return {
@@ -177,8 +187,8 @@ export function createCloudIntegrationTestProvisioner() {
 }
 
 /**
- * Service-role client for test setup/verification only (ADR-12): reuses the
- * dev-project hostname pin and fail-closed credential checks above.
+ * Service-role client for test setup/verification only (ADR-12, ADR-40): reuses
+ * the hostname allow-list and fail-closed credential checks above.
  */
 export function createServiceRoleTestClient(): SupabaseClient {
   const { supabaseServiceRoleKey, supabaseUrl } = getIntegrationEnvironment();

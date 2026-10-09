@@ -64,6 +64,51 @@ jobs:
           SUPABASE_PROJECT_REF: zkzyfwclvquiargnwgtw
         run: ./tools/ci/check-supabase-migration-drift.sh
 
+  integration:
+    name: Integration (local Supabase)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    # ADR-40: integration tests run against an ephemeral local Supabase stack
+    # (`supabase start`), not the auto-pausing Cloud development project.
+    # Fork-safe (GOV-7): no secrets are used; local keys are generated per run.
+    env:
+      # Keep in lockstep with the migration-check service image above and the
+      # replay baseline (ADR-13, ADR-21).
+      SUPABASE_POSTGRES_VERSION: 17.6.1.136
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7
+      - name: Set up Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22.12.0
+          cache: npm
+      - name: Install dependencies
+        run: npm ci
+      - name: Set up Supabase CLI
+        uses: supabase/setup-cli@v1
+        with:
+          version: 2.109.1
+      - name: Start local Supabase stack and apply migrations
+        run: ./tools/ci/start-local-supabase.sh
+      - name: Run integration tests
+        run: npm run test:integration
+      - name: Show Supabase container logs on failure
+        if: failure()
+        run: |
+          docker ps -a --filter "label=com.supabase.cli.project=second-brain-ci" \
+            --format '{{.Names}}' | while read -r container; do
+              echo "::group::${container}"
+              docker logs --tail 200 "$container" 2>&1 || true
+              echo "::endgroup::"
+            done
+      - name: Stop local Supabase stack
+        if: always()
+        run: |
+          if [[ -n "${SUPABASE_LOCAL_WORKDIR:-}" ]]; then
+            supabase stop --workdir "$SUPABASE_LOCAL_WORKDIR" --no-backup
+          fi
+
   typecheck:
     name: Typecheck
     runs-on: ubuntu-latest
