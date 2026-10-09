@@ -21,6 +21,16 @@ Estimated Context Needed:
 
 ---
 
+## 2026-10-10 — Daedalus — UX-07 / AGPL follow-ups (Argus's nits on #149 and #151)
+
+- **AGPL §13:** `shared/ui/source-code-link.tsx` (links to `github.com/techminion/second-brain`, at `/tree/<VERCEL_GIT_COMMIT_SHA>` when set) in a new About section at the end of `/settings`; unit tests for both.
+- **`use-create-and-open-note.ts`:** navigates only if `window.location.pathname` still matches the page where the create started; a `router.push` failure toasts "Note created. Open it from the sidebar." and "Could not create the note" is reserved for failed creates; `resetCreateAndOpenNoteForTests()` export.
+- **Tests:** the hook test's `afterEach` flushes with `setTimeout(0)` and resets the guard; `new-note-button.test` and `home-dashboard.test` do the same; new cases for moved-away and push failure.
+- **e2e/folders.spec.ts:** `waitForURL` now needs a new `/folders/<id>` URL, so it can't resolve on the current page.
+- UX-10 is rebased on this branch and no longer carries the hook changes.
+
+---
+
 ## 2026-10-09 — Daedalus — Home dashboard + New note command (UX-07, ADR-41)
 
 **Session Date:** 2026-10-09

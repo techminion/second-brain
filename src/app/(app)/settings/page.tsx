@@ -2,6 +2,7 @@ import { DeleteAccountForm } from "@/features/user/components/delete-account-for
 import { UpdateProfileForm } from "@/features/user/components/update-profile-form";
 import { createUserService } from "@/features/user/user-service";
 import { createServerActionSupabaseClient } from "@/shared/lib/supabase-server-action-client";
+import { SourceCodeLink } from "@/shared/ui/source-code-link";
 
 export const metadata = { title: "Account settings" };
 
@@ -46,6 +47,15 @@ export default async function SettingsPage() {
             <DeleteAccountForm />
           </div>
         </div>
+      </section>
+      <section aria-labelledby="about-heading" className="mt-12 flex flex-col gap-3 border-t pt-8">
+        <h2 className="text-lg font-medium" id="about-heading">
+          About
+        </h2>
+        <p className="text-muted-foreground text-sm">
+          Second Brain is free software under the GNU AGPL-3.0. You can get its source code:
+        </p>
+        <SourceCodeLink />
       </section>
     </div>
   );
