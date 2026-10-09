@@ -21,6 +21,30 @@ Estimated Context Needed:
 
 ---
 
+## 2026-10-10 — Daedalus — Search snippets without markdown (UX-08)
+
+**Session Date:** 2026-10-10
+**Agent:** Daedalus (builder); Argus verifies, Hermes opens the PR.
+**Objective:** /search snippets showed raw markdown (`##`, `**`, `[[…]]`, link URLs, fences) around the highlighted terms, because `ts_headline` runs over the raw body.
+
+**Files Added:**
+- `search/snippet-plain-text.ts`, plus its test (a corpus of headings, quotes, bullets, tasks, emphasis/links around and inside matches, fences, tables, `…` fragments, fragment-edge debris, unbalanced markers, CRLF). `parseSnippet` moved here and is re-exported from `search-snippet.tsx`.
+
+**Files Modified:**
+- `shared/lib/markdown-plain-text.ts`: the rules are now `stripInlineMarkdown(text, { inlineBlockMarkers })`; `markdownToPlainText` is unchanged in behaviour (its tests are untouched).
+- `search-snippet.tsx`: `SearchSnippet` renders `snippetToPlainParts`.
+- `backlinks-panel.tsx`: snippets go through `markdownToPlainText`.
+- Tests: `search-view.test.tsx`, `backlinks-panel.test.tsx`; E2E `search.spec.ts` (new markdown-snippet test, scoped to the results list).
+- Docs: 08_SEARCH §7, CHANGELOG, TASK_QUEUE, PROJECT_STATE.
+
+**Decision:** client-side strip, no migration (plan §3). Ordered-list numbers are only stripped at the start of a snippet, because mid-string `2026. ` is usually prose.
+
+**Risks:** lossy by design: a spaced ` - `, ` * ` or ` > ` in prose is read as block syntax and dropped. If that bites, move `ts_headline` onto a stored plain-text column (needs a migration and an ADR).
+
+**Suggested Next Task:** UX-09 (Settings → Appearance).
+
+---
+
 ## 2026-10-09 — Daedalus — Home dashboard + New note command (UX-07, ADR-41)
 
 **Session Date:** 2026-10-09

@@ -90,6 +90,41 @@ describe("SearchView (FTS-05/09)", () => {
     });
   });
 
+  it("renders markdown snippets as clean text with one highlight (UX-08)", async () => {
+    api.fetchSearchResults.mockResolvedValue({
+      items: [
+        result(
+          "n1",
+          "Plan",
+          "## \u0002Roadmap\u0003 - **ship** [[Q3 plan]] via [docs](https://x) `npm test`",
+        ),
+      ],
+    });
+    render(<SearchView initialQuery="roadmap" />, { wrapper });
+
+    const list = await screen.findByRole("list", { name: "Search results" });
+    const marks = list.querySelectorAll("mark");
+    expect(marks).toHaveLength(1);
+    expect(marks[0]).toHaveTextContent("Roadmap");
+    // The snippet is the mark's container (the tag chips, e.g. "#work", sit elsewhere).
+    const snippet = marks[0].parentElement;
+    expect(snippet).toHaveTextContent("Roadmap ship Q3 plan via docs npm test");
+    for (const syntax of ["#", "**", "[[", "](", "`"]) {
+      expect(snippet?.textContent).not.toContain(syntax);
+    }
+  });
+
+  it("renders a script in a snippet as text (09_SECURITY T4)", async () => {
+    api.fetchSearchResults.mockResolvedValue({
+      items: [result("n1", "Evil", "<script>alert(1)</script> \u0002hit\u0003")],
+    });
+    render(<SearchView initialQuery="hit" />, { wrapper });
+
+    const list = await screen.findByRole("list", { name: "Search results" });
+    expect(list.querySelector("script")).toBeNull();
+    expect(list).toHaveTextContent("<script>alert(1)</script> hit");
+  });
+
   it("shows the no-results state", async () => {
     api.fetchSearchResults.mockResolvedValue({ items: [] });
     render(<SearchView initialQuery="zzz" />, { wrapper });

@@ -7,6 +7,7 @@ All notable changes to Second Brain are documented here, following [Keep a Chang
 ## [Unreleased]
 
 ### Fixed
+- **2026-10-10** — Search results and backlinks no longer show raw markdown such as `##`, `**bold**`, `[[links]]` or code fences in their snippets; matched words stay highlighted, even inside bold text or links (UX-08).
 - **2026-10-09** — Home no longer always shows "Your knowledge graph is empty": it is now a dashboard with today's note, quick actions (New note, Today, Search, Graph) and your 8 most recently edited notes. The onboarding only appears when you have no notes, and never flashes while notes are loading (UX-07).
 - **2026-10-09** — "New note" in the ⌘K palette works, and the new **⌥⌘N** (Ctrl+Alt+N) shortcut creates a note from anywhere, including inside the editor. ⌘N could never work because browsers reserve it for a new window (UX-07, ADR-41).
 - **2026-09-28** — Editor accessibility: the formatting toolbar is now reachable from the keyboard (Alt+F10, then ←/→; Escape returns to the text with the selection kept); Escape leaves the editor so Tab can move on even from inside a table or list; the `[[` and `/` menus no longer set an ARIA attribute screen readers reject on the text box, keep the highlighted option scrolled into view, and meet 4.5:1 contrast on the highlighted row (EDIT-15).

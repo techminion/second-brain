@@ -4,6 +4,7 @@ import { Link2 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
+import { markdownToPlainText } from "@/shared/lib/markdown-plain-text";
 import { Skeleton } from "@/shared/ui/skeleton";
 
 import { useBacklinks } from "../hooks/use-backlinks";
@@ -58,7 +59,9 @@ export function BacklinksPanel() {
               >
                 <span className="truncate text-sm font-medium">{object.title || "Untitled"}</span>
                 {snippet ? (
-                  <span className="text-muted-foreground line-clamp-3 text-xs">{snippet}</span>
+                  <span className="text-muted-foreground line-clamp-3 text-xs">
+                    {markdownToPlainText(snippet)}
+                  </span>
                 ) : null}
               </Link>
             </li>
