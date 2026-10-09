@@ -589,7 +589,7 @@ Secondary text is slightly darker than the shade first proposed (`#64748B` / `#7
 
 **Future Revisit:** Code-block highlighting keeps the single-accent scheme of ADR-34. Revisit if multi-hue syntax colours are wanted.
 
-## ADR-40 — New note is ⌥⌘N / Ctrl+Alt+N, because browsers reserve ⌘N
+## ADR-41 — New note is ⌥⌘N / Ctrl+Alt+N, because browsers reserve ⌘N
 
 **Decision:** The New note shortcut is `⌥⌘N` on macOS and `Ctrl+Alt+N` elsewhere (10_DESIGN §8), replacing the `⌘N` the design originally specified. It matches the physical key (`event.code === "KeyN"`), requires Alt, and never fires when AltGr is held.
 

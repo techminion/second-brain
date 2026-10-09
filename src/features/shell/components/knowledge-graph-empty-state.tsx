@@ -8,7 +8,7 @@ interface TeachingStep {
   description: ReactNode;
 }
 
-// ⌥⌘N, not ⌘N: browsers reserve ⌘N/Ctrl+N for a new window (ADR-40).
+// ⌥⌘N, not ⌘N: browsers reserve ⌘N/Ctrl+N for a new window (ADR-41).
 // FR-AUTH-5 / 10_DESIGN §4: a brand-new graph teaches the three core moves —
 // create a note, link with `[[`, and open the command palette — rather than a
 // separate tutorial. The hints double as shortcut discovery.

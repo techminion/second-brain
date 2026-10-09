@@ -150,7 +150,7 @@ The editor is the single most important surface in the product. Its defining dec
 | `/` | Block menu (in editor, line start) |
 | Standard editing | `⌘B`/`⌘I` formatting, `⌘Z`/`⇧⌘Z` undo/redo — platform conventions, never remapped |
 
-¹ Not `⌘N`: browsers reserve ⌘N/Ctrl+N for a new window; a web page cannot override it ([ADR-40](DECISIONS.md)). The binding matches the physical N key (`event.code`), because ⌥ changes `event.key` on macOS, and ignores AltGr so AltGr+N still types. It works from the editor and form fields; a held key creates one note.
+¹ Not `⌘N`: browsers reserve ⌘N/Ctrl+N for a new window; a web page cannot override it ([ADR-41](DECISIONS.md)). The binding matches the physical N key (`event.code`), because ⌥ changes `event.key` on macOS, and ignores AltGr so AltGr+N still types. It works from the editor and form fields; a held key creates one note.
 
 The command palette is the discoverability mechanism for everything else: every command it lists shows its shortcut inline, so the palette teaches the shortcuts. Custom rebinding is not offered in MVP.
 

@@ -11,7 +11,7 @@ interface Command {
 
 // Static registry — SHELL-04 MVP. Feature tasks add commands as routes are built.
 const COMMANDS: readonly Command[] = [
-  // ⌥⌘N, not ⌘N: browsers reserve ⌘N/Ctrl+N for a new window (ADR-40). The
+  // ⌥⌘N, not ⌘N: browsers reserve ⌘N/Ctrl+N for a new window (ADR-41). The
   // handler is registered by the notes feature (command-handlers.tsx).
   { id: "new-note", label: "New note", shortcut: "⌥⌘N", action: "new-note" },
   { id: "quick-open", label: "Quick-open note", shortcut: "⌘P", action: "quick-open" },

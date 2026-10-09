@@ -21,7 +21,7 @@ Estimated Context Needed:
 
 ---
 
-## 2026-10-09 — Daedalus — Home dashboard + New note command (UX-07, ADR-40)
+## 2026-10-09 — Daedalus — Home dashboard + New note command (UX-07, ADR-41)
 
 **Session Date:** 2026-10-09
 **Agent:** Daedalus (builder); Argus verifies, Hermes opens the PR.
@@ -42,7 +42,7 @@ Estimated Context Needed:
 - `new-note-button.tsx`: uses the shared hook; aria-hidden `⌥⌘N` hint (the accessible name stays "New note").
 - `src/app/(app)/page.tsx`: renders `HomeDashboard`, composing the shell's empty state with the notes New note button (the feature-boundaries rule forbids notes → shell/components).
 - E2E: `a11y` axes Home empty and populated in light and dark; `note-lifecycle`, `wiki-links` and `note-audit` now scope their "New note" click to the sidebar, since Home also has one.
-- Docs: 10_DESIGN §8, ADR-40, CHANGELOG, TASK_QUEUE, PROJECT_STATE.
+- Docs: 10_DESIGN §8, ADR-41, CHANGELOG, TASK_QUEUE, PROJECT_STATE.
 
 **Verification:** typecheck, lint and format clean; 854 unit tests pass. E2E and integration were not run in this session (no `.env` credentials on the box).
 
