@@ -30,5 +30,14 @@ export default defineConfig({
           url: "http://localhost:3000",
         },
       }),
-  projects: [{ name: "chromium", use: { ...devices["Desktop Chrome"] } }],
+  projects: [
+    // Desktop specs stay on the desktop viewport; mobile-only specs (UX-10)
+    // run in their own 390x844 touch project.
+    { name: "chromium", testIgnore: /mobile\.spec\.ts$/, use: { ...devices["Desktop Chrome"] } },
+    {
+      name: "mobile",
+      testMatch: /mobile\.spec\.ts$/,
+      use: { ...devices["Desktop Chrome"], hasTouch: true, viewport: { height: 844, width: 390 } },
+    },
+  ],
 });

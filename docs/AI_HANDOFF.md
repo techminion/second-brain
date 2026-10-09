@@ -21,6 +21,47 @@ Estimated Context Needed:
 
 ---
 
+## 2026-10-10 — Daedalus — Mobile light pass (UX-10)
+
+**Session Date:** 2026-10-10
+**Agent:** Daedalus (builder); Argus verifies, Hermes opens the PR.
+**Objective:** Below 768px the floating drawer toggle covered the note header, the header crammed onto one line, New note was only inside the closed drawer, and the drawer had no Escape, focus management or close-on-navigate.
+
+**Files Added:**
+- `shell/components/mobile-top-bar.tsx`, plus its test.
+- `e2e/mobile.spec.ts`, run by a new `mobile` Playwright project (390x844, touch); the desktop project ignores it.
+
+**Files Modified:**
+- `shell-panel.tsx`: no floating toggles at mobile; overlay drawers are `role="dialog"` + `aria-modal`, move focus in, trap Tab, close on Escape, lock body scroll and return focus to the opener; 44px toggles on `pointer: coarse`.
+- `shell-panels-context.tsx`: `leftToggleRef`/`rightToggleRef` for focus return, and `CloseDrawersOnNavigation` (mounted in `AppShell`) closes overlay panels on route change.
+- `app-shell.tsx`: `mobileActions` slot and the top bar; `layout.tsx` passes `<NewNoteButton variant="icon" />`.
+- `note-context-panel.tsx`: exports `hasNoteContextPanel`.
+- `note-editor.tsx`, `daily-note-pager.tsx`, `note-actions-menu.tsx`, `folder-picker.tsx`: compact header and coarse-pointer sizes.
+- `new-note-button.tsx`: `variant="icon"` (name stays "New note").
+- `shared/ui/button.tsx`: props are `ComponentProps<"button">` so a `ref` can be passed (React 19).
+- Tests: `shell-panel-responsive` (the two mobile cases rewritten for the top bar; desktop/tablet unchanged), `note-editor`, `new-note-button`.
+- Docs: 10_DESIGN §11, CHANGELOG, TASK_QUEUE, PROJECT_STATE.
+
+**Review fixes (Argus):** panel state is stored with its tier and derived during render, so mobile never renders with the desktop defaults (both drawers were briefly "open" on first load, which left body scroll locked and pulled focus to the context toggle); a single provider-level scroll lock counts open drawers and restores the original overflow at zero; focus returns to the opener only if it was inside the drawer (or on its backdrop), and after navigating from a drawer it goes to the new page's `main h1`.
+
+**Base:** stacked on `ux-07-followups`, which carries the create-and-open hook fixes.
+
+**Decisions:** no new dependency (hand-rolled focus trap rather than Radix Dialog), so no ADR.
+
+**Suggested Next Task:** UX-11 (graph colours and legend).
+
+---
+
+## 2026-10-10 — Daedalus — UX-07 / AGPL follow-ups (Argus's nits on #149 and #151)
+
+- **AGPL §13:** `shared/ui/source-code-link.tsx` (links to `github.com/techminion/second-brain`, at `/tree/<VERCEL_GIT_COMMIT_SHA>` when set) in a new About section at the end of `/settings`; unit tests for both.
+- **`use-create-and-open-note.ts`:** navigates only if `window.location.pathname` still matches the page where the create started; a `router.push` failure toasts "Note created. Open it from the sidebar." and "Could not create the note" is reserved for failed creates; `resetCreateAndOpenNoteForTests()` export.
+- **Tests:** the hook test's `afterEach` flushes with `setTimeout(0)` and resets the guard; `new-note-button.test` and `home-dashboard.test` do the same; new cases for moved-away and push failure.
+- **e2e/folders.spec.ts:** `waitForURL` now needs a new `/folders/<id>` URL, so it can't resolve on the current page.
+- UX-10 is rebased on this branch and no longer carries the hook changes.
+
+---
+
 ## 2026-10-09 — Daedalus — Home dashboard + New note command (UX-07, ADR-41)
 
 **Session Date:** 2026-10-09

@@ -7,9 +7,10 @@ import { QuickOpenStateProvider } from "../overlays/quick-open-state";
 import { ShortcutProvider } from "../shortcuts/shortcut-manager";
 import { AccountMenu } from "./account-menu";
 import { CommandPalette } from "./command-palette";
+import { MobileTopBar } from "./mobile-top-bar";
 import { NoteContextPanel } from "./note-context-panel";
 import { ShellPanel } from "./shell-panel";
-import { ShellPanelsProvider } from "./shell-panels-context";
+import { CloseDrawersOnNavigation, ShellPanelsProvider } from "./shell-panels-context";
 import { ShellShortcuts } from "./shell-shortcuts";
 import { SidebarNavigation } from "./sidebar-navigation";
 
@@ -29,6 +30,8 @@ interface AppShellProps {
   sidebarTags?: ReactNode;
   /** Right context panel content (backlinks, BACK-03), injected at the app layer. */
   contextPanel?: ReactNode;
+  /** Mobile top-bar actions (the New note icon button, UX-10), injected at the app layer. */
+  mobileActions?: ReactNode;
   /** Feature dialogs driven by shell state (⌘P quick-open, SRCH-07), injected at the app layer. */
   overlays?: ReactNode;
 }
@@ -37,6 +40,7 @@ function AppShell({
   account,
   children,
   contextPanel,
+  mobileActions,
   overlays,
   sidebarDaily,
   sidebarFolders,
@@ -51,6 +55,7 @@ function AppShell({
           <QuickOpenStateProvider>
             <div className="bg-background flex min-h-svh w-full overflow-hidden">
               <ShellShortcuts />
+              <CloseDrawersOnNavigation />
               <CommandPalette />
               <ShellPanel
                 headerStart={
@@ -71,7 +76,10 @@ function AppShell({
                   tagsSlot={sidebarTags}
                 />
               </ShellPanel>
-              <main className="min-w-0 flex-1 overflow-auto">{children}</main>
+              <main className="min-w-0 flex-1 overflow-auto">
+                <MobileTopBar actions={mobileActions} />
+                {children}
+              </main>
               <NoteContextPanel>{contextPanel}</NoteContextPanel>
             </div>
             {overlays}

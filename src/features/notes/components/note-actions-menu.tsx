@@ -47,7 +47,7 @@ export function NoteActionsMenu({ isSaving, noteId, noteTitle }: NoteActionsMenu
       <DropdownMenu>
         <DropdownMenuTrigger
           aria-label="Note actions"
-          className="text-muted-foreground hover:bg-muted hover:text-foreground focus-visible:ring-ring flex size-7 items-center justify-center rounded-md outline-none focus-visible:ring-2"
+          className="text-muted-foreground hover:bg-muted hover:text-foreground focus-visible:ring-ring flex size-7 items-center justify-center rounded-md outline-none focus-visible:ring-2 pointer-coarse:size-11"
         >
           <MoreHorizontal aria-hidden="true" className="size-4" />
         </DropdownMenuTrigger>

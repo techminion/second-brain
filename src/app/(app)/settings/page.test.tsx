@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, within } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 
 import SettingsPage from "./page";
@@ -59,5 +59,15 @@ describe("SettingsPage", () => {
     const { container } = render(await SettingsPage());
 
     expect(container).toBeEmptyDOMElement();
+  });
+
+  it("offers the source code in an About section (AGPL-3.0 §13)", async () => {
+    getClaims.mockResolvedValue({ data: { claims: { sub: "uid-1" } }, error: null });
+
+    render(await SettingsPage());
+
+    const about = screen.getByRole("region", { name: "About" });
+    const link = within(about).getByRole("link", { name: /^Source code \(AGPL-3.0\)/ });
+    expect(link.getAttribute("href")).toMatch(/^https:\/\/github\.com\/techminion\/second-brain/);
   });
 });

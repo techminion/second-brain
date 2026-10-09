@@ -39,6 +39,7 @@ export default async function AppLayout({ children }: Readonly<AppLayoutProps>) 
     <AppShell
       account={account}
       contextPanel={<BacklinksPanel />}
+      mobileActions={<NewNoteButton variant="icon" />}
       overlays={
         <>
           <QuickOpen />

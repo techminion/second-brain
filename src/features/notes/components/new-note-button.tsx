@@ -12,8 +12,29 @@ import { useCreateAndOpenNote } from "../hooks/use-create-and-open-note";
  * create-and-open hook. The ⌥⌘N hint is aria-hidden so the accessible name
  * stays exactly "New note".
  */
-export function NewNoteButton({ className }: Readonly<{ className?: string }>) {
+export function NewNoteButton({
+  className,
+  variant = "default",
+}: Readonly<{ className?: string; variant?: "default" | "icon" }>) {
   const { createAndOpen, isPending } = useCreateAndOpenNote();
+
+  if (variant === "icon") {
+    // The mobile top bar's always-visible entry point (UX-10).
+    return (
+      <Button
+        aria-label="New note"
+        className={className ?? "size-9 shrink-0 pointer-coarse:size-11"}
+        disabled={isPending}
+        onClick={createAndOpen}
+        size="icon"
+        title="New note"
+        type="button"
+        variant="ghost"
+      >
+        <SquarePen aria-hidden="true" className="size-4" />
+      </Button>
+    );
+  }
 
   return (
     <Button

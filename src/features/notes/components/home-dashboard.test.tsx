@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, within } from "@testing-library/react";
+import { act, fireEvent, render, screen, within } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { HomeDashboard } from "./home-dashboard";
@@ -57,7 +57,12 @@ function renderHome() {
   );
 }
 
-afterEach(() => {
+// The create hook is mocked here, so there is no shared in-flight guard to
+// reset; still flush pending promises so nothing settles into the next test.
+afterEach(async () => {
+  await act(async () => {
+    await new Promise((resolve) => setTimeout(resolve, 0));
+  });
   useNotesList.mockReset();
   createAndOpen.mockReset();
 });

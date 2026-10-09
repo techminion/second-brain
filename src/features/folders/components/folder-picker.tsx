@@ -42,7 +42,7 @@ export function FolderPicker({ disabled, onChange, value }: FolderPickerProps) {
     <DropdownMenu>
       <DropdownMenuTrigger
         aria-label={`Folder: ${label}. Move note`}
-        className="text-muted-foreground hover:bg-muted hover:text-foreground focus-visible:ring-ring flex h-7 max-w-64 items-center gap-1.5 rounded-md px-2 text-sm outline-none focus-visible:ring-2 disabled:opacity-50"
+        className="text-muted-foreground hover:bg-muted hover:text-foreground focus-visible:ring-ring flex h-7 max-w-full min-w-0 items-center gap-1.5 rounded-md px-2 text-sm outline-none focus-visible:ring-2 disabled:opacity-50 md:max-w-64 pointer-coarse:h-11"
         disabled={disabled || query.isPending}
       >
         {current ? (

@@ -184,6 +184,8 @@ MVP is a **desktop-first web app** — the personas ([01_PRODUCT.md §5](01_PROD
 | 768–1279px | Right panel becomes an overlay (toggled via `⌘E`); sidebar collapsible, collapsed by default at the narrow end |
 | < 768px | Single-column: content only; sidebar and panels as full-height drawers; editor, search, and reading fully functional — graph view and multi-panel workflows are explicitly desktop-class and may be reduced (local graph only) |
 
+**Mobile shell (< 768px, UX-10):** a sticky 48px top bar at the top of the content holds the sidebar toggle, a New note icon button and, on note routes, the context-panel toggle; nothing floats over the content. Open drawers are modal dialogs: focus moves in and Tab stays inside, Escape or the backdrop closes them and focus returns to the toggle, the page behind does not scroll, and following a link closes them. The note header wraps, the save status shrinks to its dot (the text stays for screen readers), and the daily pager is icon-only. Tablet and desktop are unchanged.
+
 Touch targets meet 44px minimums on coarse-pointer devices via responsive spacing tokens, but no MVP feature may *require* touch-specific interaction. A native/PWA mobile experience is a future consideration, deliberately absent from [02_PRD.md §9](02_PRD.md#9-future-roadmap)'s committed roadmap.
 
 ## 12. Related Documents

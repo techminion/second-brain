@@ -77,3 +77,8 @@ export function getPurgeWorkerEnvironment(): PurgeWorkerEnvironment {
 }
 
 export const isProductionEnvironment = process.env.NODE_ENV === "production";
+
+/** The deployed commit, when the platform provides it (Vercel); used for the AGPL §13 source link. */
+export function getDeployedCommitSha(): string | undefined {
+  return process.env.VERCEL_GIT_COMMIT_SHA || undefined;
+}
