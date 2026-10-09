@@ -28,6 +28,18 @@ async function expectNoViolations(page: Parameters<typeof AxeBuilder>[0]["page"]
   expect(summaries).toEqual([]);
 }
 
+/** Re-run axe with the `.dark` palette applied, then restore light. */
+async function expectNoViolationsInDark(
+  page: Parameters<typeof AxeBuilder>[0]["page"],
+): Promise<void> {
+  await page.evaluate(() => document.documentElement.classList.add("dark"));
+  try {
+    await expectNoViolations(page);
+  } finally {
+    await page.evaluate(() => document.documentElement.classList.remove("dark"));
+  }
+}
+
 for (const route of ["/login", "/signup", "/forgot-password"]) {
   test(`@a11y ${route} has no WCAG 2.1 AA violations`, async ({ page }) => {
     await page.goto(route);
@@ -54,6 +66,8 @@ test("@a11y authenticated shell and settings have no WCAG 2.1 AA violations", as
     await page.waitForURL("/");
 
     await expectNoViolations(page);
+    // UX-07: the empty Home in the dark palette too.
+    await expectNoViolationsInDark(page);
 
     await page.goto("/settings");
     await page.getByRole("heading", { name: "Account settings" }).waitFor();
@@ -67,6 +81,13 @@ test("@a11y authenticated shell and settings have no WCAG 2.1 AA violations", as
     });
     expect(created.ok()).toBeTruthy();
     const { data: note } = (await created.json()) as { data: { id: string } };
+
+    // UX-07 Home dashboard, populated, in light and dark.
+    await page.goto("/");
+    await page.getByRole("heading", { level: 1, name: "Home" }).waitFor();
+
+    await expectNoViolations(page);
+    await expectNoViolationsInDark(page);
 
     await page.goto(`/notes/${note.id}`);
     await page.getByLabel("Note body").waitFor();

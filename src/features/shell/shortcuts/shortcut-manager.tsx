@@ -27,6 +27,18 @@ export interface ShortcutBinding {
   key: string;
   /** Exact-match shift requirement — distinguishes ⌘F from ⇧⌘F. Default false. */
   shift?: boolean;
+  /**
+   * When `true`, the binding requires ⌥/Alt (and never fires for AltGr, so
+   * AltGr+key still types its character on layouts such as Polish). When
+   * unset, Alt is "don't care", so ⌘-only bindings behave as before.
+   */
+  alt?: boolean;
+  /**
+   * Physical key (`KeyboardEvent.code`, e.g. "KeyN"). When set it is matched
+   * instead of `key` — required for ⌥ bindings, because ⌥ turns `event.key`
+   * into a different (often dead-key) character on macOS.
+   */
+  code?: string;
   inputPolicy?: ShortcutInputPolicy;
 }
 
@@ -60,6 +72,20 @@ function isSuppressedByPolicy(policy: ShortcutInputPolicy, target: EventTarget |
   return tagName === "INPUT" || tagName === "TEXTAREA" || tagName === "SELECT";
 }
 
+function matchesKey(binding: ShortcutBinding, event: KeyboardEvent): boolean {
+  if (binding.code) {
+    return event.code === binding.code;
+  }
+  return event.key.toLowerCase() === binding.key;
+}
+
+function matchesAlt(binding: ShortcutBinding, event: KeyboardEvent): boolean {
+  if (binding.alt !== true) {
+    return true;
+  }
+  return event.altKey && !event.getModifierState?.("AltGraph");
+}
+
 export function ShortcutProvider({ children }: Readonly<{ children: ReactNode }>) {
   const registrationsRef = useRef<Set<ShortcutRegistration>>(new Set());
 
@@ -72,8 +98,9 @@ export function ShortcutProvider({ children }: Readonly<{ children: ReactNode }>
 
       for (const { binding, handler } of registrationsRef.current) {
         if (
-          event.key.toLowerCase() !== binding.key ||
+          !matchesKey(binding, event) ||
           event.shiftKey !== (binding.shift ?? false) ||
+          !matchesAlt(binding, event) ||
           isSuppressedByPolicy(binding.inputPolicy ?? "block-all-inputs", event.target)
         ) {
           continue;
@@ -114,11 +141,13 @@ export function useShortcut(binding: ShortcutBinding, handler: ShortcutHandler):
   useEffect(() => {
     return registry.register({
       binding: {
+        alt: binding.alt,
+        code: binding.code,
         inputPolicy: binding.inputPolicy ?? "block-all-inputs",
         key: binding.key,
         shift: binding.shift ?? false,
       },
       handler: (event) => handlerRef.current(event),
     });
-  }, [binding.inputPolicy, binding.key, binding.shift, registry]);
+  }, [binding.alt, binding.code, binding.inputPolicy, binding.key, binding.shift, registry]);
 }

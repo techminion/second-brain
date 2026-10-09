@@ -116,6 +116,65 @@ describe("useShortcut", () => {
     expect(onFire).not.toHaveBeenCalled();
   });
 
+  it("matches an alt+code binding on macOS, where ⌥ changes event.key (UX-07)", () => {
+    const { onFire } = renderShortcut({ alt: true, code: "KeyN", key: "n" });
+
+    fireEvent.keyDown(document, { altKey: true, code: "KeyN", key: "˜", metaKey: true });
+
+    expect(onFire).toHaveBeenCalledTimes(1);
+  });
+
+  it("matches an alt+code binding on Ctrl+Alt+N", () => {
+    const { onFire } = renderShortcut({ alt: true, code: "KeyN", key: "n" });
+
+    fireEvent.keyDown(document, { altKey: true, code: "KeyN", ctrlKey: true, key: "n" });
+
+    expect(onFire).toHaveBeenCalledTimes(1);
+  });
+
+  it("does not fire an alt binding on Ctrl+N or Meta+N, leaving the browser default alone", () => {
+    const { onFire } = renderShortcut({ alt: true, code: "KeyN", key: "n" });
+
+    const ctrlN = new KeyboardEvent("keydown", {
+      cancelable: true,
+      code: "KeyN",
+      ctrlKey: true,
+      key: "n",
+    });
+    document.dispatchEvent(ctrlN);
+    fireEvent.keyDown(document, { code: "KeyN", key: "n", metaKey: true });
+
+    expect(onFire).not.toHaveBeenCalled();
+    expect(ctrlN.defaultPrevented).toBe(false);
+  });
+
+  it("does not fire an alt binding for AltGr, so AltGr+N still types", () => {
+    const { onFire } = renderShortcut({ alt: true, code: "KeyN", key: "n" });
+
+    const event = new KeyboardEvent("keydown", {
+      altKey: true,
+      cancelable: true,
+      code: "KeyN",
+      ctrlKey: true,
+      key: "ń",
+    });
+    Object.defineProperty(event, "getModifierState", {
+      value: (key: string) => key === "AltGraph",
+    });
+    document.dispatchEvent(event);
+
+    expect(onFire).not.toHaveBeenCalled();
+    expect(event.defaultPrevented).toBe(false);
+  });
+
+  it("treats alt as don't-care for key bindings that do not set it", () => {
+    const { onFire } = renderShortcut({ key: "e" });
+
+    fireEvent.keyDown(document, { altKey: true, key: "e", metaKey: true });
+
+    expect(onFire).toHaveBeenCalledTimes(1);
+  });
+
   it("throws without a provider", () => {
     expect(() => render(<Probe binding={{ key: "e" }} onFire={vi.fn()} />)).toThrow(
       "useShortcut requires a ShortcutProvider ancestor",

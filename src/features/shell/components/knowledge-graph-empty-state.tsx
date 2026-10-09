@@ -8,6 +8,7 @@ interface TeachingStep {
   description: ReactNode;
 }
 
+// ⌥⌘N, not ⌘N: browsers reserve ⌘N/Ctrl+N for a new window (ADR-40).
 // FR-AUTH-5 / 10_DESIGN §4: a brand-new graph teaches the three core moves —
 // create a note, link with `[[`, and open the command palette — rather than a
 // separate tutorial. The hints double as shortcut discovery.
@@ -18,7 +19,7 @@ const steps: TeachingStep[] = [
     description: (
       <>
         Press{" "}
-        <kbd className="bg-muted text-foreground rounded px-1.5 py-0.5 font-mono text-xs">⌘N</kbd>{" "}
+        <kbd className="bg-muted text-foreground rounded px-1.5 py-0.5 font-mono text-xs">⌥⌘N</kbd>{" "}
         to start writing in markdown.
       </>
     ),
@@ -47,7 +48,15 @@ const steps: TeachingStep[] = [
   },
 ];
 
-export function KnowledgeGraphEmptyState() {
+interface KnowledgeGraphEmptyStateProps {
+  /**
+   * A working "New note" action, injected by the caller (UX-07 Home) so this
+   * shell component stays feature-agnostic.
+   */
+  newNoteSlot?: ReactNode;
+}
+
+export function KnowledgeGraphEmptyState({ newNoteSlot }: Readonly<KnowledgeGraphEmptyStateProps>) {
   return (
     <section
       aria-labelledby="empty-state-heading"
@@ -74,6 +83,7 @@ export function KnowledgeGraphEmptyState() {
           </li>
         ))}
       </ul>
+      {newNoteSlot ? <div className="flex w-full justify-center">{newNoteSlot}</div> : null}
     </section>
   );
 }

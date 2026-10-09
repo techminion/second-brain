@@ -21,7 +21,11 @@ test("creates, edits, deletes, and restores a note through the UI", async ({ pag
     await page.waitForURL("/");
 
     // Create from the sidebar affordance; it opens the new note's page.
-    await page.getByRole("button", { name: "New note" }).click();
+    // Scoped to the sidebar: Home also renders a "New note" action (UX-07).
+    await page
+      .getByRole("complementary", { name: "Application sidebar" })
+      .getByRole("button", { name: "New note" })
+      .click();
     await page.waitForURL(/\/notes\/[0-9a-f-]+$/);
     const noteUrl = page.url();
 

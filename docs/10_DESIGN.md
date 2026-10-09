@@ -138,7 +138,7 @@ The editor is the single most important surface in the product. Its defining dec
 | Shortcut | Action |
 |---|---|
 | `⌘K` | Command palette — the universal entry point: search, navigation, and commands in one surface (backed by `SearchService.search` + a static command registry) |
-| `⌘N` | New note |
+| `⌥⌘N` (Ctrl+Alt+N) | New note¹ |
 | `⌘P` | Quick-open note by title (`suggestNoteTitles`) |
 | `⌘D` | Open today's daily note (FR-DAILY-1) |
 | `⌘E` | Toggle right panel (backlinks / chat) |
@@ -149,6 +149,8 @@ The editor is the single most important surface in the product. Its defining dec
 | `[[` | Wiki-link autocomplete (in editor) |
 | `/` | Block menu (in editor, line start) |
 | Standard editing | `⌘B`/`⌘I` formatting, `⌘Z`/`⇧⌘Z` undo/redo — platform conventions, never remapped |
+
+¹ Not `⌘N`: browsers reserve ⌘N/Ctrl+N for a new window; a web page cannot override it ([ADR-40](DECISIONS.md)). The binding matches the physical N key (`event.code`), because ⌥ changes `event.key` on macOS, and ignores AltGr so AltGr+N still types. It works from the editor and form fields; a held key creates one note.
 
 The command palette is the discoverability mechanism for everything else: every command it lists shows its shortcut inline, so the palette teaches the shortcuts. Custom rebinding is not offered in MVP.
 

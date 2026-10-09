@@ -48,7 +48,11 @@ test("links a new note to an existing one and the backlink appears live", async 
     await expect(backlinks).toContainText("No notes link here yet.");
 
     // Create B and link it to A through the `[[` autocomplete.
-    await page.getByRole("button", { name: "New note" }).click();
+    // Scoped to the sidebar: Home also renders a "New note" action (UX-07).
+    await page
+      .getByRole("complementary", { name: "Application sidebar" })
+      .getByRole("button", { name: "New note" })
+      .click();
     await page.waitForURL((url) => url.href !== noteAUrl && /\/notes\//.test(url.pathname));
     await page.getByLabel("Note title").fill("Weekly review");
     const body = page.getByRole("textbox", { name: "Note body" });

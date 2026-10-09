@@ -588,3 +588,23 @@ Secondary text is slightly darker than the shade first proposed (`#64748B` / `#7
 **Enforcement:** `design-tokens.test.ts` checks every text token against all three surfaces in both themes, and the focus ring at 3:1. The axe sweep checks the rendered composites (tints).
 
 **Future Revisit:** Code-block highlighting keeps the single-accent scheme of ADR-34. Revisit if multi-hue syntax colours are wanted.
+
+## ADR-40 — New note is ⌥⌘N / Ctrl+Alt+N, because browsers reserve ⌘N
+
+**Decision:** The New note shortcut is `⌥⌘N` on macOS and `Ctrl+Alt+N` elsewhere (10_DESIGN §8), replacing the `⌘N` the design originally specified. It matches the physical key (`event.code === "KeyN"`), requires Alt, and never fires when AltGr is held.
+
+**Status:** Accepted (2026-10-09) — UX-07.
+
+**Context:** The UX audit (Sprint 12) found the palette's New note command disabled and no `⌘N` binding. Binding `⌘N` would not have helped: Chromium, Firefox and Safari open a new window on ⌘N/Ctrl+N before the page's `keydown` handler runs, so `preventDefault()` cannot stop it.
+
+**Options Considered:**
+- (a) `⌘N` / `Ctrl+N`. Rejected: reserved by every target browser.
+- (b) `⇧⌘N`. Rejected: incognito/private window in Chrome and Edge; reopens a closed window in Firefox.
+- (c) `Alt+N` alone. Rejected: on macOS ⌥N is a dead key (`˜`) used to type ñ, so it would break typing.
+- (d) `⌥⌘N` / `Ctrl+Alt+N`. Chosen: not reserved by Chrome, Firefox, Safari or Edge for web pages.
+
+**Chosen Solution:** (d). The shortcut manager gains `alt` (exact match only when `true`; otherwise "don't care", so existing bindings are unchanged) and `code` (match `event.code` instead of `event.key`). An `alt: true` binding skips events where `getModifierState("AltGraph")` is true, because on Windows Ctrl+Alt is AltGr and AltGr+N types a character on some layouts (e.g. `ń` in Polish). The handler ignores `event.repeat` and in-flight creates, so a held key creates one note.
+
+**Tradeoffs:** a three-key chord is less discoverable than ⌘N, so the hint is shown on the sidebar New note button, the palette, Home and the empty state. The palette and the visible button remain the fallback if a browser or OS later claims the chord.
+
+**Future Revisit:** if a target browser or OS is found to claim ⌥⌘N, record it here and fall back to the palette plus the button.

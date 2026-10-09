@@ -23,4 +23,12 @@ describe("NewNoteButton", () => {
     expect(mutate).toHaveBeenCalledWith({ title: "Untitled" }, expect.any(Object));
     expect(push).toHaveBeenCalledWith("/notes/new-id");
   });
+
+  it("shows the ⌥⌘N hint without changing the accessible name (UX-07)", () => {
+    render(<NewNoteButton />);
+
+    const button = screen.getByRole("button", { name: "New note" });
+    expect(button).toHaveAccessibleName("New note");
+    expect(button).toHaveTextContent("⌥⌘N");
+  });
 });
