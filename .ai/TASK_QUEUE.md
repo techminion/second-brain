@@ -25,7 +25,7 @@ Promoted 2026-10-01: the user paused AI and asked for a friendlier UI, planned w
 | UX-07 | Home dashboard + New note command/shortcut | P0 | M | NOTE-09, DAILY-03 | Daedalus | In Review | M1 | Phase 3; fixes Home always showing the empty state and the disabled New note command. `HomeDashboard` (today card, quick actions, 8 recent notes; onboarding only at zero notes); palette handler registry (`shell/commands/command-handlers.tsx`); `⌥⌘N` / Ctrl+Alt+N (ADR-41) |
 | UX-08 | Search snippets without markdown syntax | P1 | S | FTS-05 | — | Queued | M1 | Phase 4 |
 | UX-09 | Settings → Appearance | P1 | S | SETUP-13 | — | Queued | M1 | Phase 4 |
-| UX-10 | Mobile light pass | P2 | M | SHELL-06, UX-02 | — | Queued | M1 | Phase 4 |
+| UX-10 | Mobile light pass | P2 | M | SHELL-06, UX-02 | Daedalus | In Review | M1 | Phase 4. `MobileTopBar` (48px; sidebar toggle, `mobileActions` New note slot, context toggle on note routes) replaces the floating toggles at mobile; overlay drawers are `role="dialog"` + `aria-modal` with focus trap/return, Escape, scroll lock and close-on-navigation; compact note header; 44px coarse targets. Stacked on `ux-07-followups`. No dependency added, so no ADR |
 | UX-11 | Graph colours + legend | P2 | M | GRAPH-04, UX-01 | — | Queued | M1 | Phase 4 |
 
 ## Sprint 11 — M3 Semantic search (paused)

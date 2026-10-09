@@ -79,17 +79,20 @@ export function NoteEditor({ note }: Readonly<{ note: Note }>) {
 
   return (
     <article className="mx-auto flex max-w-3xl flex-col gap-3 px-6 py-6 md:px-10" onBlur={flush}>
-      <header className="flex min-h-8 items-center justify-between gap-3">
-        <FolderPicker
-          onChange={(folderId) =>
-            mutate(
-              { id: note.id, input: { folderId } },
-              { onError: () => toast.error("Could not move your note.") },
-            )
-          }
-          value={note.folderId}
-        />
-        <div className="flex shrink-0 items-center gap-2">
+      {/* Below md the row wraps and the status shrinks to its dot (UX-10). */}
+      <header className="flex min-h-8 flex-wrap items-center justify-between gap-x-3 gap-y-1">
+        <div className="min-w-0 flex-1">
+          <FolderPicker
+            onChange={(folderId) =>
+              mutate(
+                { id: note.id, input: { folderId } },
+                { onError: () => toast.error("Could not move your note.") },
+              )
+            }
+            value={note.folderId}
+          />
+        </div>
+        <div className="flex shrink-0 items-center gap-1 md:gap-2">
           {note.dailyNoteDate ? <DailyNotePager date={note.dailyNoteDate} /> : null}
           <span
             aria-live="polite"
@@ -110,7 +113,7 @@ export function NoteEditor({ note }: Readonly<{ note: Note }>) {
                     : "bg-highlight",
               )}
             />
-            {status}
+            <span className="sr-only md:not-sr-only">{status}</span>
           </span>
           <NoteActionsMenu
             isSaving={mutation.isPending}

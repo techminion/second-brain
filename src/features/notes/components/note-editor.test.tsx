@@ -108,6 +108,18 @@ describe("NoteEditor", () => {
     expect(screen.getByRole("button", { name: "Note actions" })).toBeInTheDocument();
   });
 
+  it("compacts the header below md: wraps, and the status keeps its text for screen readers (UX-10)", () => {
+    render(<NoteEditor note={makeNote()} />);
+
+    const header = screen.getByRole("status").closest("header");
+    expect(header).toHaveClass("flex-wrap");
+    // The folder picker's slot can shrink and truncate.
+    expect(screen.getByLabelText("Folder").parentElement).toHaveClass("min-w-0");
+    const label = screen.getByText("Saved");
+    expect(label).toHaveClass("sr-only", "md:not-sr-only");
+    expect(screen.getByRole("status")).toHaveTextContent("Saved");
+  });
+
   it("autosaves the edited body after the debounce window", () => {
     render(<NoteEditor note={makeNote({ id: "n1", title: "T" })} />);
 

@@ -41,4 +41,29 @@ describe("NewNoteButton", () => {
     expect(button).toHaveAccessibleName("New note");
     expect(button).toHaveTextContent("⌥⌘N");
   });
+
+  it("has an icon variant for the mobile top bar, still named New note (UX-10)", async () => {
+    mutateAsync.mockResolvedValue({ id: "icon-id" });
+    render(<NewNoteButton variant="icon" />);
+
+    const button = screen.getByRole("button", { name: "New note" });
+    expect(button).toHaveAccessibleName("New note");
+    expect(button).not.toHaveTextContent("New note");
+    expect(button).toHaveClass("pointer-coarse:size-11");
+
+    fireEvent.click(button);
+    expect(mutateAsync).toHaveBeenCalledWith({ title: "Untitled" });
+    await waitFor(() => expect(push).toHaveBeenCalledWith("/notes/icon-id"));
+  });
+
+  it("creates exactly one note on a double tap (shared in-flight guard)", () => {
+    mutateAsync.mockReturnValue(new Promise(() => {}));
+    render(<NewNoteButton variant="icon" />);
+
+    const button = screen.getByRole("button", { name: "New note" });
+    fireEvent.click(button);
+    fireEvent.click(button);
+
+    expect(mutateAsync).toHaveBeenCalledTimes(1);
+  });
 });

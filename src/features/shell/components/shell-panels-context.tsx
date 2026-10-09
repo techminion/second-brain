@@ -1,8 +1,10 @@
 "use client";
 
+import { usePathname } from "next/navigation";
 import {
   createContext,
   type ReactNode,
+  type RefObject,
   useCallback,
   useContext,
   useEffect,
@@ -21,6 +23,12 @@ interface ShellPanelsState {
   toggleRight: () => void;
   collapseLeft: () => void;
   collapseRight: () => void;
+  /**
+   * The control that opened each drawer (the mobile top bar's toggles, or the
+   * tablet's floating context toggle), so focus can return to it on close.
+   */
+  leftToggleRef: RefObject<HTMLButtonElement | null>;
+  rightToggleRef: RefObject<HTMLButtonElement | null>;
 }
 
 const ShellPanelsContext = createContext<ShellPanelsState | null>(null);
@@ -47,6 +55,8 @@ export function ShellPanelsProvider({ children }: Readonly<{ children: ReactNode
   const [isLeftExpanded, setIsLeftExpanded] = useState(tierDefaults.desktop.left);
   const [isRightExpanded, setIsRightExpanded] = useState(tierDefaults.desktop.right);
   const previousTier = useRef<BreakpointTier>("desktop");
+  const leftToggleRef = useRef<HTMLButtonElement | null>(null);
+  const rightToggleRef = useRef<HTMLButtonElement | null>(null);
 
   // Crossing a breakpoint is a deliberate context change, so each rail returns
   // to its tier default rather than carrying an intent that no longer fits.
@@ -71,6 +81,8 @@ export function ShellPanelsProvider({ children }: Readonly<{ children: ReactNode
       collapseRight,
       isLeftExpanded,
       isRightExpanded,
+      leftToggleRef,
+      rightToggleRef,
       tier,
       toggleLeft,
       toggleRight,
@@ -89,4 +101,32 @@ export function useShellPanels(): ShellPanelsState {
   }
 
   return state;
+}
+
+/**
+ * Following a link from a drawer should show the destination, not leave the
+ * drawer covering it (UX-10): overlay panels close on navigation. In-flow
+ * panels (desktop, and the tablet sidebar) keep their state. Rendered by the
+ * AppShell (it needs the router's pathname, which the provider does not).
+ */
+export function CloseDrawersOnNavigation(): null {
+  const { collapseLeft, collapseRight, tier } = useShellPanels();
+  const pathname = usePathname();
+  const previousPathname = useRef(pathname);
+
+  useEffect(() => {
+    if (pathname === previousPathname.current) {
+      return;
+    }
+
+    previousPathname.current = pathname;
+    if (tier === "mobile") {
+      collapseLeft();
+    }
+    if (tier !== "desktop") {
+      collapseRight();
+    }
+  }, [collapseLeft, collapseRight, pathname, tier]);
+
+  return null;
 }

@@ -7,7 +7,7 @@ import {
   PanelRightClose,
   PanelRightOpen,
 } from "lucide-react";
-import type { ReactNode } from "react";
+import { type ReactNode, type RefObject, useEffect, useRef } from "react";
 
 import { cn } from "@/shared/lib/utils";
 import { Button } from "@/shared/ui/button";
@@ -30,7 +30,7 @@ interface PanelControl {
   label: string;
 }
 
-function getPanelControl(side: ShellPanelSide, isExpanded: boolean): PanelControl {
+export function getPanelControl(side: ShellPanelSide, isExpanded: boolean): PanelControl {
   if (side === "left") {
     return isExpanded
       ? { Icon: PanelLeftClose, label: "Collapse application sidebar" }
@@ -52,19 +52,94 @@ function isOverlaySide(side: ShellPanelSide, tier: BreakpointTier): boolean {
   return side === "right" || tier === "mobile";
 }
 
+const focusableSelector =
+  'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
+
+/**
+ * While an overlay drawer is open (UX-10): focus moves into it, Tab cycles
+ * inside it, Escape closes it, the page behind does not scroll, and on close
+ * focus returns to the control that opened it.
+ */
+function useDrawerBehavior(
+  open: boolean,
+  drawerRef: RefObject<HTMLElement | null>,
+  returnFocusRef: RefObject<HTMLButtonElement | null>,
+  close: () => void,
+): void {
+  const closeRef = useRef(close);
+  closeRef.current = close;
+
+  useEffect(() => {
+    if (!open) {
+      return;
+    }
+
+    const drawer = drawerRef.current;
+    const focusables = () =>
+      drawer ? [...drawer.querySelectorAll<HTMLElement>(focusableSelector)] : [];
+    focusables()[0]?.focus();
+
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") {
+        // Leave Escape to an open menu or dialog inside the drawer.
+        if (event.defaultPrevented) {
+          return;
+        }
+        event.preventDefault();
+        closeRef.current();
+        return;
+      }
+
+      if (event.key === "Tab") {
+        const items = focusables();
+        if (items.length === 0) {
+          return;
+        }
+        const first = items[0];
+        const last = items[items.length - 1];
+        const active = document.activeElement;
+        if (event.shiftKey && (active === first || !drawer?.contains(active))) {
+          event.preventDefault();
+          last.focus();
+        } else if (!event.shiftKey && (active === last || !drawer?.contains(active))) {
+          event.preventDefault();
+          first.focus();
+        }
+      }
+    }
+
+    document.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown);
+      document.body.style.overflow = previousOverflow;
+      // The opener is rendered again by the time this cleanup runs.
+      returnFocusRef.current?.focus();
+    };
+  }, [drawerRef, open, returnFocusRef]);
+}
+
+const toggleSizeClassName = "size-8 pointer-coarse:size-11";
+
 function ShellPanel({ children, headerStart, label, side }: Readonly<ShellPanelProps>) {
   const panels = useShellPanels();
   const isExpanded = side === "left" ? panels.isLeftExpanded : panels.isRightExpanded;
   const toggle = side === "left" ? panels.toggleLeft : panels.toggleRight;
   const collapse = side === "left" ? panels.collapseLeft : panels.collapseRight;
+  const openerRef = side === "left" ? panels.leftToggleRef : panels.rightToggleRef;
   const overlay = isOverlaySide(side, panels.tier);
   const { Icon, label: controlLabel } = getPanelControl(side, isExpanded);
+  const drawerRef = useRef<HTMLElement>(null);
+
+  useDrawerBehavior(overlay && isExpanded, drawerRef, openerRef, collapse);
 
   const toggleButton = (
     <Button
       aria-expanded={isExpanded}
       aria-label={controlLabel}
-      className="text-muted-foreground hover:text-foreground size-8 shrink-0"
+      className={cn("text-muted-foreground hover:text-foreground shrink-0", toggleSizeClassName)}
       onClick={toggle}
       size="icon"
       title={controlLabel}
@@ -75,12 +150,32 @@ function ShellPanel({ children, headerStart, label, side }: Readonly<ShellPanelP
     </Button>
   );
 
-  // Collapsed drawer: no rail in the flow, just a pinned affordance to reopen it
-  // (there is no visible rail to click at this tier).
   if (overlay && !isExpanded) {
+    // Mobile: the top bar (MobileTopBar) owns the toggles, so nothing floats
+    // over the content (UX-10).
+    if (panels.tier === "mobile") {
+      return null;
+    }
+
+    // Tablet: no rail in the flow, just a pinned affordance to reopen it.
     return (
       <div className={cn("fixed top-2 z-40", side === "left" ? "left-2" : "right-2")}>
-        {toggleButton}
+        <Button
+          aria-expanded={false}
+          aria-label={controlLabel}
+          className={cn(
+            "text-muted-foreground hover:text-foreground shrink-0",
+            toggleSizeClassName,
+          )}
+          onClick={toggle}
+          ref={openerRef}
+          size="icon"
+          title={controlLabel}
+          type="button"
+          variant="ghost"
+        >
+          <Icon aria-hidden="true" className="size-4" />
+        </Button>
       </div>
     );
   }
@@ -97,6 +192,10 @@ function ShellPanel({ children, headerStart, label, side }: Readonly<ShellPanelP
       ) : null}
       <aside
         aria-label={label}
+        // An open drawer is modal (UX-10); in-flow panels stay complementary.
+        aria-modal={overlay ? true : undefined}
+        ref={drawerRef}
+        role={overlay ? "dialog" : undefined}
         className={cn(
           "duration-structural transition-width bg-surface flex flex-col overflow-hidden",
           side === "left" ? "border-r" : "border-l",
